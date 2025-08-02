@@ -6,7 +6,11 @@ const members = [
 ];
 
 // members를 localStorage에 저장
-localStorage.setItem('members', JSON.stringify(members));
+localStorage.setItem('members', JSON.stringify(members));$(function() {
+  // 회사명 예시 (실제 데이터에 맞게 변경)
+  const companyName = '도파라';
+  $('#company-name').text(companyName);
+});
 
 function renderMembers() {
   const $list = $('#member-list');
