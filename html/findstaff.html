@@ -123,16 +123,6 @@
   <!-- Page Specific JS File -->
   <script>
     $(document).ready(function() {
-      // Data for staff members
-      const staffData = [
-        { id: 1, name: 'Syahdan Ubaidillah', avatar: './img/avatar/avatar-1.png', role: 'Editor', icon: 'fas fa-wrench' },
-        { id: 2, name: 'Danny Stenvenson', avatar: './img/avatar/avatar-2.png', role: 'Admin', icon: 'fas fa-cog' },
-        { id: 3, name: 'Riko Huang', avatar: './img/avatar/avatar-3.png', role: 'Author', icon: 'fas fa-pencil-alt' },
-        { id: 4, name: 'Luthfi Hakim', avatar: './img/avatar/avatar-4.png', role: 'Author', icon: 'fas fa-pencil-alt' },
-        { id: 5, name: 'Alfa Zulkarnain', avatar: './img/avatar/avatar-5.png', role: 'Editor', icon: 'fas fa-wrench' },
-        { id: 6, name: 'Egi Ferdian', avatar: './img/avatar/avatar-4.png', role: 'Admin', icon: 'fas fa-cog' }
-      ];
-
       // Function to populate staff members
       function populateStaff(containerId, data) {
         const container = document.getElementById(containerId);
@@ -156,12 +146,51 @@
         $('[data-toggle="tooltip"]').tooltip();
       }
 
-      // Populate both sections
-      // For demonstration, using the same data. Replace with different data if needed.
-      populateStaff('featured-staff-row', staffData);
-      // You can use different data for the latest updated section if you have it
-      // For example: populateStaff('latest-updated-staff-row', latestUpdatedStaffData);
-      populateStaff('latest-updated-staff-row', staffData);
+      // Fetch staff data from API
+      $.ajax({
+        url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ action: 'getall' }), // or whatever action your API expects
+        success: function(response) {
+          let data = [];
+          // Check if the actual data is in the 'body' property and is a string
+          if (response.body && typeof response.body === 'string') {
+            try {
+              data = JSON.parse(response.body);
+            } catch (e) {
+              console.error('Error parsing response body:', e);
+              return; // Exit if parsing fails
+            }
+          } else if (Array.isArray(response)) {
+            // If the response itself is the array
+            data = response;
+          } else {
+            console.error('Unexpected response format:', response);
+            return; // Exit if the format is not as expected
+          }
+
+          // Ensure that the parsed data is an array before calling .map
+          if (!Array.isArray(data)) {
+              console.error('Parsed data is not an array:', data);
+              return;
+          }
+
+          const staffData = data.map(item => ({
+            id: item.staff_id, // Adjust if the field name is different
+            name: item.name,
+            avatar: item.imgUrl || './img/avatar/avatar-1.png', // Default avatar
+            role: item.role,
+            icon: 'fas fa-user' // Default icon, adjust as needed
+          }));
+
+          populateStaff('featured-staff-row', staffData);
+          populateStaff('latest-updated-staff-row', staffData);
+        },
+        error: function(error) {
+          console.error('Error fetching staff data:', error);
+        }
+      });
 
       // 예시: 검색 결과를 동적으로 표시
       $('#findstaff-form').on('submit', function(e) {
