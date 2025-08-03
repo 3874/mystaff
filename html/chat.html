@@ -19,8 +19,8 @@
 <body class="h-100">
   <div id="app" class="h-100">
     <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
-      <div class="navbar-bg"></div>
-
+      <div class="navbar-bg">
+      </div>
 
       <!-- Main Content -->
       <div class="main-content flex-grow-1">
@@ -31,7 +31,7 @@
               <div class="col-12 col-sm-12 col-lg-12 h-100 d-flex flex-column">
                 <div class="card chat-box h-100 flex-grow-1 d-flex flex-column mt-0" id="mychatbox">
                   <div class="card-header">
-                    <a href="javascript:history.back();"><i class="fa fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp; <h4>Working with <span id="chat-user-name"></span></h4>
+                    <a href="javascript:history.back();"><i class="fa fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp; <h4>Working with <span id="chat-user-name"></span> &nbsp;&nbsp; <button class="btn btn-danger" id="remove_btn">Remove</button></h4>
                   </div>
                   <div class="card-body chat-content flex-grow-1 overflow-auto">
                   </div>
@@ -64,7 +64,7 @@
 
   <!-- JS Libraies -->
 
-  <!-- Page Specific JS File -->
+  <script src="./js/mystaffDB.js"></script>
   <script src="./js/pages/chat.js"></script>
   
   <!-- Template JS File -->

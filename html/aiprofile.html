@@ -47,7 +47,6 @@
                         quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
                         consequat.</p>
                       </div>
-                      <div class="mb-2 mt-3"><div class="text-small font-weight-bold">Follow Hasan On</div></div>
                       <a href="#" class="btn btn-social-icon mr-1 btn-facebook">
                         <i class="fab fa-facebook-f"></i>
                       </a>
@@ -62,7 +61,7 @@
                       </a>
                       <div class="w-100 d-sm-none"></div>
                       <div class="float-right mt-sm-0 mt-3">
-                        <a href="#" class="btn">Hiring <i class="fas fa-chevron-right"></i></a>
+                        <a href="#" class="btn" id="hire-btn">Hiring <i class="fas fa-chevron-right"></i></a>
                       </div>
                     </div>
                   </div>
@@ -82,71 +81,8 @@
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
-
-  <!-- Page Specific JS File -->
-  <script>
-    $(document).ready(function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const staffId = urlParams.get('id');
-
-      if (staffId) {
-        $.ajax({
-          url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ action: 'read', staff_id: staffId }),
-          success: function(response) {
-            let staffData;
-            // The response from API Gateway is often an object with a stringified 'body'.
-            if (response.body && typeof response.body === 'string') {
-              try {
-                staffData = JSON.parse(response.body);
-              } catch (e) {
-                console.error('Error parsing response body:', e);
-                return;
-              }
-            } else if (typeof response === 'object' && response !== null) {
-              // Fallback if the response is already a JSON object.
-              staffData = response;
-            } else {
-              console.error('Unexpected response format:', response);
-              return;
-            }
-
-            // When getting by ID, the result might be an array with one item.
-            if (Array.isArray(staffData) && staffData.length > 0) {
-                staffData = staffData[0];
-            } else if (Array.isArray(staffData) && staffData.length === 0) {
-                console.error('Staff not found for id:', staffId);
-                // Maybe display a "not found" message on the page
-                $('.author-box-name a').text('Staff Not Found');
-                return;
-            }
-
-            // Populate the profile card with the fetched data
-            $('.author-box-picture').attr('src', staffData.imgUrl || './img/avatar/avatar-1.png');
-            $('.author-box-name a').text(staffData.name);
-            $('.author-box-job').text(staffData.role);
-            // Assuming 'expertise' maps to the description field
-            $('.author-box-description p').text(staffData.expertise); 
-            
-            // Update the hiring link to go to the chat page with the staff's ID
-            const chatLink = `chat.html?id=${staffData.staff_id}&name=${encodeURIComponent(staffData.name)}`;
-            $('.float-right a.btn').attr('href', chatLink);
-          },
-          error: function(error) {
-            console.error('Error fetching staff data:', error);
-            // Display an error message on the page
-            $('.author-box-name a').text('Error loading profile');
-          }
-        });
-      } else {
-        console.error('No staff ID found in URL.');
-        // Display a message indicating no ID was provided
-        $('.author-box-name a').text('No Staff ID Provided');
-      }
-    });
-  </script>
+  <script src="./js/mystaffDB.js"></script>
+  <script src="./js/pages/aiprofile.js"></script>
   <script src="./js/scripts.js"></script>
   <script src="./js/custom.js"></script>
 </body>
