@@ -47,15 +47,22 @@ function renderMembers(members) { // Accept the members parameter
           console.log(staffData);
 
           const $memberItem = $(`
-            <li class="media member-item" data-id="${staffData.staff_id}" style="cursor:pointer;">
+            <li class="media member-item" data-id="${staffData.staff_id}">
               <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
               <div class="media-body">
                 <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
                 <div class="text-small"> ${staffData.expertise}</div>
               </div>
+              <button class="btn btn-danger btn-sm fire-btn">Fire</button>
             </li>
           `);
           
+          $memberItem.find('.fire-btn').on('click', function(e) {
+            e.stopPropagation();
+            const staffId = $(this).closest('.member-item').data('id');
+            fireStaff(staffId);
+          });
+
           $memberItem.on('click', function() {
             window.location.href = `chat.html?id=${staffData.staff_id}&name=${staffData.name}`; // Redirect to chat.html
           });
@@ -72,5 +79,25 @@ function renderMembers(members) { // Accept the members parameter
   } else {
     console.error('No staff IDs found.');
     $list.append('<li>No Staff IDs Provided</li>');
+  }
+}
+
+function fireStaff(staffId) {
+  if (confirm('Are you sure you want to fire this staff member?')) {
+    MystaffDB.getAllData()
+      .then(data => {
+        const mystaff = data[0];
+        const updatedMembers = mystaff.members.filter(id => id !== staffId);
+        mystaff.members = updatedMembers;
+        return MystaffDB.updateUser(mystaff);
+      })
+      .then(() => {
+        $(`.member-item[data-id="${staffId}"]`).remove();
+        alert('Staff member fired successfully.');
+      })
+      .catch(error => {
+        console.error('Error firing staff member:', error);
+        alert('Failed to fire staff member.');
+      });
   }
 }

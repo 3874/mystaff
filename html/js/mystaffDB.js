@@ -90,10 +90,31 @@ const MystaffDB = (function() {
         });
     }
 
+    function updateUser(user) {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject("Database not initialized.");
+                return;
+            }
+            const transaction = db.transaction([storeName], "readwrite");
+            const objectStore = transaction.objectStore(storeName);
+            const putRequest = objectStore.put(user);
+
+            putRequest.onsuccess = function() {
+                resolve();
+            };
+
+            putRequest.onerror = function() {
+                reject("Failed to update user.");
+            };
+        });
+    }
+
     return {
         init,
         getAllData,
         addUser,
-        clearAllData
+        clearAllData,
+        updateUser
     };
 })();
