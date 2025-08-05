@@ -1,4 +1,7 @@
 $(document).ready(function() {
+  const mystaffJSON = CheckSignIn();
+  console.log(mystaffJSON);
+
   const memberId = getQueryParameter('id');
   const memberName = getQueryParameter('name');
   $('#chat-user-name').text(memberName);

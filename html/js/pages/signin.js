@@ -18,8 +18,9 @@ $(document).ready(function() {
             const user = users.find(u => u.email === email && u.password === password);
 
             if (user) {
+                localStorage.setItem("mystaffInfo", JSON.stringify(user));
                 alert("Login successful!");
-                window.location.href = "mystaff.html";
+                window.location.href = "./index.html";
             } else {
                 alert("Invalid email or password.");
             }

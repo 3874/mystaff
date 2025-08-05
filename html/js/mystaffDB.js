@@ -110,11 +110,32 @@ const MystaffDB = (function() {
         });
     }
 
+    function logout() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject("Database not initialized.");
+                return;
+            }
+            const transaction = db.transaction([storeName], "readwrite");
+            const objectStore = transaction.objectStore(storeName);
+            const clearRequest = objectStore.clear();
+
+            clearRequest.onsuccess = function() {
+                resolve();
+            };
+
+            clearRequest.onerror = function() {
+                reject("Failed to clear data.");
+            };
+        });
+    }
+
     return {
         init,
         getAllData,
         addUser,
         clearAllData,
-        updateUser
+        updateUser,
+        logout
     };
 })();

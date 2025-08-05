@@ -3,7 +3,6 @@ $(document).ready(function() {
   const staffId = urlParams.get('id');
   const mystaffJSON = CheckSignIn();
   console.log(mystaffJSON);
-  const mystaff = JSON.parse(mystaffJSON);
 
       if (staffId) {
         $.ajax({
@@ -52,45 +51,6 @@ $(document).ready(function() {
         console.error('No staff ID found in URL.');
         $('.author-box-name a').text('No Staff ID Provided');
       }
-
-
-  $('#hire-btn').on('click', function(e) {
-    e.preventDefault();
-    if (!staffId) {
-      alert('Staff ID not found. Cannot hire staff.');
-      return;
-    }
-
-    MystaffDB.init()
-      .then(() => MystaffDB.getAllData())
-      .then(data => {
-        console.log(data);
-        const members = mystaff.members || [];
-
-        if (members.includes(staffId)) {
-          throw new Error('Staff is already hired.');
-        }
-
-        members.push(staffId);
-        mystaff.members = members;
-
-        return MystaffDB.updateUser(mystaff);
-      })
-      .then(() => {
-        // Update localStorage after successful DB update
-        return MystaffDB.getAllData();
-      })
-      .then(data => {
-        const updatedMystaff = data[0];
-        localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));
-        alert('Staff hired successfully!');
-        location.href = "./index.html";
-      })
-      .catch(error => {
-        console.error('Error hiring staff:', error.message);
-        alert(error.message || 'Error hiring staff.');
-      });
-  });
 
 });
 

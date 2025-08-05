@@ -1,17 +1,10 @@
 $(document).ready(function() {
-  MystaffDB.init()
-    .then(() => {
-      return MystaffDB.getAllData(); // Fetch and log all data on initial load
-    })
-    .then(data => {
-      const mystaff = data[0] || {}; // Assuming the first entry is the current staff
-      $('#company-name').text(mystaff.companyName || 'No Name');
-      console.log(mystaff);
-      renderMembers(mystaff.members || []); // Pass the members array to renderMembers
-    })
-    .catch(error => {
-      console.error("Error while initializing DB:", error);
-    });
+  const mystaffJSON = CheckSignIn();
+  console.log(mystaffJSON);
+  const mystaff = JSON.parse(mystaffJSON);
+  $('#company-name').text(mystaff.companyName || 'No Name');
+  renderMembers(mystaff.members || []);
+
 });
 
 function renderMembers(members) { // Accept the members parameter
@@ -53,7 +46,11 @@ function renderMembers(members) { // Accept the members parameter
                 <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
                 <div class="text-small"> ${staffData.expertise}</div>
               </div>
-              <button class="btn btn-danger btn-sm fire-btn">Fire</button>
+              <div class="btn-group mb-3" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
+                <button type="button" class="btn btn-sm btn-warning chat-btn">Chat</button>
+                <button type="button" class="btn btn-sm btn-success detail-btn">Detail</button>
+              </div>
             </li>
           `);
           
@@ -63,8 +60,12 @@ function renderMembers(members) { // Accept the members parameter
             fireStaff(staffId);
           });
 
-          $memberItem.on('click', function() {
+          $memberItem.find('.chat-btn').on('click', function() {
             window.location.href = `chat.html?id=${staffData.staff_id}&name=${staffData.name}`; // Redirect to chat.html
+          });
+
+          $memberItem.find('.detail-btn').on('click', function() {
+            window.location.href = `detail.html?id=${staffData.staff_id}`; // Redirect to chat.html
           });
 
           $list.append($memberItem);
@@ -84,20 +85,30 @@ function renderMembers(members) { // Accept the members parameter
 
 function fireStaff(staffId) {
   if (confirm('Are you sure you want to fire this staff member?')) {
-    MystaffDB.getAllData()
+    MystaffDB.init()
+      .then(() => MystaffDB.getAllData())
       .then(data => {
         const mystaff = data[0];
+        if (!mystaff) {
+          throw new Error("User data not found. Please sign in again.");
+        }
         const updatedMembers = mystaff.members.filter(id => id !== staffId);
         mystaff.members = updatedMembers;
         return MystaffDB.updateUser(mystaff);
       })
       .then(() => {
+        // Update localStorage after successful DB update
+        return MystaffDB.getAllData();
+      })
+      .then(data => {
+        const updatedMystaff = data[0];
+        localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));
         $(`.member-item[data-id="${staffId}"]`).remove();
         alert('Staff member fired successfully.');
       })
       .catch(error => {
-        console.error('Error firing staff member:', error);
-        alert('Failed to fire staff member.');
+        console.error('Error firing staff member:', error.message);
+        alert(error.message || 'Failed to fire staff member.');
       });
   }
 }

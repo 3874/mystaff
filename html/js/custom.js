@@ -6,3 +6,16 @@
  */
 
 "use strict";
+
+function CheckSignIn() {
+  const mystaffJSON = localStorage.getItem("mystaffInfo");
+  if (!mystaffJSON) {
+    location.href = "./signin.html";
+  }
+  return mystaffJSON;
+}
+
+$('#signout-btn').on('click', function() {
+    localStorage.removeItem("mystaffInfo");
+    location.href = "./signin.html";
+});

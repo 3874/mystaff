@@ -44,8 +44,9 @@ $(document).ready(function() {
             const newUser = { nick, companyName, email, secretKey, password };
             MystaffDB.addUser(newUser)
                 .then(() => {
+                    localStorage.setItem("mystaffInfo", JSON.stringify(newUser));
                     alert('Registration successful!');
-                    window.location.href = 'mystaff.html';
+                    window.location.href = 'index.html';
                 })
                 .catch(error => {
                     alert('Failed to register. Please try again. ' + error);
