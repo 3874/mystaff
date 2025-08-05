@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
@@ -10,13 +10,51 @@
   <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+
   <!-- Template CSS -->
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/components.css">
-
 </head>
+  <style>
+    html, body, #app {
+      height: 100%;
+      min-height: 100vh;
+    }
+    .main-wrapper {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .main-content, .section, .section-body, .row, .col-12 {
+      flex: 1 1 auto !important;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+    .chat-box {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+    .card-body.chat-content {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    .card-footer.chat-form {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      z-index: 100;
+      border-top: 1px solid #eee;
+    }
+  </style>
 
-<body class="h-100">
+<body class="layout-3">
   <div id="app" class="h-100">
     <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
       <div class="navbar-bg">
@@ -61,13 +99,9 @@
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <!-- JS Libraies -->
-
   <script src="./js/mystaffDB.js"></script>
   <script src="./js/pages/chat.js"></script>
   
-  <!-- Template JS File -->
   <script src="./js/scripts.js"></script>
   <script src="./js/custom.js"></script>
 </body>
