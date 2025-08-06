@@ -1,51 +1,45 @@
 "use strict";
 
-let db;
-const request = indexedDB.open('chatDatabase', 1);
-
-request.onerror = function(event) {
-    console.error('Database error:', event.target.errorCode);
-};
-
-request.onupgradeneeded = function(event) {
-    db = event.target.result;
-    if (!db.objectStoreNames.contains('chats')) {
-        db.createObjectStore('chats', { keyPath: 'chat_id' });
-    }
-};
-
-request.onsuccess = function(event) {
-    db = event.target.result;
-    console.log('Database initialized successfully.');
-    fetchAllChats();
-};
-
-// Function to fetch all chat messages
-function fetchAllChats() {
-    const transaction = db.transaction(['chats'], 'readonly');
-    const objectStore = transaction.objectStore('chats');
-    const getAllRequest = objectStore.getAll();
-
-    getAllRequest.onsuccess = function(event) {
-        const allChats = event.target.result;
-        console.log('All chat messages:', allChats);
-        displayChats(allChats);
-    };
-
-    getAllRequest.onerror = function(event) {
-        console.error('Error fetching all chats:', event.target.error);
-    };
-}
-
-function displayChats(chats) {
-    const chatList = $("#chatlist");
-    chatList.empty();
-    chats.forEach(chat => {
-        chatList.append(`<li class="list-group-item" data-id="${chat.chat_id}">${chat.chat_name}</li>`);
+$(document).ready(function() {
+  // 1) MystaffDB 초기화
+  MystaffDB.init()
+    .then(() => {
+      console.log('MystaffDB initialized successfully.');
+      // 2) 모든 채팅 세션 가져오기
+      return MystaffDB.getChatData();
+    })
+    .then(sessions => {
+      console.log('All chat sessions:', sessions);
+      displayChats(sessions);
+    })
+    .catch(error => {
+      console.error('Error initializing or fetching chats:', error.message || error);
     });
+});
+
+// 3) 화면에 채팅 세션 목록 표시
+function displayChats(sessions) {
+  const chatList = $("#chatlist");
+  chatList.empty();
+
+  sessions.forEach(session => {
+    // session.sessionId, session.staff_id, session.messages
+    // 여기서는 staff_id를 텍스트로 사용합니다. 필요시 ownerStore에서 이름을 가져오도록 확장하세요.
+    chatList.append(
+      `<li class="list-group-item" data-id="${session.sessionId}">${session.title}</li>`
+    );
+  });
 }
 
+// 4) 클릭 시 해당 세션으로 이동
 $("#chatlist").on("click", ".list-group-item", function() {
-    const chatId = $(this).data("id");
-    window.location.href = `chat.html?id=${chatId}&name=${$(this).text()}`;
+  const sessionId = $(this).data("id");
+  // staff_id 대신 이름을 query로 전달하려면 추가 조회 로직 필요
+  window.location.href = `chat.html?sessionId=${sessionId}`;
+});
+
+$("#clear-btn").on("click", function() {
+    MystaffDB.init()
+    .then(() => MystaffDB.clearChatData())
+    location.reload();
 });

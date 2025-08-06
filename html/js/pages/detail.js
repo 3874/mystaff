@@ -25,14 +25,33 @@ $(document).ready(function() {
     });
 
     $('.chat-btn').on('click', async function() {
-      let session = await MystaffDB.getChatSessionByStaffId(staffData.staff_id);
-      console.log(session);
-      if (session) {
-        //location.href = `chat.html?sessionId=${session.sessionId}`;
-      } else {
-        const newSessionId = crypto.randomUUID();
-        //location.href = `chat.html?sessionId=${newSessionId}`;
+      try {
+        // 클릭할 때마다 DB 초기화 시도
+        await MystaffDB.init();
+        console.log("MystaffDB initialized on click");
+
+        // 초기화 후 세션 조회/생성 로직
+        let session = await MystaffDB.getChatSessionByStaffId(staffData.staff_id);
+        console.log('기존 세션:', session);
+
+        if (session) {
+          window.location.href = `chat.html?sessionId=${session.sessionId}`;
+        } else {
+          const newSessionId = crypto.randomUUID();
+          const sessionObj = {
+            sessionId: newSessionId,
+            title: staffData.name,
+            staff_id: staffData.staff_id
+          };
+          await MystaffDB.addChatSession(sessionObj);
+          console.log('새 세션 생성:', sessionObj);
+          window.location.href = `chat.html?sessionId=${newSessionId}`;
+        }
+      } catch (error) {
+        console.error('채팅 세션 처리 중 오류:', error);
+        alert('채팅을 시작하는 데 실패했습니다. 다시 시도해주세요.');
       }
     });
+
 
 });

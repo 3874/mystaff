@@ -40,26 +40,6 @@ const MystaffDB = (function() {
         });
     }
 
-    function getChatSessionByStaffId(staffId) {
-        return new Promise((resolve, reject) => {
-            if (!db) {
-                reject("Database not initialized.");
-                return;
-            }
-            const transaction = db.transaction([chatsStoreName], "readonly");
-            const objectStore = transaction.objectStore(chatsStoreName);
-            const index = objectStore.index("staff_id");
-            const request = index.get(staffId);
-
-            request.onsuccess = function() {
-                resolve(request.result);
-            };
-
-            request.onerror = function() {
-                reject("Error fetching chat session.");
-            };
-        });
-    }
 
     function addChatSession(session) {
         return new Promise((resolve, reject) => {
@@ -170,6 +150,27 @@ const MystaffDB = (function() {
         });
     }
 
+    function getChatSessionByStaffId(staffId) {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject("Database not initialized.");
+                return;
+            }
+            const transaction = db.transaction([chatsStoreName], "readonly");
+            const objectStore = transaction.objectStore(chatsStoreName);
+            const index = objectStore.index("staff_id");
+            const request = index.get(staffId);
+
+            request.onsuccess = function() {
+                resolve(request.result);
+            };
+
+            request.onerror = function() {
+                reject("Error fetching chat session.");
+            };
+        });
+    }
+
     function getChatSession(sessionId) {
         return new Promise((resolve, reject) => {
             if (!db) {
@@ -198,6 +199,26 @@ const MystaffDB = (function() {
             }
             const transaction = db.transaction([ownerStoreName], "readonly");
             const objectStore = transaction.objectStore(ownerStoreName);
+            const getAllRequest = objectStore.getAll();
+
+            getAllRequest.onsuccess = function() {
+                resolve(getAllRequest.result);
+            };
+
+            getAllRequest.onerror = function() {
+                reject("Error fetching data.");
+            };
+        });
+    }
+
+    function getChatData() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject("Database not initialized.");
+                return;
+            }
+            const transaction = db.transaction([chatsStoreName], "readonly");
+            const objectStore = transaction.objectStore(chatsStoreName);
             const getAllRequest = objectStore.getAll();
 
             getAllRequest.onsuccess = function() {
@@ -284,6 +305,7 @@ const MystaffDB = (function() {
         clearUserData,
         clearChatData,
         updateUser,
+        getChatData,
         getChatSessionByStaffId,
         addChatSession,
         addChatMessage,

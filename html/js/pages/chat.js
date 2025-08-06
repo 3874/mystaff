@@ -1,10 +1,15 @@
 var chatStaff, sessionId;
 
-$(document).ready(async function() {
-    await MystaffDB.init();
-
+$(document).ready(function() {
     const myprofileJSON = CheckSignIn();
     console.log(myprofileJSON);
+    const chatJson = localStorage.getItem('mystaff_staffData');
+    if (!chatJson) {
+        location.href="index.html";
+    }
+    chatStaff = JSON.parse(chatJson);
+    console.log(chatStaff);
+    $('#chat-user-name').text(chatStaff.name);
 
     const urlParams = new URLSearchParams(window.location.search);
     sessionId = urlParams.get('sessionId') || '';
@@ -13,34 +18,32 @@ $(document).ready(async function() {
         location.href = "index.html";
     }
 
-    chatStaff = await MystaffDB.getChatSession(sessionId);
-    if (!chatStaff) {
-        console.error('Could not find staff for sessionId:', sessionId);
-        location.href = "index.html";
-        return;
-    }
-    console.log(chatStaff);
+    MystaffDB.init()
+    .then(() => MystaffDB.getChatSession(sessionId))
+    .then(session => {
+        console.log(session);
+        // session이 없거나 messages가 없으면 빈 배열로 대체
+        const messages = session?.messages || [];
 
-    $('#chat-user-name').text(chatStaff.name);
-    loadExistingChats(sessionId);
-
+        messages.forEach(chatMessage => {
+        $.chatCtrl('#mychatbox', {
+            text: chatMessage.text,
+            picture: chatMessage.sender === 'user'
+            ? './img/avatar/avatar-1.png'
+            : chatStaff.imgUrl,
+            position: chatMessage.sender === 'user'
+            ? 'chat-right'
+            : 'chat-left'
+        });
+        });
+    })
+    .catch(error => {
+        console.error('Error loading chat session:', error.message);
+        alert(error.message || '채팅 세션을 불러오는 중 오류가 발생했습니다.');
+    });
+    
 });
 
-async function loadExistingChats(sessionId) {
-    if (!sessionId) {
-        console.error('No sessionId provided, cannot load chats.');
-        return; 
-    }
-
-    const messages = await MystaffDB.getChatMessages(sessionId);
-    messages.forEach(chatMessage => {
-        $.chatCtrl('#mychatbox', {
-            text: chatMessage.text, 
-            picture: chatMessage.sender === 'user' ? './img/avatar/avatar-1.png' : chatStaff.imgUrl,
-            position: chatMessage.sender === 'user' ? 'chat-right' : 'chat-left'
-        });
-    });
-}
 
 // Chat control function
 $.chatCtrl = function(element, chat) {
@@ -87,39 +90,45 @@ $.chatCtrl = function(element, chat) {
 };
 
 
-$("#chat-form").submit(async function() {
-    var me = $(this);
-    var $form = $(this);
-    var $input = $form.find('input');
-    var $button = $form.find('button');
+$("#chat-form").on("submit", async function(event) {
+    // 1) 기본 폼 제출 동작 방지
+    event.preventDefault();
+
+    const $form = $(this);
+    const $input = $form.find('input');
+    const $button = $form.find('button');
 
     // Disable input and button
     $input.prop('disabled', true);
     $button.prop('disabled', true);
-    const Staff_func = chatStaff.functionJSON;
-    console.log(Staff_func);
-    const message = $input.val().trim();
-    if (message.length > 0) {
-        await MystaffDB.addChatMessage(sessionId, 'user', message);
-        $.chatCtrl('#mychatbox', {
-            text: message,
-            picture: './img/avatar/avatar-1.png',
-        });
-        me.find('input').val('');
 
+    const Staff_func = chatStaff.functionJSON;
+    const message = $input.val().trim();
+
+    if (message.length > 0) {
         try {
-            await sendChatRequest(message, sessionId, Staff_func.url)
-        } finally {
-            // Enable input and button when response is received or an error occurs
-            $input.prop('disabled', false);
-            $button.prop('disabled', false);
-            $input.focus();
+            // 2) 로컬 DB에 저장
+            await MystaffDB.addChatMessage(sessionId, 'user', message);
+
+            // 3) 화면에 출력
+            $.chatCtrl('#mychatbox', {
+                text: message,
+                picture: './img/avatar/avatar-1.png',
+                position: 'chat-right'
+            });
+            $input.val('');
+
+            // 4) 서버 요청 및 응답 처리
+            await sendChatRequest(message, sessionId, Staff_func.url);
+        } catch (err) {
+            console.error(err);
         }
-    } else {
-        $input.prop('disabled', false);
-        $button.prop('disabled', false);
     }
-    return false;
+
+    // 5) 항상 버튼·입력창 활성화
+    $input.prop('disabled', false);
+    $button.prop('disabled', false);
+    $input.focus();
 });
 
 // Send chat request to the server
