@@ -14,7 +14,7 @@ $(document).ready(function() {
             return;
         }
 
-        MystaffDB.getAllData().then(users => {
+        MystaffDB.getUserData().then(users => {
             const user = users.find(u => u.email === email && u.password === password);
 
             if (user) {

@@ -8,11 +8,11 @@
 "use strict";
 
 function CheckSignIn() {
-  const mystaffJSON = localStorage.getItem("mystaffInfo");
-  if (!mystaffJSON) {
+  const myprofileJSON = localStorage.getItem("mystaffInfo");
+  if (!myprofileJSON) {
     location.href = "./signin.html";
   }
-  return mystaffJSON;
+  return myprofileJSON;
 }
 
 $('#signout-btn').on('click', function() {

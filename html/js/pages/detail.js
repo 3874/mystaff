@@ -1,56 +1,38 @@
+var staffData;
+
 $(document).ready(function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const staffId = urlParams.get('id');
-  const mystaffJSON = CheckSignIn();
-  console.log(mystaffJSON);
 
-      if (staffId) {
-        $.ajax({
-          url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ action: 'read', staff_id: staffId }),
-          success: function(response) {
-            let staffData;
-            if (response.body && typeof response.body === 'string') {
-              try {
-                staffData = JSON.parse(response.body);
-              } catch (e) {
-                console.error('Error parsing response body:', e);
-                return;
-              }
-            } else if (typeof response === 'object' && response !== null) {
-              staffData = response;
-            } else {
-              console.error('Unexpected response format:', response);
-              return;
-            }
+    const myprofileJSON = CheckSignIn();
+    console.log(myprofileJSON);
 
-            if (Array.isArray(staffData) && staffData.length > 0) {
-                staffData = staffData[0];
-            } else if (Array.isArray(staffData) && staffData.length === 0) {
-                console.error('Staff not found for id:', staffId);
-                $('.author-box-name a').text('Staff Not Found');
-                return;
-            }
+    const chatJson = localStorage.getItem('mystaff_staffData');
+    if (!chatJson) {
+      location.href="index.html";
+    }
+    staffData = JSON.parse(chatJson);
+    console.log("staffData:", staffData);
+    $('.author-box-picture').attr('src', staffData.imgUrl || './img/avatar/avatar-1.png');
+    $('.author-box-name a').text(staffData.name);
+    $('.author-box-job').text(staffData.role);
+    $('.author-box-description p').text(staffData.description); 
+    const chatLink = `index.html`;
+    $('.float-right a.btn').attr('href', chatLink);
 
-            $('.author-box-picture').attr('src', staffData.imgUrl || './img/avatar/avatar-1.png');
-            $('.author-box-name a').text(staffData.name);
-            $('.author-box-job').text(staffData.role);
-            $('.author-box-description p').text(staffData.expertise); 
-            
-            const chatLink = `index.html`;
-            $('.float-right a.btn').attr('href', chatLink);
-          },
-          error: function(error) {
-            console.error('Error fetching staff data:', error);
-            $('.author-box-name a').text('Error loading profile');
-          }
-        });
+    $('.json-btn').on('click', function() {
+      const functionJSON = staffData.functionJSON;
+      $('#json-data').text(JSON.stringify(functionJSON, null, 2));
+      $('#jsonModal').modal('show');
+    });
+
+    $('.chat-btn').on('click', async function() {
+      let session = await MystaffDB.getChatSessionByStaffId(staffData.staff_id);
+      console.log(session);
+      if (session) {
+        //location.href = `chat.html?sessionId=${session.sessionId}`;
       } else {
-        console.error('No staff ID found in URL.');
-        $('.author-box-name a').text('No Staff ID Provided');
+        const newSessionId = crypto.randomUUID();
+        //location.href = `chat.html?sessionId=${newSessionId}`;
       }
+    });
 
 });
-

@@ -1,7 +1,7 @@
 $(document).ready(function() {
-  const mystaffJSON = CheckSignIn();
-  console.log(mystaffJSON);
-  const mystaff = JSON.parse(mystaffJSON);
+  const myprofileJSON = CheckSignIn();
+  console.log(myprofileJSON);
+  const mystaff = JSON.parse(myprofileJSON);
   $('#company-name').text(mystaff.companyName || 'No Name');
   renderMembers(mystaff.members || []);
 
@@ -48,8 +48,6 @@ function renderMembers(members) { // Accept the members parameter
               </div>
               <div class="btn-group mb-3" role="group" aria-label="Basic example">
                 <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
-                <button type="button" class="btn btn-sm btn-warning chat-btn">Chat</button>
-                <button type="button" class="btn btn-sm btn-success detail-btn">Detail</button>
               </div>
             </li>
           `);
@@ -60,12 +58,9 @@ function renderMembers(members) { // Accept the members parameter
             fireStaff(staffId);
           });
 
-          $memberItem.find('.chat-btn').on('click', function() {
-            window.location.href = `chat.html?id=${staffData.staff_id}&name=${staffData.name}`; // Redirect to chat.html
-          });
-
-          $memberItem.find('.detail-btn').on('click', function() {
-            window.location.href = `detail.html?id=${staffData.staff_id}`; // Redirect to chat.html
+          $memberItem.on('click', function() {
+            localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
+            window.location.href = `detail.html`;
           });
 
           $list.append($memberItem);
@@ -86,7 +81,7 @@ function renderMembers(members) { // Accept the members parameter
 function fireStaff(staffId) {
   if (confirm('Are you sure you want to fire this staff member?')) {
     MystaffDB.init()
-      .then(() => MystaffDB.getAllData())
+      .then(() => MystaffDB.getUserData())
       .then(data => {
         const mystaff = data[0];
         if (!mystaff) {
@@ -98,7 +93,7 @@ function fireStaff(staffId) {
       })
       .then(() => {
         // Update localStorage after successful DB update
-        return MystaffDB.getAllData();
+        return MystaffDB.getUserData();
       })
       .then(data => {
         const updatedMystaff = data[0];

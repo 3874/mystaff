@@ -1,7 +1,7 @@
 $(document).ready(function() {
-  const mystaffJSON = CheckSignIn();
-  console.log(mystaffJSON);
-  const mystaff = JSON.parse(mystaffJSON);
+  const myprofileJSON = CheckSignIn();
+  console.log(myprofileJSON);
+  const mystaff = JSON.parse(myprofileJSON);
   function populateStaff(containerId, data) {
     const container = document.getElementById(containerId);
     if (!container) return;

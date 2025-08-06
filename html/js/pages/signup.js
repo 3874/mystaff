@@ -2,7 +2,7 @@ $(document).ready(function() {
 
   MystaffDB.init()
     .then(() => {
-        return MystaffDB.getAllData(); // Fetch and log all data on initial load
+        return MystaffDB.getUserData(); // Fetch and log all data on initial load
     })
     .then(data => {
         console.log("Current data in 'owner' table:", data);
@@ -37,7 +37,7 @@ $(document).ready(function() {
       return;
     }
 
-    MystaffDB.getAllData().then(data => {
+    MystaffDB.getUserData().then(data => {
         if (data.some(user => user.email === email)) {
             alert('An account with this email already exists.');
         } else {
@@ -59,11 +59,11 @@ $(document).ready(function() {
 
   $('#reset-database').on('click', function() {
       if (confirm('Are you sure you want to delete all registered data? This cannot be undone.')) {
-          MystaffDB.clearAllData()
+          MystaffDB.clearUserData()
               .then(() => {
                   alert('Database has been reset.');
                   console.log("All data cleared from 'owner' table.");
-                  return MystaffDB.getAllData();  // Re-fetch and log now-empty table
+                  return MystaffDB.getUserData();  // Re-fetch and log now-empty table
               })
               .then(data => {
                   console.log("Current data in 'owner' table (after reset):", data);

@@ -35,18 +35,16 @@
                     <div class="author-box-left">
                       <img alt="image" src="./img/avatar/avatar-1.png" class="rounded-circle author-box-picture">
                       <div class="clearfix"></div>
-                      <a href="#" class="btn btn-primary mt-3 follow-btn" data-follow-action="alert('follow clicked');" data-unfollow-action="alert('unfollow clicked');">Follow</a>
+                      <a href="#" class="btn btn-primary mt-3 json-btn" >JSON</a>
+                      <a href="#" class="btn btn-warning mt-3 chat-btn" >1:1 Chat</a>
                     </div>
                     <div class="author-box-details">
                       <div class="author-box-name">
-                        <a href="#">Hasan Basri</a>
+                        <a href="#"></a>
                       </div>
-                      <div class="author-box-job">Web Developer</div>
+                      <div class="author-box-job"></div>
                       <div class="author-box-description">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                        consequat.</p>
+                        <p></p>
                       </div>
                       <a href="#" class="btn btn-social-icon mr-1 btn-facebook">
                         <i class="fab fa-facebook-f"></i>
@@ -79,9 +77,30 @@
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
+  <script src="./js/mystaffDB.js"></script>
   <script src="./js/pages/detail.js"></script>
   
   <script src="./js/scripts.js"></script>
   <script src="./js/custom.js"></script>
+
+  <!-- Modal -->
+  <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jsonModalLabel">Staff Data JSON</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <pre id="json-data"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
