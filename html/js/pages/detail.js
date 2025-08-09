@@ -37,7 +37,7 @@ $(document).ready(function() {
         if (session) {
           window.location.href = `chat.html?sessionId=${session.sessionId}`;
         } else {
-          const newSessionId = crypto.randomUUID();
+          const newSessionId = generateUUID();
           const sessionObj = {
             sessionId: newSessionId,
             title: staffData.name,
