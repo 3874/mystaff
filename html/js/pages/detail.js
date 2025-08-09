@@ -1,3 +1,7 @@
+import { init, getChatSessionByStaffId, addChatSession } from '../mystaffDB.js';
+import { CheckSignIn } from '../custom.js';
+import { generateUUID } from '../utils.js';
+
 var staffData;
 
 $(document).ready(function() {
@@ -27,11 +31,11 @@ $(document).ready(function() {
     $('.chat-btn').on('click', async function() {
       try {
         // 클릭할 때마다 DB 초기화 시도
-        await MystaffDB.init();
+        await init();
         console.log("MystaffDB initialized on click");
 
         // 초기화 후 세션 조회/생성 로직
-        let session = await MystaffDB.getChatSessionByStaffId(staffData.staff_id);
+        let session = await getChatSessionByStaffId(staffData.staff_id);
         console.log('기존 세션:', session);
 
         if (session) {
@@ -43,7 +47,7 @@ $(document).ready(function() {
             title: staffData.name,
             staff_id: staffData.staff_id
           };
-          await MystaffDB.addChatSession(sessionObj);
+          await addChatSession(sessionObj);
           console.log('새 세션 생성:', sessionObj);
           window.location.href = `chat.html?sessionId=${newSessionId}`;
         }

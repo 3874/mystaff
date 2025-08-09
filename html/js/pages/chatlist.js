@@ -1,12 +1,14 @@
+import { init, getChatPartData, clearChatData } from '../mystaffDB.js';
+
 "use strict";
 
 $(document).ready(function() {
   // 1) MystaffDB 초기화
-  MystaffDB.init()
+  init()
     .then(() => {
       console.log('MystaffDB initialized successfully.');
       // 2) 모든 채팅 세션 가져오기
-      return MystaffDB.getChatData();
+      return getChatPartData();
     })
     .then(sessions => {
       console.log('All chat sessions:', sessions);
@@ -39,7 +41,7 @@ $("#chatlist").on("click", ".list-group-item", function() {
 });
 
 $("#clear-btn").on("click", function() {
-    MystaffDB.init()
-    .then(() => MystaffDB.clearChatData())
+    init()
+    .then(() => clearChatData())
     location.reload();
 });

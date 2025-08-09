@@ -119,8 +119,14 @@
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
-  <script src="./js/pages/findstaff.js"></script>
+  <script src="./js/pages/findstaff.js" type="module"></script>
   <script src="./js/scripts.js"></script>
-  <script src="./js/custom.js"></script>
+  
+  <script type="module">
+    import { initializeSignOut } from './js/custom.js';
+    $(document).ready(function() {
+      initializeSignOut();
+    });
+  </script>
 </body>
 </html>

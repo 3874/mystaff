@@ -1,3 +1,8 @@
+import { OpenAIAdapter, GeminiAdapter, ClaudeAdapter, GrokAdapter, LlamaAdapter, DeepseekAdapter } from '../adapters.js';
+import { init, getChatSession, addChatMessage, deleteChatMessages } from '../mystaffDB.js';
+import { CheckSignIn } from '../custom.js';
+import { generateUUID } from '../utils.js';
+
 var chatStaff, sessionId;
 
 $(document).ready(function() {
@@ -8,21 +13,18 @@ $(document).ready(function() {
         location.href="index.html";
     }
     chatStaff = JSON.parse(chatJson);
-    console.log(chatStaff);
     $('#chat-user-name').text(chatStaff.name);
 
     const urlParams = new URLSearchParams(window.location.search);
     sessionId = urlParams.get('sessionId') || '';
-    console.log(sessionId);
     if(!sessionId) {
-        location.href = "index.html";
+        sessionId = generateUUID();
+        location.href = `chat.html?sessionId=${sessionId}`;
     }
 
-    MystaffDB.init()
-    .then(() => MystaffDB.getChatSession(sessionId))
+    init()
+    .then(() => getChatSession(sessionId))
     .then(session => {
-        console.log(session);
-        // session이 없거나 messages가 없으면 빈 배열로 대체
         const messages = session?.messages || [];
 
         messages.forEach(chatMessage => {
@@ -108,7 +110,7 @@ $("#chat-form").on("submit", async function(event) {
     if (message.length > 0) {
         try {
             // 2) 로컬 DB에 저장
-            await MystaffDB.addChatMessage(sessionId, 'user', message);
+            await addChatMessage(sessionId, 'user', message);
 
             // 3) 화면에 출력
             $.chatCtrl('#mychatbox', {
@@ -119,7 +121,59 @@ $("#chat-form").on("submit", async function(event) {
             $input.val('');
 
             // 4) 서버 요청 및 응답 처리
-            await sendChatRequest(message, sessionId, Staff_func.url);
+            switch (chatStaff.staff_type) {
+                case 'default':
+                    const AIprovider = chatStaff.functionJSON.ai_provider;
+                    let adapter;
+                    const apiKey = chatStaff.functionJSON.apiKey; 
+
+                    switch (AIprovider) {
+                        case 'openai':
+                            adapter = new OpenAIAdapter(apiKey);
+                            break;
+                        case 'gemini':
+                            adapter = new GeminiAdapter(apiKey);
+                            break;
+                        case 'claude':
+                            adapter = new ClaudeAdapter(apiKey);
+                            break;
+                        case 'grok':
+                            adapter = new GrokAdapter(apiKey);
+                            break;
+                        case 'llama':
+                            adapter = new LlamaAdapter(apiKey);
+                            break;
+                        case 'deepseek':
+                            adapter = new DeepseekAdapter(apiKey);
+                            break;
+                        default:
+                            console.error('Unknown AI service:', service);
+                            await addChatMessage(sessionId, 'system', "죄송합니다. 알 수 없는 AI 서비스입니다.");
+                            return;
+                    }
+
+                    try {
+                        const reply = await adapter.sendMessage(message);
+                        await addChatMessage(sessionId, 'system', reply);
+                        $.chatCtrl('#mychatbox', {
+                            text: reply,
+                            picture: chatStaff.imgUrl,
+                            position: 'chat-left'
+                        });
+                    } catch (error) {
+                        console.error('Error from AI service:', error);
+                        await addChatMessage(sessionId, 'system', error.message || "AI 서비스와 통신 중 오류가 발생했습니다.");
+                        $.chatCtrl('#mychatbox', {
+                            text: error.message || "AI 서비스와 통신 중 오류가 발생했습니다.",
+                            picture: chatStaff.imgUrl,
+                            position: 'chat-left'
+                        });
+                    }
+                    break;
+                default:
+                    await sendChatRequest(message, sessionId, Staff_func.url);
+                    break;
+            }
         } catch (err) {
             console.error(err);
         }
@@ -131,45 +185,11 @@ $("#chat-form").on("submit", async function(event) {
     $input.focus();
 });
 
-// Send chat request to the server
-async function sendChatRequest(input, sessionId, clienturl) {
-    const N8N_WEBHOOK_URL = clienturl;
-    console.log(N8N_WEBHOOK_URL);
-    const requestData = {
-        chatInput: input,
-        sessionId: sessionId
-    };
 
-    try {
-        const response = await fetch(N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `mystaff`
-            },
-            body: JSON.stringify(requestData)
-        });
-        
-        const data = await response.json();
-        if (response.ok) {
-            const reply = data[0].output || "죄송합니다. 응답을 받아오는 데 실패했습니다.";
-            await MystaffDB.addChatMessage(sessionId, 'system', reply);
-            $.chatCtrl('#mychatbox', {
-                text: reply,
-                picture: chatStaff.imgUrl,
-                position: 'chat-left'
-            });
-        } else {
-            console.error('Error response:', data);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 
 $(document).on("click", "#remove_btn", async function() {
     if (sessionId) {
-        await MystaffDB.deleteChatMessages(sessionId);
+        await deleteChatMessages(sessionId);
         alert("채팅 데이터가 성공적으로 삭제되었습니다!");
         location.reload();
     } else {

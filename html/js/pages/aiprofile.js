@@ -1,3 +1,6 @@
+import { init, getUserData, updateUser } from '../mystaffDB.js';
+import { CheckSignIn } from '../custom.js';
+
 $(document).ready(function() {
   //로그인체크
   const myprofileJSON = CheckSignIn();
@@ -43,7 +46,7 @@ $(document).ready(function() {
         $('.author-box-picture').attr('src', staffData.imgUrl || './img/avatar/avatar-1.png');
         $('.author-box-name a').text(staffData.name);
         $('.author-box-job').text(staffData.role);
-        $('.author-box-description p').text(staffData.expertise); 
+        $('.author-box-description p').text(staffData.description); 
         
         const chatLink = `index.html`;
         $('.float-right a.btn').attr('href', chatLink);
@@ -66,8 +69,8 @@ $(document).ready(function() {
       return;
     }
 
-  MystaffDB.init()
-    .then(() => MystaffDB.getUserData())
+  init()
+    .then(() => getUserData())
     .then(data => {
       console.log(data);
       const mystaff = data[0] || {}; // 데이터가 없을 경우를 대비
@@ -81,7 +84,7 @@ $(document).ready(function() {
       mystaff.members = members;
 
       // DB 업데이트를 요청하고, 업데이트에 사용된 mystaff 객체를 다음 then으로 넘깁니다.
-      return MystaffDB.updateUser(mystaff).then(() => mystaff); 
+      return updateUser(mystaff).then(() => mystaff); 
     })
     .then(updatedMystaff => {
       localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));
@@ -95,4 +98,3 @@ $(document).ready(function() {
   });
 
 });
-

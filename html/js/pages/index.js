@@ -1,15 +1,87 @@
+import { init, getUserData, updateUser } from '../mystaffDB.js';
+import { CheckSignIn } from '../custom.js';
+
 $(document).ready(function() {
   const myprofileJSON = CheckSignIn();
   console.log(myprofileJSON);
   const mystaff = JSON.parse(myprofileJSON);
   $('#company-name').text(mystaff.companyName || 'No Name');
+  defaultMember();
   renderMembers(mystaff.members || []);
 
 });
 
-function renderMembers(members) { // Accept the members parameter
+function defaultMember() {
   const $list = $('#member-list');
   $list.empty();
+
+  // Make an AJAX call to get all staff members
+  $.ajax({
+    url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ action: 'getall' }), // Using 'getall' action as seen in findstaff.js
+    success: function(response) {
+      let allStaffData;
+
+      if (response.body && typeof response.body === 'string') {
+        try {
+          allStaffData = JSON.parse(response.body);
+        } catch (e) {
+          console.error('Error parsing response body for default members:', e);
+          return;
+        }
+      } else if (Array.isArray(response)) {
+        allStaffData = response;
+      } else {
+        console.error('Unexpected response format for default members:', response);
+        return;
+      }
+
+      // Ensure that the parsed data is an array before calling .filter
+      if (!Array.isArray(allStaffData)) {
+          console.error('API response for default members is not an array:', allStaffData);
+          $list.append('<li>Error: API response format is incorrect.</li>');
+          return;
+      }
+
+      // Filter for staff with staff_type === 'default'
+      const defaultStaff = allStaffData.filter(staff => staff.staff_type === 'default');
+      console.log('All staff data:', defaultStaff);
+      
+      if (defaultStaff.length > 0) {
+        defaultStaff.forEach(staffData => {
+          const $memberItem = $(`
+            <li class="media member-item" data-id="${staffData.staff_id}">
+              <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
+              <div class="media-body">
+                <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
+                <div class="text-small"> ${staffData.description}</div>
+              </div>
+            </li>
+          `);
+
+          $memberItem.on('click', function() {
+            localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
+            window.location.href = `chat.html`;
+          });
+
+          $list.append($memberItem);
+        });
+      } else {
+        console.log('No default staff members found.');
+        $list.append('<li>No Default Staff Members Found</li>');
+      }
+    },
+    error: function(error) {
+      console.error('Error fetching default staff data:', error);
+      $list.append('<li>Error loading default staff.</li>');
+    }
+  });
+}       
+
+function renderMembers(members) {
+  const $list = $('#member-list');
 
 
   if (Array.isArray(members) && members.length > 0) {
@@ -44,7 +116,7 @@ function renderMembers(members) { // Accept the members parameter
               <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
               <div class="media-body">
                 <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
-                <div class="text-small"> ${staffData.expertise}</div>
+                <div class="text-small"> ${staffData.description}</div>
               </div>
               <div class="btn-group mb-3" role="group" aria-label="Basic example">
                 <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
@@ -74,14 +146,14 @@ function renderMembers(members) { // Accept the members parameter
     });
   } else {
     console.error('No staff IDs found.');
-    $list.append('<li>No Staff IDs Provided</li>');
+    $list.append('<li>No hired Staff</li>');
   }
 }
 
 function fireStaff(staffId) {
   if (confirm('Are you sure you want to fire this staff member?')) {
-    MystaffDB.init()
-      .then(() => MystaffDB.getUserData())
+    init()
+      .then(() => getUserData())
       .then(data => {
         const mystaff = data[0];
         if (!mystaff) {
@@ -89,11 +161,11 @@ function fireStaff(staffId) {
         }
         const updatedMembers = mystaff.members.filter(id => id !== staffId);
         mystaff.members = updatedMembers;
-        return MystaffDB.updateUser(mystaff);
+        return updateUser(mystaff);
       })
       .then(() => {
         // Update localStorage after successful DB update
-        return MystaffDB.getUserData();
+        return getUserData();
       })
       .then(data => {
         const updatedMystaff = data[0];

@@ -1,3 +1,5 @@
+import { CheckSignIn } from '../custom.js';
+
 $(document).ready(function() {
   const myprofileJSON = CheckSignIn();
   console.log(myprofileJSON);
@@ -31,6 +33,7 @@ $(document).ready(function() {
     contentType: 'application/json',
     data: JSON.stringify({ action: 'getall' }), // or whatever action your API expects
     success: function(response) {
+      console.log('Staff data fetched successfully:', response);
       let data = [];
       // Check if the actual data is in the 'body' property and is a string
       if (response.body && typeof response.body === 'string') {
@@ -54,7 +57,10 @@ $(document).ready(function() {
           return;
       }
 
-      const staffData = data.map(item => ({
+      // Filter out staff with staff_type === 'default'
+      const filteredData = data.filter(item => item.staff_type !== 'default');
+
+      const staffData = filteredData.map(item => ({
         id: item.staff_id, // Adjust if the field name is different
         name: item.name,
         avatar: item.imgUrl || './img/avatar/avatar-1.png', // Default avatar

@@ -1,5 +1,7 @@
+import { init, getUserData } from '../mystaffDB.js';
+
 $(document).ready(function() {
-    MystaffDB.init().catch(error => {
+    init().catch(error => {
         console.error("Error while initializing DB:", error);
     });
 
@@ -14,7 +16,7 @@ $(document).ready(function() {
             return;
         }
 
-        MystaffDB.getUserData().then(users => {
+        getUserData().then(users => {
             const user = users.find(u => u.email === email && u.password === password);
 
             if (user) {

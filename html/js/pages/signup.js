@@ -1,8 +1,10 @@
+import { init, getUserData, addUser, clearUserData } from '../mystaffDB.js';
+
 $(document).ready(function() {
 
-  MystaffDB.init()
+  init()
     .then(() => {
-        return MystaffDB.getUserData(); // Fetch and log all data on initial load
+        return getUserData(); // Fetch and log all data on initial load
     })
     .then(data => {
         console.log("Current data in 'owner' table:", data);
@@ -37,12 +39,12 @@ $(document).ready(function() {
       return;
     }
 
-    MystaffDB.getUserData().then(data => {
+    getUserData().then(data => {
         if (data.some(user => user.email === email)) {
             alert('An account with this email already exists.');
         } else {
             const newUser = { nick, companyName, email, secretKey, password };
-            MystaffDB.addUser(newUser)
+            addUser(newUser)
                 .then(() => {
                     localStorage.setItem("mystaffInfo", JSON.stringify(newUser));
                     alert('Registration successful!');
@@ -59,11 +61,11 @@ $(document).ready(function() {
 
   $('#reset-database').on('click', function() {
       if (confirm('Are you sure you want to delete all registered data? This cannot be undone.')) {
-          MystaffDB.clearUserData()
+          clearUserData()
               .then(() => {
                   alert('Database has been reset.');
                   console.log("All data cleared from 'owner' table.");
-                  return MystaffDB.getUserData();  // Re-fetch and log now-empty table
+                  return getUserData();  // Re-fetch and log now-empty table
               })
               .then(data => {
                   console.log("Current data in 'owner' table (after reset):", data);

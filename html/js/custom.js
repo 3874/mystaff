@@ -1,37 +1,15 @@
-/**
- *
- * You can write your JS code here, DO NOT touch the default style file
- * because it will make it harder for you to update.
- * 
- */
-
-"use strict";
-
-function CheckSignIn() {
-  const myprofileJSON = localStorage.getItem("mystaffInfo");
-  if (!myprofileJSON) {
-    location.href = "./signin.html";
-  }
-  return myprofileJSON;
-}
-
-function generateUUID() { // Public Domain/MIT
-    var d = new Date().getTime();//Timestamp
-    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16;//random number between 0 and 16
-        if(d > 0){//Use timestamp until depleted
-            r = (d + r)%16 | 0;
-            d = Math.floor(d/16);
-        } else {//Use microseconds since page-load if supported
-            r = (d2 + r)%16 | 0;
-            d2 = Math.floor(d2/16);
-        }
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+export function initializeSignOut() {
+    $('#signout-btn').on('click', function() {
+        localStorage.removeItem("mystaffInfo");
+        location.href = "./signin.html";
     });
 }
 
-$('#signout-btn').on('click', function() {
-    localStorage.removeItem("mystaffInfo");
-    location.href = "./signin.html";
-});
+export function CheckSignIn() {
+    const userData = localStorage.getItem('mystaffInfo');
+    if (!userData) {
+        window.location.href = './signin.html';
+        return null; // Added to prevent further execution
+    }
+    return userData;
+}

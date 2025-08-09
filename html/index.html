@@ -97,11 +97,16 @@
 
   <!-- JS Libraies -->
 
-  <script src="./js/mystaffDB.js"></script>
-  <script src="./js/pages/index.js"></script>
+  <script type="module" src="./js/pages/index.js"></script>
   
   <!-- Template JS File -->
   <script src="./js/scripts.js"></script>
-  <script src="./js/custom.js"></script>
+  
+  <script type="module">
+    import { initializeSignOut } from './js/custom.js';
+    $(document).ready(function() {
+      initializeSignOut();
+    });
+  </script>
 </body>
 </html>
