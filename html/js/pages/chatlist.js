@@ -1,8 +1,11 @@
 import { init, getChatPartData, clearChatData } from '../mystaffDB.js';
+import { CheckSignIn } from '../custom.js';
 
 "use strict";
 
 $(document).ready(function() {
+  const myprofileJSON = CheckSignIn();
+  console.log(myprofileJSON);
   // 1) MystaffDB 초기화
   init()
     .then(() => {

@@ -2,10 +2,11 @@ let db;
 const dbName = 'mystaff';
 const ownerStoreName = 'owner';
 const chatsStoreName = 'chats';
+const apiKeysStoreName = 'apiKeys';
 
 export function init() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 4); // Increment version to 4
+        const request = indexedDB.open(dbName, 5); // Increment version to 5
 
         request.onerror = function(event) {
             console.error("Database error: " + event.target.errorCode);
@@ -27,6 +28,11 @@ export function init() {
 
             if (db.objectStoreNames.contains('messages')) {
                 db.deleteObjectStore('messages');
+            }
+
+            // New object store for API keys
+            if (!db.objectStoreNames.contains(apiKeysStoreName)) {
+                db.createObjectStore(apiKeysStoreName, { keyPath: "serviceName" });
             }
         };
 
@@ -148,7 +154,7 @@ export function deleteChatMessages(sessionId) {
     });
 }
 
-export function getChatSessionByStaffId(staffId) {
+export function getChatSessionsByStaffId(staffId) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject("Database not initialized.");
@@ -157,19 +163,19 @@ export function getChatSessionByStaffId(staffId) {
         const transaction = db.transaction([chatsStoreName], "readonly");
         const objectStore = transaction.objectStore(chatsStoreName);
         const index = objectStore.index("staff_id");
-        const request = index.get(staffId);
+        const request = index.getAll(staffId);
 
         request.onsuccess = function() {
             resolve(request.result);
         };
 
         request.onerror = function() {
-            reject("Error fetching chat session.");
+            reject("Error fetching chat sessions.");
         };
     });
 }
 
-export function getChatSession(sessionId) {
+export function getChatbySession(sessionId) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject("Database not initialized.");
@@ -302,6 +308,66 @@ export function clearChatData() {
     });
 }
 
+export function addApiKey(apiKeyData) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject("Database not initialized.");
+            return;
+        }
+        const transaction = db.transaction([apiKeysStoreName], "readwrite");
+        const objectStore = transaction.objectStore(apiKeysStoreName);
+        const request = objectStore.add(apiKeyData);
+
+        request.onsuccess = function() {
+            resolve(request.result);
+        };
+
+        request.onerror = function() {
+            reject("Failed to add API key.");
+        };
+    });
+}
+
+export function getApiKey(serviceName) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject("Database not initialized.");
+            return;
+        }
+        const transaction = db.transaction([apiKeysStoreName], "readonly");
+        const objectStore = transaction.objectStore(apiKeysStoreName);
+        const request = objectStore.get(serviceName);
+
+        request.onsuccess = function() {
+            resolve(request.result);
+        };
+
+        request.onerror = function() {
+            reject("Error fetching API key.");
+        };
+    });
+}
+
+export function updateApiKey(apiKeyData) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject("Database not initialized.");
+            return;
+        }
+        const transaction = db.transaction([apiKeysStoreName], "readwrite");
+        const objectStore = transaction.objectStore(apiKeysStoreName);
+        const request = objectStore.put(apiKeyData); // put() updates if exists, adds if not
+
+        request.onsuccess = function() {
+            resolve(request.result);
+        };
+
+        request.onerror = function() {
+            reject("Failed to update API key.");
+        };
+    });
+}
+
 export function updateUser(user) {
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -318,6 +384,38 @@ export function updateUser(user) {
 
         putRequest.onerror = function() {
             reject("Failed to update user.");
+        };
+    });
+}
+
+export function updateChatTitle(sessionId, newTitle) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject("Database not initialized.");
+            return;
+        }
+        const transaction = db.transaction([chatsStoreName], "readwrite");
+        const objectStore = transaction.objectStore(chatsStoreName);
+        const request = objectStore.get(sessionId);
+
+        request.onsuccess = function() {
+            const session = request.result;
+            if (session) {
+                session.title = newTitle;
+                const updateRequest = objectStore.put(session);
+                updateRequest.onsuccess = function() {
+                    resolve(updateRequest.result);
+                };
+                updateRequest.onerror = function() {
+                    reject("Failed to update chat title.");
+                };
+            } else {
+                reject("Session not found.");
+            }
+        };
+
+        request.onerror = function() {
+            reject("Error fetching chat session for title update.");
         };
     });
 }

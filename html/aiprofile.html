@@ -7,84 +7,67 @@
 
   <!-- General CSS Files -->
   <link rel="stylesheet" href="./css/bootstrap.min.css">
-  <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- CSS Libraries -->
-
-  <!-- Template CSS -->
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/components.css">
 </head>
 
-<body class="layout-3">
-  <div id="app" class="h-100">
-    <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
-      <div class="navbar-bg"></div>
-
-      <div class="main-content">
-        <section class="section">
-          <div class="section-header">
-            <a href="javascript:history.back();"><i class="fa fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp; <h1>Profile of AI Staff</h1>
-          </div>
-          <div class="section-body">
-            <div class="row">
-              <div class="col-12 col-sm-12 col-lg-12">
-                <div class="card author-box card-primary">
-                  <div class="card-body">
-                    <div class="author-box-left">
-                      <img alt="image" src="./img/avatar/avatar-1.png" class="rounded-circle author-box-picture">
-                      <div class="clearfix"></div>
-                      <a href="#" class="btn btn-primary mt-3 follow-btn" data-follow-action="alert('follow clicked');" data-unfollow-action="alert('unfollow clicked');">Follow</a>
-                    </div>
-                    <div class="author-box-details">
-                      <div class="author-box-name">
-                        <a href="#">Hasan Basri</a>
-                      </div>
-                      <div class="author-box-job">Web Developer</div>
-                      <div class="author-box-description">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                        consequat.</p>
-                      </div>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-facebook">
-                        <i class="fab fa-facebook-f"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-twitter">
-                        <i class="fab fa-twitter"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-github">
-                        <i class="fab fa-github"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-instagram">
-                        <i class="fab fa-instagram"></i>
-                      </a>
-                      <div class="w-100 d-sm-none"></div>
-                      <div class="float-right mt-sm-0 mt-3">
-                        <a href="#" class="btn" id="hire-btn">Hiring <i class="fas fa-chevron-right"></i></a>
-                      </div>
-                    </div>
-                  </div>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="main-content">
+      <section class="section">
+        <div class="section-header d-flex align-items-center">
+          <a href="javascript:history.back();" class="btn btn-light mr-3"><i class="fa fa-arrow-left"></i></a>
+          <h1>Profile</h1>
+        </div>
+        <div class="section-body">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 col-sm-12 col-md-12 text-center">
+                  <img alt="image" src="./img/avatar/avatar-1.png" class="img-fluid rounded-circle mb-3 author-box-picture" style="width: 150px;">
+                  <p class="author-box-staffId"></p>
+                  <h3 class="author-box-name"></h3>
+                  <p class="author-box-job"></p>
+                  <p class="author-box-description"></p>
+                  <p class="author-box-lang"></p>
+                  <a href="#" class="btn btn-primary btn-block json-btn">JSON</a>
+                  <a href="#" class="btn btn-warning btn-block mt-2 hire-btn">HIRE</a>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <!-- General JS Scripts -->
   <script src="./js/jquery.min.js"></script>
   <script src="./js/popper.js"></script>
-  <script src="./js/tooltip.js"></script>
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
   <script src="./js/pages/aiprofile.js" type="module"></script>
-  
-  <script src="./js/scripts.js"></script>
 
+
+  <!-- Modal -->
+  <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jsonModalLabel">Staff Data JSON</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <pre id="json-data"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

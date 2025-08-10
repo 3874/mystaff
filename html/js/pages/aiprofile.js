@@ -44,9 +44,11 @@ $(document).ready(function() {
         }
 
         $('.author-box-picture').attr('src', staffData.imgUrl || './img/avatar/avatar-1.png');
-        $('.author-box-name a').text(staffData.name);
+        $('.author-box-name').text(staffData.name);
+        $('.author-box-staffId').text(staffData.staff_id);
         $('.author-box-job').text(staffData.role);
-        $('.author-box-description p').text(staffData.description); 
+        $('.author-box-lang').text(staffData.lang);
+        $('.author-box-description').text(staffData.description);
         
         const chatLink = `index.html`;
         $('.float-right a.btn').attr('href', chatLink);
@@ -62,39 +64,39 @@ $(document).ready(function() {
   }
 
   // hire 버튼 누르면 owner objectstore(테이블)의 members에 배열로 저장
-  $('#hire-btn').on('click', function(e) {
+  $('.hire-btn').on('click', function(e) {
     e.preventDefault();
     if (!staffId) {
       alert('Staff ID not found. Cannot hire staff.');
       return;
     }
 
-  init()
-    .then(() => getUserData())
-    .then(data => {
-      console.log(data);
-      const mystaff = data[0] || {}; // 데이터가 없을 경우를 대비
-      const members = mystaff.members || [];
+    init()
+      .then(() => getUserData())
+      .then(data => {
+        console.log(data);
+        const mystaff = data[0] || {}; // 데이터가 없을 경우를 대비
+        const members = mystaff.members || [];
 
-      if (members.includes(staffId)) {
-        throw new Error('Staff is already hired.');
-      }
+        if (members.includes(staffId)) {
+          throw new Error('Staff is already hired.');
+        }
 
-      members.push(staffId);
-      mystaff.members = members;
+        members.push(staffId);
+        mystaff.members = members;
 
-      // DB 업데이트를 요청하고, 업데이트에 사용된 mystaff 객체를 다음 then으로 넘깁니다.
-      return updateUser(mystaff).then(() => mystaff); 
-    })
-    .then(updatedMystaff => {
-      localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));
-      alert('Staff hired successfully!');
-      location.href = "./index.html";
-    })
-    .catch(error => {
-      console.error('Error hiring staff:', error.message);
-      alert(error.message || 'Error hiring staff.');
+        // DB 업데이트를 요청하고, 업데이트에 사용된 mystaff 객체를 다음 then으로 넘깁니다.
+        return updateUser(mystaff).then(() => mystaff); 
+      })
+      .then(updatedMystaff => {
+        localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));
+        alert('Staff hired successfully!');
+        location.href = "./index.html";
+      })
+      .catch(error => {
+        console.error('Error hiring staff:', error.message);
+        alert(error.message || 'Error hiring staff.');
+      });
     });
-  });
 
 });

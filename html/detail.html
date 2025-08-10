@@ -7,78 +7,39 @@
 
   <!-- General CSS Files -->
   <link rel="stylesheet" href="./css/bootstrap.min.css">
-  <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Template CSS -->
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/components.css">
 </head>
 
-<body class="layout-3">
-  <div id="app" class="h-100">
-    <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
-      <div class="navbar-bg"></div>
-
-      <div class="main-content">
-        <section class="section">
-          <div class="section-header">
-            <a href="javascript:history.back();"><i class="fa fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp; <h1>Profile of AI Staff</h1>
-          </div>
-          <div class="section-body">
-            <div class="row">
-              <div class="col-12 col-sm-12 col-lg-12">
-                <div class="card author-box card-primary">
-                  <div class="card-body">
-                    <div class="author-box-left">
-                      <img alt="image" src="./img/avatar/avatar-1.png" class="rounded-circle author-box-picture">
-                      <div class="clearfix"></div>
-                      <a href="#" class="btn btn-primary mt-3 json-btn" >JSON</a>
-                      <a href="#" class="btn btn-warning mt-3 chat-btn" >1:1 Chat</a>
-                    </div>
-                    <div class="author-box-details">
-                      <div class="author-box-name">
-                        <a href="#"></a>
-                      </div>
-                      <div class="author-box-job"></div>
-                      <div class="author-box-description">
-                        <p></p>
-                      </div>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-facebook">
-                        <i class="fab fa-facebook-f"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-twitter">
-                        <i class="fab fa-twitter"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-github">
-                        <i class="fab fa-github"></i>
-                      </a>
-                      <a href="#" class="btn btn-social-icon mr-1 btn-instagram">
-                        <i class="fab fa-instagram"></i>
-                      </a>
-                      <div class="w-100 d-sm-none"></div>
-                    </div>
-                  </div>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="main-content">
+      <section class="section">
+        <div class="section-header d-flex align-items-center">
+          <a href="javascript:history.back();" class="btn btn-light mr-3"><i class="fa fa-arrow-left"></i></a>
+          <h1>Profile</h1>
+        </div>
+        <div class="section-body">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 col-sm-12 col-md-12 text-center">
+                  <img alt="image" src="./img/avatar/avatar-1.png" class="img-fluid rounded-circle mb-3 author-box-picture" style="width: 150px;">
+                  <p class="author-box-staffId"></p>
+                  <h3 class="author-box-name"></h3>
+                  <p class="author-box-job"></p>
+                  <p class="author-box-description"></p>
+                  <p class="author-box-lang"></p>
+                  <a href="#" class="btn btn-primary btn-block json-btn">JSON</a>
+                  <a href="#" class="btn btn-warning btn-block mt-2 chat-btn">1:1 Chat</a>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   </div>
-
-  <!-- General JS Scripts -->
-  <script src="./js/jquery.min.js"></script>
-  <script src="./js/popper.js"></script>
-  <script src="./js/tooltip.js"></script>
-  <script src="./js/bootstrap.min.js"></script>
-  <script src="./js/jquery.nicescroll.min.js"></script>
-  <script src="./js/moment.min.js"></script>
-  <script src="./js/pages/detail.js" type="module"></script>
-  
-  <script src="./js/scripts.js"></script>
-
 
   <!-- Modal -->
   <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
@@ -91,7 +52,17 @@
           </button>
         </div>
         <div class="modal-body">
-          <pre id="json-data"></pre>
+          <table class="table table-bordered table-striped" id="json-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Data will be inserted here by JavaScript -->
+            </tbody>
+          </table>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -99,5 +70,12 @@
       </div>
     </div>
   </div>
+    <!-- General JS Scripts -->
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/popper.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/jquery.nicescroll.min.js"></script>
+  <script src="./js/moment.min.js"></script>
+  <script type="module" src="./js/pages/detail.js"></script>
 </body>
 </html>

@@ -1,48 +1,67 @@
-import { OpenAIAdapter, GeminiAdapter, ClaudeAdapter, GrokAdapter, LlamaAdapter, DeepseekAdapter } from '../adapters.js';
-import { init, getChatSession, addChatMessage, deleteChatMessages } from '../mystaffDB.js';
+import { handleMessage } from '../adapters.js';
+import { init, getChatbySession, addChatMessage, deleteChatMessages, getChatSessionsByStaffId, addChatSession, updateChatTitle } from '../mystaffDB.js';
 import { CheckSignIn } from '../custom.js';
 import { generateUUID } from '../utils.js';
 
-var chatStaff, sessionId;
+var chatStaff, sessionId, staffId;
 
 $(document).ready(function() {
     const myprofileJSON = CheckSignIn();
     console.log(myprofileJSON);
-    const chatJson = localStorage.getItem('mystaff_staffData');
-    if (!chatJson) {
-        location.href="index.html";
-    }
-    chatStaff = JSON.parse(chatJson);
-    $('#chat-user-name').text(chatStaff.name);
 
     const urlParams = new URLSearchParams(window.location.search);
     sessionId = urlParams.get('sessionId') || '';
-    if(!sessionId) {
-        sessionId = generateUUID();
-        location.href = `chat.html?sessionId=${sessionId}`;
-    }
-
-    init()
-    .then(() => getChatSession(sessionId))
-    .then(session => {
-        const messages = session?.messages || [];
-
-        messages.forEach(chatMessage => {
-        $.chatCtrl('#mychatbox', {
-            text: chatMessage.text,
-            picture: chatMessage.sender === 'user'
-            ? './img/avatar/avatar-1.png'
-            : chatStaff.imgUrl,
-            position: chatMessage.sender === 'user'
-            ? 'chat-right'
-            : 'chat-left'
+    staffId = urlParams.get('staffId') || '';
+    if (!sessionId && !staffId) {
+        location.href="index.html";
+    } else if (sessionId) {
+        // If only sessionId is provided, fetch the chat session by sessionId
+        init().then(() => {
+            return getChatbySession(sessionId);
+        }).then(session => {
+            const messages = session?.messages || [];
+            $('#chat-title').text(session.title || 'New Chat');
+            messages.forEach(chatMessage => {
+                $.chatCtrl('#mychatbox', {
+                    text: chatMessage.text,
+                    picture: chatMessage.sender === 'user'
+                    ? './img/avatar/avatar-1.png'
+                    : chatStaff.imgUrl,
+                    position: chatMessage.sender === 'user'
+                    ? 'chat-right'
+                    : 'chat-left'
+                });
+            });
+        }).catch(error => {
+            console.error('Error fetching chat session:', error);
+            alert('Failed to fetch chat session.');
         });
+    } else if (staffId) {
+        // If only staffId is provided, fetch the chat session by staffId
+        init().then(() => {
+            return getChatSessionsByStaffId(staffId);
+        }).then(sessions => {
+            if (sessions && sessions.length > 0) {
+                // Single session found, redirect to that chat
+                sessionId = sessions[0].sessionId;
+                location.href = `chat.html?sessionId=${sessionId}`;
+            } else {
+                // No session found, create a new one
+                sessionId = generateUUID();
+                return addChatSession({
+                    sessionId: sessionId,
+                    staff_id: staffId,
+                    title: 'New Chat'
+                }).then(() => {
+                    location.href = `chat.html?sessionId=${sessionId}`;
+                });
+            }
+        }).catch(error => {
+            console.error('Error handling chat session:', error);
+            alert('Failed to handle chat session.');
         });
-    })
-    .catch(error => {
-        console.error('Error loading chat session:', error.message);
-        alert(error.message || '채팅 세션을 불러오는 중 오류가 발생했습니다.');
-    });
+        return;
+    } 
     
 });
 
@@ -62,7 +81,7 @@ $.chatCtrl = function(element, chat) {
     var chatTextHtml = marked.parse(chat.text);
     var target = $(element),
         elementHtml = '<div class="chat-item '+chat.position+'" style="display:none">' +
-                      '<img src="'+chat.picture+'">' +
+                      '<img src="'+chat.picture+'" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">' +
                       '<div class="chat-details">' +
                       '<div class="chat-text">'+chatTextHtml+'</div>' +
                       '<div class="chat-time">'+chat.time+'</div>' +
@@ -104,15 +123,14 @@ $("#chat-form").on("submit", async function(event) {
     $input.prop('disabled', true);
     $button.prop('disabled', true);
 
-    const Staff_func = chatStaff.functionJSON;
     const message = $input.val().trim();
 
     if (message.length > 0) {
         try {
-            // 2) 로컬 DB에 저장
+            // 2) 로컬 DB에 저장 (사용자 메시지)
             await addChatMessage(sessionId, 'user', message);
 
-            // 3) 화면에 출력
+            // 3) 화면에 출력 (사용자 메시지)
             $.chatCtrl('#mychatbox', {
                 text: message,
                 picture: './img/avatar/avatar-1.png',
@@ -121,65 +139,23 @@ $("#chat-form").on("submit", async function(event) {
             $input.val('');
 
             // 4) 서버 요청 및 응답 처리
-            switch (chatStaff.staff_type) {
-                case 'default':
-                    const AIprovider = chatStaff.functionJSON.ai_provider;
-                    let adapter;
-                    const apiKey = chatStaff.functionJSON.apiKey; 
-
-                    switch (AIprovider) {
-                        case 'openai':
-                            adapter = new OpenAIAdapter(apiKey);
-                            break;
-                        case 'gemini':
-                            adapter = new GeminiAdapter(apiKey);
-                            break;
-                        case 'claude':
-                            adapter = new ClaudeAdapter(apiKey);
-                            break;
-                        case 'grok':
-                            adapter = new GrokAdapter(apiKey);
-                            break;
-                        case 'llama':
-                            adapter = new LlamaAdapter(apiKey);
-                            break;
-                        case 'deepseek':
-                            adapter = new DeepseekAdapter(apiKey);
-                            break;
-                        default:
-                            console.error('Unknown AI service:', service);
-                            await addChatMessage(sessionId, 'system', "죄송합니다. 알 수 없는 AI 서비스입니다.");
-                            return;
-                    }
-
-                    try {
-                        const reply = await adapter.sendMessage(message);
-                        await addChatMessage(sessionId, 'system', reply);
-                        $.chatCtrl('#mychatbox', {
-                            text: reply,
-                            picture: chatStaff.imgUrl,
-                            position: 'chat-left'
-                        });
-                    } catch (error) {
-                        console.error('Error from AI service:', error);
-                        await addChatMessage(sessionId, 'system', error.message || "AI 서비스와 통신 중 오류가 발생했습니다.");
-                        $.chatCtrl('#mychatbox', {
-                            text: error.message || "AI 서비스와 통신 중 오류가 발생했습니다.",
-                            picture: chatStaff.imgUrl,
-                            position: 'chat-left'
-                        });
-                    }
-                    break;
-                default:
-                    await sendChatRequest(message, sessionId, Staff_func.url);
-                    break;
+            const reply = await handleMessage(chatStaff, sessionId, message);
+            if(reply) {
+                // 5) 로컬 DB에 저장 (시스템 응답)
+                await addChatMessage(sessionId, 'system', reply);
+                // 6) 화면에 출력 (시스템 응답)
+                $.chatCtrl('#mychatbox', {
+                    text: reply,
+                    picture: chatStaff.imgUrl,
+                    position: 'chat-left'
+                });
             }
         } catch (err) {
             console.error(err);
         }
     }
 
-    // 5) 항상 버튼·입력창 활성화
+    // 7) 항상 버튼·입력창 활성화
     $input.prop('disabled', false);
     $button.prop('disabled', false);
     $input.focus();
@@ -195,4 +171,45 @@ $(document).on("click", "#remove_btn", async function() {
     } else {
         alert("세션 ID를 찾을 수 없습니다.");
     }
+});
+
+// Handle chat title editing
+$(document).on('click', '#chat-title', function() {
+    const $title = $(this);
+    const originalTitle = $title.text();
+    const $input = $('<input type="text" class="form-control" />');
+    $input.val(originalTitle);
+    $title.hide();
+    $title.after($input);
+    $input.focus();
+
+    const saveChanges = async () => {
+        const newTitle = $input.val().trim();
+        if (newTitle && newTitle !== originalTitle) {
+            try {
+                await updateChatTitle(sessionId, newTitle);
+                $title.text(newTitle);
+            } catch (error) {
+                console.error('Error updating chat title:', error);
+                alert('Failed to update chat title.');
+                // Revert to original title on error
+                $title.text(originalTitle);
+            }
+        } else {
+            // If title is empty or unchanged, revert
+            $title.text(originalTitle);
+        }
+        $input.remove();
+        $title.show();
+    };
+
+    $input.on('blur', saveChanges);
+    $input.on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            saveChanges();
+        } else if (e.key === 'Escape') {
+            $input.remove();
+            $title.show();
+        }
+    });
 });

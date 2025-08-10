@@ -7,62 +7,60 @@
 
   <!-- General CSS Files -->
   <link rel="stylesheet" href="./css/bootstrap.min.css">
-  <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-
-  <!-- Template CSS -->
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/components.css">
+  <style>
+    html, body {
+        height: 100%;
+    }
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+    .chat-card {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    .chat-content {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+  </style>
 </head>
 
-<body class="layout-3">
-  <div id="app" class="h-100">
-    <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
-      <div class="navbar-bg">
-      </div>
-
-      <!-- Main Content -->
-      <div class="main-content flex-grow-1">
-        <section class="section h-100">
-
-          <div class="section-body h-100">
-            <div class="row h-100 align-items-stretch justify-content-center">
-              <div class="col-12 col-sm-12 col-lg-12 h-100 d-flex flex-column">
-                <div class="card chat-box" style="height:88vh;" id="mychatbox">
-                  <div class="card-header">
-                    <a href="./index.html"><i class="fa fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp; <h4>Working with <span id="chat-user-name"></span> &nbsp;&nbsp; <button class="btn btn-danger" id="remove_btn">Clear</button></h4>
-                  </div>
-                  <div class="card-body chat-content flex-grow-1 overflow-auto">
-                  </div>
-                  <div class="card-footer chat-form">
-                    <form id="chat-form" class="d-flex">
-                      <input type="text" class="form-control" placeholder="Type a message">
-                      <button class="btn btn-primary ml-2">
-                        <i class="far fa-paper-plane"></i>
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
+<body>
+    <div class="chat-container p-3">
+        <div class="card chat-card" id="mychatbox">
+            <div class="card-header d-flex align-items-center">
+                <a href="./index.html" class="btn btn-light mr-3"><i class="fa fa-arrow-left"></i></a>
+                <h4 class="mb-0" id="chat-title"></h4>
+                <button class="btn btn-danger ml-auto" id="remove_btn">Clear</button>
             </div>
-          </div>
-        </section>
-      </div>
-
+            <div class="card-body chat-content">
+                <!-- Chat messages will be appended here by chat.js -->
+            </div>
+            <div class="card-footer">
+                <form id="chat-form" class="d-flex">
+                    <input type="text" class="form-control" placeholder="Type a message">
+                    <button class="btn btn-primary ml-2">
+                        <i class="far fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
   <!-- General JS Scripts -->
   <script src="./js/jquery.min.js"></script>
   <script src="./js/popper.js"></script>
-  <script src="./js/tooltip.js"></script>
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="./js/pages/chat.js" type="module"></script>
   
-  <script src="./js/scripts.js"></script>
+  
 </body>
 </html>

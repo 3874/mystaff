@@ -3,151 +3,159 @@ import { CheckSignIn } from '../custom.js';
 
 $(document).ready(function() {
   const myprofileJSON = CheckSignIn();
-  console.log(myprofileJSON);
-  const mystaff = JSON.parse(myprofileJSON);
-  $('#company-name').text(mystaff.companyName || 'No Name');
-  defaultMember();
-  renderMembers(mystaff.members || []);
+  const mystaff = JSON.parse(myprofileJSON || '{}');
+  console.log('MyStaff Data:', mystaff);
 
+  $('#company-name').text(mystaff.companyName || 'No Name');
+
+  // 1) 한 번만 호출해서 전체 스태프 로드
+  fetchAllStaff()
+    .then(allStaff => {
+      // id → staff 객체 맵
+      const staffMap = new Map(allStaff.map(s => [s.staff_id, s]));
+
+      // 2) 기본 멤버 렌더
+      renderDefaultMembers(allStaff);
+
+      // 3) 고용 멤버 렌더 (mystaff.members의 id를 staffMap에서 매핑)
+      renderMembers(mystaff.members || [], staffMap);
+    })
+    .catch(err => {
+      console.error('Error loading staff:', err);
+      $('#default-member-list').html('<li class="list-group-item">Error loading default staff.</li>');
+      $('#hired-member-list').html('<li class="list-group-item">Error loading hired staff.</li>');
+    });
 });
 
-function defaultMember() {
-  const $list = $('#member-list');
-  $list.empty();
+/** 공통 응답 정규화 */
+function normalizeResponse(response) {
+  if (response && typeof response.body === 'string') {
+    return JSON.parse(response.body);
+  }
+  return response;
+}
 
-  // Make an AJAX call to get all staff members
-  $.ajax({
-    url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
-    type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify({ action: 'getall' }), // Using 'getall' action as seen in findstaff.js
-    success: function(response) {
-      let allStaffData;
-
-      if (response.body && typeof response.body === 'string') {
+/** 전체 스태프를 한번에 가져오기 */
+function fetchAllStaff() {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ action: 'getall' }),
+      success: function(resp) {
         try {
-          allStaffData = JSON.parse(response.body);
-        } catch (e) {
-          console.error('Error parsing response body for default members:', e);
-          return;
-        }
-      } else if (Array.isArray(response)) {
-        allStaffData = response;
-      } else {
-        console.error('Unexpected response format for default members:', response);
-        return;
-      }
-
-      // Ensure that the parsed data is an array before calling .filter
-      if (!Array.isArray(allStaffData)) {
-          console.error('API response for default members is not an array:', allStaffData);
-          $list.append('<li>Error: API response format is incorrect.</li>');
-          return;
-      }
-
-      // Filter for staff with staff_type === 'default'
-      const defaultStaff = allStaffData.filter(staff => staff.staff_type === 'default');
-      console.log('All staff data:', defaultStaff);
-      
-      if (defaultStaff.length > 0) {
-        defaultStaff.forEach(staffData => {
-          const $memberItem = $(`
-            <li class="media member-item" data-id="${staffData.staff_id}">
-              <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
-              <div class="media-body">
-                <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
-                <div class="text-small"> ${staffData.description}</div>
-              </div>
-            </li>
-          `);
-
-          $memberItem.on('click', function() {
-            localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
-            window.location.href = `chat.html`;
-          });
-
-          $list.append($memberItem);
-        });
-      } else {
-        console.log('No default staff members found.');
-        $list.append('<li>No Default Staff Members Found</li>');
-      }
-    },
-    error: function(error) {
-      console.error('Error fetching default staff data:', error);
-      $list.append('<li>Error loading default staff.</li>');
-    }
-  });
-}       
-
-function renderMembers(members) {
-  const $list = $('#member-list');
-
-
-  if (Array.isArray(members) && members.length > 0) {
-    members.forEach(element => {
-      $.ajax({
-        url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ action: 'read', staff_id: element }),
-        success: function(response) {
-          let staffData;
-
-          // Parse the response
-          if (response.body && typeof response.body === 'string') {
-            try {
-              staffData = JSON.parse(response.body);
-            } catch (e) {
-              console.error('Error parsing response body:', e);
-              return;
-            }
-          } else if (typeof response === 'object' && response !== null) {
-            staffData = response;
-          } else {
-            console.error('Unexpected response format:', response);
+          const parsed = normalizeResponse(resp);
+          if (!Array.isArray(parsed)) {
+            reject(new Error('API response for getall is not an array'));
             return;
           }
-
-          console.log(staffData);
-
-          const $memberItem = $(`
-            <li class="media member-item" data-id="${staffData.staff_id}">
-              <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
-              <div class="media-body">
-                <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
-                <div class="text-small"> ${staffData.description}</div>
-              </div>
-              <div class="btn-group mb-3" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
-              </div>
-            </li>
-          `);
-          
-          $memberItem.find('.fire-btn').on('click', function(e) {
-            e.stopPropagation();
-            const staffId = $(this).closest('.member-item').data('id');
-            fireStaff(staffId);
-          });
-
-          $memberItem.on('click', function() {
-            localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
-            window.location.href = `detail.html`;
-          });
-
-          $list.append($memberItem);
-
-        },
-        error: function(error) {
-          console.error('Error fetching staff data:', error);
-          // Optionally show an error message for each member
+          resolve(parsed);
+        } catch (e) {
+          reject(e);
         }
-      });
+      },
+      error: function(err) {
+        reject(err);
+      }
     });
-  } else {
-    console.error('No staff IDs found.');
-    $list.append('<li>No hired Staff</li>');
+  });
+}
+
+/** 기본 멤버 렌더링 (staff_type === 'default') */
+function renderDefaultMembers(allStaff) {
+  const $list = $('#default-member-list');
+  $list.empty();
+
+  const defaultStaff = allStaff.filter(s => s.staff_type === 'default');
+
+  if (defaultStaff.length === 0) {
+    $list.append('<li class="list-group-item">No Default Staff Members Found</li>');
+    return;
   }
+
+  defaultStaff.forEach(staffData => {
+    const $item = $(`
+      <li class="list-group-item d-flex justify-content-between align-items-center member-item" data-id="${staffData.staff_id}">
+        <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
+        <div class="media-body">
+          <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
+          <div class="text-small">${staffData.description || ''}</div>
+        </div>
+      </li>
+    `);
+
+    $item.on('click', function() {
+      localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
+      window.location.href = `chat.html?staffId=${staffData.staff_id}`;
+    });
+
+    $list.append($item);
+  });
+}
+
+/** 고용 멤버 렌더링: members: string[] (staff_id 배열), staffMap: Map */
+function renderMembers(members, staffMap) {
+  const $list = $('#hired-member-list');
+  $list.empty();
+
+  console.log('Rendering hired members:', members);
+  if (!Array.isArray(members) || members.length === 0) {
+    $list.append('<li class="list-group-item">No hired Staff</li>');
+    return;
+  }
+
+  members.forEach(id => {
+    const staffData = staffMap.get(id);
+    if (!staffData) {
+      // getall에 없을 수 있는 예외 케이스 대비 (옵션): 자리표시자 표시
+      console.warn('Staff id not found in getall result:', id);
+      const $fallback = $(`
+        <li class="list-group-item d-flex justify-content-between align-items-center member-item" data-id="${id}">
+          <div class="media-body">
+            <div class="mt-0 mb-1 font-weight-bold">Unknown Staff (${id})</div>
+            <div class="text-small">정보를 불러올 수 없습니다.</div>
+          </div>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
+          </div>
+        </li>
+      `);
+      $fallback.find('.fire-btn').on('click', function(e) {
+        e.stopPropagation();
+        const staffId = $(this).closest('.member-item').data('id');
+        fireStaff(staffId);
+      });
+      $list.append($fallback);
+      return;
+    }
+
+    const $item = $(`
+      <li class="list-group-item d-flex justify-content-between align-items-center member-item" data-id="${staffData.staff_id}">
+        <img alt="image" class="mr-3 rounded-circle" width="50" src="${staffData.imgUrl || './img/avatar/avatar-1.png'}">
+        <div class="media-body">
+          <div class="mt-0 mb-1 font-weight-bold">${staffData.name}</div>
+          <div class="text-small">${staffData.description || ''}</div>
+        </div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-sm btn-danger fire-btn">Fire</button>
+        </div>
+      </li>
+    `);
+
+    $item.find('.fire-btn').on('click', function(e) {
+      e.stopPropagation();
+      const staffId = $(this).closest('.member-item').data('id');
+      fireStaff(staffId);
+    });
+
+    $item.on('click', function() {
+      localStorage.setItem('mystaff_staffData', JSON.stringify(staffData));
+      window.location.href = `detail.html`;
+    });
+
+    $list.append($item);
+  });
 }
 
 function fireStaff(staffId) {
@@ -156,17 +164,11 @@ function fireStaff(staffId) {
       .then(() => getUserData())
       .then(data => {
         const mystaff = data[0];
-        if (!mystaff) {
-          throw new Error("User data not found. Please sign in again.");
-        }
-        const updatedMembers = mystaff.members.filter(id => id !== staffId);
-        mystaff.members = updatedMembers;
+        if (!mystaff) throw new Error("User data not found. Please sign in again.");
+        mystaff.members = (mystaff.members || []).filter(id => id !== staffId);
         return updateUser(mystaff);
       })
-      .then(() => {
-        // Update localStorage after successful DB update
-        return getUserData();
-      })
+      .then(() => getUserData())
       .then(data => {
         const updatedMystaff = data[0];
         localStorage.setItem("mystaffInfo", JSON.stringify(updatedMystaff));

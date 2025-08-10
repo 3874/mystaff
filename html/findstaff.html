@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
@@ -7,120 +7,115 @@
 
   <!-- General CSS Files -->
   <link rel="stylesheet" href="./css/bootstrap.min.css">
-  <link rel="stylesheet" href="./css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Template CSS -->
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/components.css">
 </head>
 
-<body class="h-100">
-  <div id="app" class="h-100">
-    <div class="main-wrapper main-wrapper-1 d-flex flex-column h-100">
-      <div class="navbar-bg"></div>
-      <nav class="navbar navbar-expand-lg main-navbar">
-        <form class="form-inline mr-auto">
-          <ul class="navbar-nav mr-3">
-            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li>
-          </ul>
-        </form>
-      </nav>
-      <div class="main-sidebar sidebar-style-2">
-        <aside id="sidebar-wrapper">
-          <div class="sidebar-brand">
-            <a href="index.html">My Staff</a>
+<body class="bg-light">
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block bg-white sidebar vh-100">
+        <div class="sidebar-sticky">
+          <div class="sidebar-brand text-center my-3">
+            <a href="index.html" class="h4">My Staff</a>
           </div>
-          <ul class="sidebar-menu">
-            <li class="menu-header">My Staff</li>
-            <li class="dropdown">
-              <a href="./index.html" class="nav-link"><i class="fas fa-users"></i><span>My Staff</span></a>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>My Staff</span>
+              </h6>
+              <a class="nav-link" href="./index.html">
+                <i class="fas fa-users"></i>
+                My Staff
+              </a>
             </li>
-            <li class="menu-header">Working Chats</li>
-            <li class="dropdown">
-              <a href="./chatlist.html" class="nav-link"><i class="fas fa-file-alt"></i><span>Chat list</span></a>
+            <li class="nav-item">
+              <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Working Chats</span>
+              </h6>
+              <a class="nav-link" href="./chatlist.html">
+                <i class="fas fa-file-alt"></i>
+                Chat list
+              </a>
             </li>
-            <li class="menu-header">AI Job Finder</li>
-            <li>
-              <a class="nav-link active" href="#"><i class="fas fa-search"></i> <span>Find Your Staff</span></a>
+            <li class="nav-item">
+              <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>AI Job Finder</span>
+              </h6>
+              <a class="nav-link active" href="#">
+                <i class="fas fa-search"></i>
+                Find Your Staff
+              </a>
             </li>
           </ul>
-          <div class="mt-4 mb-4 p-3 hide-sidebar-mini">
-            <button id="signout-btn" class="btn btn-danger btn-lg btn-block btn-icon-split mt-2">
+          <div class="mt-4 p-3">
+            <button id="signout-btn" class="btn btn-danger btn-block">
               <i class="fas fa-sign-out-alt"></i> Sign-Out
             </button>
           </div>
-        </aside>
-      </div>
+        </div>
+      </nav>
 
-      <div class="main-content">
-        <section class="section">
-          <div class="section-header">
-            <h1>Find Your Staff</h1>
-          </div>
-          <div class="section-body">
-            <div class="row align-items-center justify-content-center">
-              <div class="col-12 col-sm-8 col-lg-6">
-                <div class="card">
-                  <div class="card-body">
-                    <!-- 검색 폼 예시 -->
-                    <form id="findstaff-form" class="mb-4">
-                      <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Enter staff name or skill">
-                        <div class="input-group-append">
-                          <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search"></i> Search
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                    <!-- 검색 결과 리스트 -->
-                    <ul id="findstaff-list" class="list-unstyled list-unstyled-border">
-                      <!-- 검색 결과가 JS로 동적으로 생성됩니다 -->
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-12 col-sm-12 col-lg-12">
-                <div class="card mt-4">
-                  <div class="card-header">
-                    <h4>Featured Staff</h4>
-                  </div>
-                  <div class="card-body pb-0">
-                    <div class="row" id="featured-staff-row">
-                      <!-- Featured staff will be populated by script -->
+      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Find Your Staff</h1>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-8">
+            <div class="card">
+              <div class="card-body">
+                <form id="findstaff-form" class="mb-4">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Enter staff name or skill">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                      </button>
                     </div>
                   </div>
-                </div>
-                <div class="card mt-4">
-                  <div class="card-header">
-                    <h4>Latest Updated</h4>
-                  </div>
-                  <div class="card-body pb-0">
-                    <div class="row" id="latest-updated-staff-row">
-                        <!-- Latest updated staff will be populated by script -->
-                    </div>
-                  </div>
-                </div>
+                </form>
+                <ul id="findstaff-list" class="list-group">
+                  <!-- Search results will be dynamically generated here -->
+                </ul>
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header">
+            <h4>Featured Staff</h4>
+          </div>
+          <div class="card-body">
+            <div class="row" id="featured-staff-row">
+              <!-- Featured staff will be populated by script -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header">
+            <h4>Latest Updated</h4>
+          </div>
+          <div class="card-body">
+            <div class="row" id="latest-updated-staff-row">
+              <!-- Latest updated staff will be populated by script -->
+            </div>
+          </div>
+        </div>
+
+      </main>
     </div>
   </div>
 
   <!-- General JS Scripts -->
   <script src="./js/jquery.min.js"></script>
   <script src="./js/popper.js"></script>
-  <script src="./js/tooltip.js"></script>
   <script src="./js/bootstrap.min.js"></script>
   <script src="./js/jquery.nicescroll.min.js"></script>
   <script src="./js/moment.min.js"></script>
   <script src="./js/pages/findstaff.js" type="module"></script>
-  <script src="./js/scripts.js"></script>
   
   <script type="module">
     import { initializeSignOut } from './js/custom.js';
