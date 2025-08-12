@@ -40,6 +40,7 @@ $(document).ready(function() {
     });
 
     $('.chat-btn').on('click', async function() {
+      window.location.href = `chat.html?staffId=${staffData.staff_id}`;
     });
 
 
