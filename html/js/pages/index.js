@@ -8,22 +8,27 @@ $(document).ready(function() {
 
   $('#company-name').text(mystaff.companyName || 'No Name');
 
-  // 1) 한 번만 호출해서 전체 스태프 로드
-  fetchAllStaff()
-    .then(allStaff => {
+  fetchStaff("mystaff")
+    .then(staffList => {
       // id → staff 객체 맵
-      const staffMap = new Map(allStaff.map(s => [s.staff_id, s]));
-
-      // 2) 기본 멤버 렌더
-      renderDefaultMembers(allStaff);
+      let staffMap = new Map(staffList.map(s => [s.staff_id, s]));
 
       // 3) 고용 멤버 렌더 (mystaff.members의 id를 staffMap에서 매핑)
       renderMembers(mystaff.members || [], staffMap);
     })
     .catch(err => {
-      console.error('Error loading staff:', err);
-      $('#default-member-list').html('<li class="list-group-item">Error loading default staff.</li>');
+      console.error('Error loading hired staff:', err);
       $('#hired-member-list').html('<li class="list-group-item">Error loading hired staff.</li>');
+    });
+
+  fetchStaff("myAIstaff")
+    .then(staffList => {
+      // 기본 제공 멤버 렌더
+      renderDefaultMembers(staffList);
+    })
+    .catch(err => {
+      console.error('Error loading default staff:', err);
+      $('#default-member-list').html('<li class="list-group-item">Error loading default staff.</li>');
     });
 });
 
@@ -36,10 +41,19 @@ function normalizeResponse(response) {
 }
 
 /** 전체 스태프를 한번에 가져오기 */
-function fetchAllStaff() {
+function fetchStaff(staffoption) {
+  let Staffurl;
+  if (staffoption === "mystaff") {
+    Staffurl = 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff';
+  } else if (staffoption === "myAIstaff") {
+    Staffurl = 'https://yfef2g1t5g.execute-api.ap-northeast-2.amazonaws.com/default/myAIstaff';
+  } else {
+    throw new Error('Invalid staff option');
+  }
+
   return new Promise((resolve, reject) => {
     $.ajax({
-      url: 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff',
+      url: Staffurl,
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({ action: 'getall' }),

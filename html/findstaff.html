@@ -9,12 +9,53 @@
   <link rel="stylesheet" href="./css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+  <style>
+    @media (max-width: 767.98px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        right: -280px; /* Start off-screen */
+        width: 280px;
+        height: 100vh;
+        z-index: 1040; /* Appear above everything */
+        transition: right 0.3s ease-in-out;
+        background-color: #fff;
+      }
+
+      .sidebar.show {
+        right: 0; /* Slide in */
+      }
+
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1039; /* Just below the sidebar */
+        display: none; /* Hidden by default */
+      }
+
+      #sidebarMenu.show ~ .sidebar-overlay {
+          display: block;
+      }
+    }
+  </style>
 </head>
 
 <body class="bg-light">
+
+  <nav class="navbar navbar-dark bg-dark d-md-none">
+    <a class="navbar-brand" href="#">My Staff</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+
   <div class="container-fluid">
     <div class="row">
-      <nav class="col-md-2 d-none d-md-block bg-white sidebar vh-100">
+      <nav id="sidebarMenu" class="col-md-2 bg-white sidebar vh-100 collapse d-md-block">
         <div class="sidebar-sticky">
           <div class="sidebar-brand text-center my-3">
             <a href="index.html" class="h4">My Staff</a>
@@ -42,19 +83,23 @@
               <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                 <span>AI Job Finder</span>
               </h6>
-              <a class="nav-link active" href="#">
+              <a class="nav-link active" href="./findstaff.html">
                 <i class="fas fa-search"></i>
                 Find Your Staff
               </a>
             </li>
           </ul>
           <div class="mt-4 p-3">
-            <button id="signout-btn" class="btn btn-danger btn-block">
+            <a href="./createAIstaff.html" class="btn btn-primary btn-block">
+              <i class="fas fa-plus"></i> Create AI Staff
+            </a>
+            <button id="signout-btn" class="btn btn-danger btn-block mt-2">
               <i class="fas fa-sign-out-alt"></i> Sign-Out
             </button>
           </div>
         </div>
       </nav>
+      <div class="sidebar-overlay" data-toggle="collapse" data-target="#sidebarMenu"></div>
 
       <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -117,11 +162,5 @@
   <script src="./js/moment.min.js"></script>
   <script src="./js/pages/findstaff.js" type="module"></script>
   
-  <script type="module">
-    import { initializeSignOut } from './js/custom.js';
-    $(document).ready(function() {
-      initializeSignOut();
-    });
-  </script>
 </body>
 </html>
