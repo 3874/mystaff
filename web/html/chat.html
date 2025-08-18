@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Mystaff Chat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Custom styles to retain the layout */
+    body, html {
+      height: 100%;
+    }
+    .chat-container {
+      height: 100vh; /* Full viewport height */
+      display: flex;
+      flex-direction: column;
+    }
+    #chatMessages {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    #sidebar {
+        height: 100vh;
+        overflow-y: auto;
+    }
+    .msg-user {
+      text-align: right;
+      margin: 0.5rem 0;
+      color: #bb86fc;
+    }
+    .msg-system {
+      text-align: left;
+      margin: 0.5rem 0;
+      color: #03dac6;
+    }
+  </style>
+</head>
+<body>
+  <!-- API Key Modal -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Enter OpenAI API Key</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="password" id="apiKeyInput" class="form-control" placeholder="sk-...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="saveApiKeyBtn" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-body-tertiary p-0">
+          <div class="position-sticky pt-3">
+              <h2 class="px-3">MyStaff</h2>
+              <ul id="sessionList" class="list-group list-group-flush"></ul>
+          </div>
+      </aside>
+
+      <!-- Chat Window -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-0 chat-container">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
+            <h1 class="h2" id="chatTitle">Chat</h1>
+        </div>
+
+        <div id="chatMessages"></div>
+
+        <div class="mt-auto p-3 bg-body-tertiary border-top">
+            <div class="input-group">
+              <button class="btn btn-outline-secondary" type="button" id="fileUploadBtn">+</button>
+              <input type="file" id="fileInput" style="display:none;" />
+              <input type="text" id="messageInput" class="form-control" placeholder="Type your message...">
+              <button class="btn btn-primary" type="button" id="sendBtn">Send</button>
+            </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chat Script -->
+  <script type="module" src="../js/pages/chat.js"></script>
+</body>
+</html>

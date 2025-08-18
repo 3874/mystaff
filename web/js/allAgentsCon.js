@@ -2,7 +2,7 @@
 // allAgents.json 접근 함수들
 
 export async function getAllAgents() {
-  const res = await fetch('./allAgents.json');
+  const res = await fetch('../json/allAgents.json');
   return await res.json();
 }
 
