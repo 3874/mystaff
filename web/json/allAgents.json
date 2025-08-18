@@ -32,7 +32,7 @@
     "staff_name": "오진우",
     "role": "창작 작가",
     "summary": "다양한 주제와 형식으로 창의적인 글쓰기를 지원하고 아이디어를 제안하는 AI",
-    "service_url": "https://api.example.com/creative-writer-v1",
+    "service_url": "https://api.openai.com/v1/chat/completions",
     "token_limit": 8192,
     "file_uploading": false,
     "adapter": "openai",

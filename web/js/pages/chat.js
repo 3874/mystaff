@@ -148,7 +148,6 @@ function bindUIEvents() {
         e.preventDefault();
         const $listItem = $(this).closest('.list-group-item');
         const sessionToEditId = $listItem.data('session-id');
-        alert(sessionToEditId);
         const currentTitle = $listItem.find('.session-title').text();
         const newTitle = prompt("Enter new title", currentTitle);
         if (newTitle) {
