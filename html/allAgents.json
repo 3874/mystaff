@@ -1,0 +1,257 @@
+[
+  {
+    "staff_id": {
+      "S": "mystaff_20240726_00001"
+    },
+    "name": {
+      "S": "박오픈"
+    },
+    "creation_date": {
+      "S": "2024-07-26T10:00:00Z"
+    },
+    "description": {
+      "S": "한글로 고객들의 상담을 해주는 AI BOT"
+    },
+    "functionJSON": {
+      "M": {
+        "ai_provider": {
+          "S": "openai"
+        },
+        "service_model": {
+          "S": "gpt-4o-mini"
+        },
+        "service_type": {
+          "S": "text"
+        }
+      }
+    },
+    "imgUrl": {
+      "S": "./img/avatar/avatar-1.png"
+    },
+    "lang": {
+      "S": "한국어"
+    },
+    "provider_name": {
+      "S": "mystaff"
+    },
+    "role": {
+      "S": "CS 상담"
+    },
+    "staff_type": {
+      "S": "in-house"
+    },
+    "status": {
+      "S": "active"
+    },
+    "update_date": {
+      "S": ""
+    },
+    "version": {
+      "S": "0.1"
+    }
+  },
+  {
+    "staff_id": {
+      "S": "mystaff_20240726_00002"
+    },
+    "name": {
+      "S": "김지식"
+    },
+    "creation_date": {
+      "S": "2024-07-26T10:01:00Z"
+    },
+    "description": {
+      "S": "회사 내부 문서 및 자료를 바탕으로 정보를 찾아주는 AI 비서"
+    },
+    "functionJSON": {
+      "M": {
+        "ai_provider": {
+          "S": "openai"
+        },
+        "service_model": {
+          "S": "gpt-4o"
+        },
+        "service_type": {
+          "S": "text"
+        }
+      }
+    },
+    "imgUrl": {
+      "S": "./img/avatar/avatar-2.png"
+    },
+    "lang": {
+      "S": "한국어"
+    },
+    "provider_name": {
+      "S": "mystaff"
+    },
+    "role": {
+      "S": "지식 검색"
+    },
+    "staff_type": {
+      "S": "in-house"
+    },
+    "status": {
+      "S": "active"
+    },
+    "update_date": {
+      "S": ""
+    },
+    "version": {
+      "S": "0.2"
+    }
+  },
+  {
+    "staff_id": {
+      "S": "mystaff_20240726_00003"
+    },
+    "name": {
+      "S": "이마케팅"
+    },
+    "creation_date": {
+      "S": "2024-07-26T10:02:00Z"
+    },
+    "description": {
+      "S": "마케팅 문구 생성, 소셜 미디어 콘텐츠 기획을 돕는 AI 봇"
+    },
+    "functionJSON": {
+      "M": {
+        "ai_provider": {
+          "S": "openai"
+        },
+        "service_model": {
+          "S": "gpt-3.5-turbo"
+        },
+        "service_type": {
+          "S": "text"
+        }
+      }
+    },
+    "imgUrl": {
+      "S": "./img/avatar/avatar-3.png"
+    },
+    "lang": {
+      "S": "한국어"
+    },
+    "provider_name": {
+      "S": "mystaff"
+    },
+    "role": {
+      "S": "콘텐츠 생성"
+    },
+    "staff_type": {
+      "S": "in-house"
+    },
+    "status": {
+      "S": "active"
+    },
+    "update_date": {
+      "S": ""
+    },
+    "version": {
+      "S": "0.1"
+    }
+  },
+  {
+    "staff_id": {
+      "S": "mystaff_20240726_00004"
+    },
+    "name": {
+      "S": "최개발"
+    },
+    "creation_date": {
+      "S": "2024-07-26T10:03:00Z"
+    },
+    "description": {
+      "S": "코드 리뷰, 오류 디버깅, 개발 문서 작성을 지원하는 AI 어시스턴트"
+    },
+    "functionJSON": {
+      "M": {
+        "ai_provider": {
+          "S": "openai"
+        },
+        "service_model": {
+          "S": "gpt-4o"
+        },
+        "service_type": {
+          "S": "text"
+        }
+      }
+    },
+    "imgUrl": {
+      "S": "./img/avatar/avatar-4.png"
+    },
+    "lang": {
+      "S": "한국어"
+    },
+    "provider_name": {
+      "S": "mystaff"
+    },
+    "role": {
+      "S": "개발 지원"
+    },
+    "staff_type": {
+      "S": "in-house"
+    },
+    "status": {
+      "S": "active"
+    },
+    "update_date": {
+      "S": ""
+    },
+    "version": {
+      "S": "1.0"
+    }
+  },
+  {
+    "staff_id": {
+      "S": "mystaff_20240726_00005"
+    },
+    "name": {
+      "S": "정인사"
+    },
+    "creation_date": {
+      "S": "2024-07-26T10:04:00Z"
+    },
+    "description": {
+      "S": "직원들의 복리후생, 휴가 신청 등 인사 관련 질문에 답변하는 AI 봇"
+    },
+    "functionJSON": {
+      "M": {
+        "ai_provider": {
+          "S": "openai"
+        },
+        "service_model": {
+          "S": "gpt-4o-mini"
+        },
+        "service_type": {
+          "S": "text"
+        }
+      }
+    },
+    "imgUrl": {
+      "S": "./img/avatar/avatar-5.png"
+    },
+    "lang": {
+      "S": "한국어"
+    },
+    "provider_name": {
+      "S": "mystaff"
+    },
+    "role": {
+      "S": "인사 관리"
+    },
+    "staff_type": {
+      "S": "in-house"
+    },
+    "status": {
+      "S": "active"
+    },
+    "update_date": {
+      "S": ""
+    },
+    "version": {
+      "S": "0.5"
+    }
+  }
+]
