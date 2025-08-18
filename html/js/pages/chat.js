@@ -1,5 +1,6 @@
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { handleMessage } from '../adapters.js';
-import { init, getChatbySession, addChatMessage, deleteChatMessages, getChatSessionsByStaffId, addChatSession, updateChatTitle } from '../mystaffDB.js';
+import { init, getChatbySession, addChatMessage, deleteChatMessages, getApiKey, getChatSessionsByStaffId, addChatSession, updateChatTitle } from '../mystaffDB.js';
 import { CheckSignIn } from '../custom.js';
 import { generateUUID } from '../utils.js';
 
@@ -19,19 +20,43 @@ $(document).ready(function() {
         init().then(() => {
             return getChatbySession(sessionId);
         }).then(session => {
-            const messages = session?.messages || [];
-            $('#chat-title').text(session.title || 'New Chat');
-            messages.forEach(chatMessage => {
-                $.chatCtrl('#mychatbox', {
-                    text: chatMessage.text,
-                    picture: chatMessage.sender === 'user'
-                    ? './img/avatar/avatar-1.png'
-                    : chatStaff.imgUrl,
-                    position: chatMessage.sender === 'user'
-                    ? 'chat-right'
-                    : 'chat-left'
+            if (!session) {
+                alert('Chat session not found!');
+                location.href = "index.html";
+                return;
+            }
+            const currentStaffId = session.staff_id;
+            
+            // Fetch all staff to find the one for this chat
+            Promise.all([fetchStaff("mystaff"), fetchStaff("myAIstaff")])
+                .then(([mystaffList, myAIstaffList]) => {
+                    const allStaff = [...mystaffList, ...myAIstaffList];
+                    chatStaff = allStaff.find(s => s.staff_id === currentStaffId);
+
+                    if (!chatStaff) {
+                        console.error("Staff member not found for this chat session!");
+                        alert("Could not load staff data for this chat.");
+                        return;
+                    }
+
+                    // Now that chatStaff is set, render messages
+                    const messages = session?.messages || [];
+                    $('#chat-title').text(session.title || 'New Chat');
+                    messages.forEach(chatMessage => {
+                        $.chatCtrl('#mychatbox', {
+                            text: chatMessage.text,
+                            picture: chatMessage.sender === 'user'
+                            ? './img/avatar/avatar-1.png'
+                            : chatStaff.imgUrl,
+                            position: chatMessage.sender === 'user'
+                            ? 'chat-right'
+                            : 'chat-left'
+                        });
+                    });
+                }).catch(error => {
+                    console.error('Error fetching staff lists:', error);
+                    alert('Failed to load staff data.');
                 });
-            });
         }).catch(error => {
             console.error('Error fetching chat session:', error);
             alert('Failed to fetch chat session.');
@@ -65,6 +90,49 @@ $(document).ready(function() {
     
 });
 
+/** 공통 응답 정규화 */
+function normalizeResponse(response) {
+  if (response && typeof response.body === 'string') {
+    return JSON.parse(response.body);
+  }
+  return response;
+}
+
+/** 전체 스태프를 한번에 가져오기 */
+function fetchStaff(staffoption) {
+  let Staffurl;
+  if (staffoption === "mystaff") {
+    Staffurl = 'https://r2jt9u3d5g.execute-api.ap-northeast-2.amazonaws.com/default/mystaff';
+  } else if (staffoption === "myAIstaff") {
+    Staffurl = 'https://yfef2g1t5g.execute-api.ap-northeast-2.amazonaws.com/default/myAIstaff';
+  } else {
+    throw new Error('Invalid staff option');
+  }
+
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: Staffurl,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ action: 'getall' }),
+      success: function(resp) {
+        try {
+          const parsed = normalizeResponse(resp);
+          if (!Array.isArray(parsed)) {
+            reject(new Error('API response for getall is not an array'));
+            return;
+          }
+          resolve(parsed);
+        } catch (e) {
+          reject(e);
+        }
+      },
+      error: function(err) {
+        reject(err);
+      }
+    });
+  });
+}
 
 // Chat control function
 $.chatCtrl = function(element, chat) {
@@ -139,7 +207,7 @@ $("#chat-form").on("submit", async function(event) {
             $input.val('');
 
             // 4) 서버 요청 및 응답 처리
-            const reply = await handleMessage(chatStaff, sessionId, message);
+            const reply = await handleMessage(chatStaff, sessionId, message, getApiKey);
             if(reply) {
                 // 5) 로컬 DB에 저장 (시스템 응답)
                 await addChatMessage(sessionId, 'system', reply);

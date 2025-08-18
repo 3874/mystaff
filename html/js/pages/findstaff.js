@@ -4,6 +4,7 @@ $(document).ready(function() {
   const myprofileJSON = CheckSignIn();
   console.log(myprofileJSON);
   const mystaff = JSON.parse(myprofileJSON);
+  
   function populateStaff(containerId, data) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -11,12 +12,11 @@ $(document).ready(function() {
     let staffHTML = '';
     data.forEach(staff => {
       staffHTML += `
-        <div class="col-6 col-sm-2 col-lg-2 mb-4 mb-md-0">
-          <a href="aiprofile.html?id=${staff.id}">
-            <div class="avatar-item">
-              <img alt="image" src="${staff.avatar}" class="img-fluid" data-toggle="tooltip" title="${staff.name}">
-              <div class="avatar-badge" title="${staff.role}" data-toggle="tooltip"><i class="${staff.icon}"></i></div>
-            </div>
+        <div class="col-6 col-sm-4 col-lg-2 mb-4 text-center">
+          <a href="aiprofile.html?id=${staff.id}" class="text-decoration-none text-dark">
+            <img alt="${staff.name}" src="${staff.avatar}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;" data-toggle="tooltip" title="${staff.name}">
+            <h6 class="mb-0">${staff.name}</h6>
+            <p class="text-muted small">${staff.role}</p>
           </a>
         </div>
       `;
@@ -85,11 +85,13 @@ $(document).ready(function() {
     if (keyword) {
       // 실제 구현에서는 Ajax 등으로 검색 결과를 받아와야 함
       $list.append(`
-        <li class="media">
-          <img alt="image" class="mr-3 rounded-circle" width="50" src="./img/avatar/avatar-1.png">
-          <div class="media-body">
-            <div class="mt-0 mb-1 font-weight-bold">검색 결과 예시: ${keyword}</div>
-            <div class="text-muted text-small font-weight-600">Skill: 예시</div>
+        <li class="list-group-item">
+          <div class="d-flex align-items-center">
+            <img alt="image" src="./img/avatar/avatar-1.png" class="rounded-circle mr-3" style="width: 60px; height: 60px; object-fit: cover;">
+            <div>
+              <div class="font-weight-bold">검색 결과 예시: ${keyword}</div>
+              <div class="text-muted text-small">Role: 예시</div>
+            </div>
           </div>
         </li>
       `);

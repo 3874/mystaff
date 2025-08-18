@@ -279,6 +279,7 @@ class MystaffAdapter {
 
 async function handleMessage(chatStaff, sessionId, message, getApiKey) {
     const Staff_func = chatStaff.functionJSON;
+    console.log(Staff_func);
     switch (chatStaff.staff_type) {
         case 'default':
         case 'in-house':
