@@ -1,257 +1,142 @@
 [
   {
-    "staff_id": {
-      "S": "mystaff_20240726_00001"
-    },
-    "name": {
-      "S": "박오픈"
-    },
-    "creation_date": {
-      "S": "2024-07-26T10:00:00Z"
-    },
-    "description": {
-      "S": "한글로 고객들의 상담을 해주는 AI BOT"
-    },
-    "functionJSON": {
-      "M": {
-        "ai_provider": {
-          "S": "openai"
-        },
-        "service_model": {
-          "S": "gpt-4o-mini"
-        },
-        "service_type": {
-          "S": "text"
-        }
-      }
-    },
-    "imgUrl": {
-      "S": "./img/avatar/avatar-1.png"
-    },
-    "lang": {
-      "S": "한국어"
-    },
-    "provider_name": {
-      "S": "mystaff"
-    },
-    "role": {
-      "S": "CS 상담"
-    },
-    "staff_type": {
-      "S": "in-house"
-    },
-    "status": {
-      "S": "active"
-    },
-    "update_date": {
-      "S": ""
-    },
-    "version": {
-      "S": "0.1"
-    }
+    "staffId": "mystaff_20240726_00018",
+    "staff_name": "송오픈",
+    "role": "고객 서비스 매니저",
+    "summary": "고객 문의를 신속하고 정확하게 응대하여 만족도를 높이는 AI 봇",
+    "service_url": "https://api.openai.com/v1/chat/completions",
+    "token_limit": 12800,
+    "file_uploading": false,
+    "adapter": "openai",
+    "model": "gpt-4o-mini",
+    "system_prompt": "당신은 친절하고 전문적인 고객 서비스 상담원입니다. 고객의 질문에 명확하고 간결하게 답변해주세요.",
+    "rag_support": false,
+    "output_type": "text"
   },
   {
-    "staff_id": {
-      "S": "mystaff_20240726_00002"
-    },
-    "name": {
-      "S": "김지식"
-    },
-    "creation_date": {
-      "S": "2024-07-26T10:01:00Z"
-    },
-    "description": {
-      "S": "회사 내부 문서 및 자료를 바탕으로 정보를 찾아주는 AI 비서"
-    },
-    "functionJSON": {
-      "M": {
-        "ai_provider": {
-          "S": "openai"
-        },
-        "service_model": {
-          "S": "gpt-4o"
-        },
-        "service_type": {
-          "S": "text"
-        }
-      }
-    },
-    "imgUrl": {
-      "S": "./img/avatar/avatar-2.png"
-    },
-    "lang": {
-      "S": "한국어"
-    },
-    "provider_name": {
-      "S": "mystaff"
-    },
-    "role": {
-      "S": "지식 검색"
-    },
-    "staff_type": {
-      "S": "in-house"
-    },
-    "status": {
-      "S": "active"
-    },
-    "update_date": {
-      "S": ""
-    },
-    "version": {
-      "S": "0.2"
-    }
+    "staffId": "mystaff_20240726_00019",
+    "staff_name": "배화가",
+    "role": "그림 전문가",
+    "summary": "Prompt를 베이스로 그림을 그려주는 AI",
+    "service_url": "https://api.example.com/knowledge-seeker-v2",
+    "token_limit": 32768,
+    "file_uploading": true,
+    "adapter": "openai",
+    "model": "gpt-image-1",
+    "system_prompt": "당신은 최고의 화가입니다. 사용자의 질문에 대한 가장 정확하게 이해하고 그림으로 표현해줘.",
+    "rag_support": false,
+    "output_type": "image"
   },
   {
-    "staff_id": {
-      "S": "mystaff_20240726_00003"
-    },
-    "name": {
-      "S": "이마케팅"
-    },
-    "creation_date": {
-      "S": "2024-07-26T10:02:00Z"
-    },
-    "description": {
-      "S": "마케팅 문구 생성, 소셜 미디어 콘텐츠 기획을 돕는 AI 봇"
-    },
-    "functionJSON": {
-      "M": {
-        "ai_provider": {
-          "S": "openai"
-        },
-        "service_model": {
-          "S": "gpt-3.5-turbo"
-        },
-        "service_type": {
-          "S": "text"
-        }
-      }
-    },
-    "imgUrl": {
-      "S": "./img/avatar/avatar-3.png"
-    },
-    "lang": {
-      "S": "한국어"
-    },
-    "provider_name": {
-      "S": "mystaff"
-    },
-    "role": {
-      "S": "콘텐츠 생성"
-    },
-    "staff_type": {
-      "S": "in-house"
-    },
-    "status": {
-      "S": "active"
-    },
-    "update_date": {
-      "S": ""
-    },
-    "version": {
-      "S": "0.1"
-    }
+    "staffId": "mystaff_20240726_00020",
+    "staff_name": "오진우",
+    "role": "창작 작가",
+    "summary": "다양한 주제와 형식으로 창의적인 글쓰기를 지원하고 아이디어를 제안하는 AI",
+    "service_url": "https://api.example.com/creative-writer-v1",
+    "token_limit": 8192,
+    "file_uploading": false,
+    "adapter": "openai",
+    "model": "gpt-4o",
+    "system_prompt": "당신은 상상력이 풍부한 작가입니다. 주어진 주제에 대해 독창적이고 흥미로운 콘텐츠를 작성해주세요.",
+    "rag_support": false,
+    "output_type": "text"
   },
   {
-    "staff_id": {
-      "S": "mystaff_20240726_00004"
-    },
-    "name": {
-      "S": "최개발"
-    },
-    "creation_date": {
-      "S": "2024-07-26T10:03:00Z"
-    },
-    "description": {
-      "S": "코드 리뷰, 오류 디버깅, 개발 문서 작성을 지원하는 AI 어시스턴트"
-    },
-    "functionJSON": {
-      "M": {
-        "ai_provider": {
-          "S": "openai"
-        },
-        "service_model": {
-          "S": "gpt-4o"
-        },
-        "service_type": {
-          "S": "text"
-        }
-      }
-    },
-    "imgUrl": {
-      "S": "./img/avatar/avatar-4.png"
-    },
-    "lang": {
-      "S": "한국어"
-    },
-    "provider_name": {
-      "S": "mystaff"
-    },
-    "role": {
-      "S": "개발 지원"
-    },
-    "staff_type": {
-      "S": "in-house"
-    },
-    "status": {
-      "S": "active"
-    },
-    "update_date": {
-      "S": ""
-    },
-    "version": {
-      "S": "1.0"
-    }
+    "staffId": "mystaff_20240726_00021",
+    "staff_name": "정코딩",
+    "role": "코드 개발 도우미",
+    "summary": "복잡한 기술 개념을 명확하고 이해하기 쉽게 코드화하는 데 도움을 주는 AI",
+    "service_url": "https://api.example.com/tech-doc-v1",
+    "token_limit": 65536,
+    "file_uploading": true,
+    "adapter": "google",
+    "model": "gemini-1.5-pro",
+    "system_prompt": "당신은 정확하고 체계적인 코드 작성 전문가입니다. 제공된 정보를 바탕으로 명료한 기술 문서를 작성하세요.",
+    "rag_support": true,
+    "output_type": "code"
   },
   {
-    "staff_id": {
-      "S": "mystaff_20240726_00005"
-    },
-    "name": {
-      "S": "정인사"
-    },
-    "creation_date": {
-      "S": "2024-07-26T10:04:00Z"
-    },
-    "description": {
-      "S": "직원들의 복리후생, 휴가 신청 등 인사 관련 질문에 답변하는 AI 봇"
-    },
-    "functionJSON": {
-      "M": {
-        "ai_provider": {
-          "S": "openai"
-        },
-        "service_model": {
-          "S": "gpt-4o-mini"
-        },
-        "service_type": {
-          "S": "text"
-        }
-      }
-    },
-    "imgUrl": {
-      "S": "./img/avatar/avatar-5.png"
-    },
-    "lang": {
-      "S": "한국어"
-    },
-    "provider_name": {
-      "S": "mystaff"
-    },
-    "role": {
-      "S": "인사 관리"
-    },
-    "staff_type": {
-      "S": "in-house"
-    },
-    "status": {
-      "S": "active"
-    },
-    "update_date": {
-      "S": ""
-    },
-    "version": {
-      "S": "0.5"
-    }
+    "staffId": "mystaff_20240726_00022",
+    "staff_name": "하성민",
+    "role": "세일즈 어시스턴트",
+    "summary": "잠재 고객을 발굴하고, 맞춤형 제안을 생성하여 영업 활동을 지원하는 AI",
+    "service_url": "https://api.example.com/sales-aid-v2",
+    "token_limit": 4096,
+    "file_uploading": false,
+    "adapter": "openai",
+    "model": "gpt-3.5-turbo",
+    "system_prompt": "당신은 설득력 있는 세일즈 어시스턴트입니다. 고객의 니즈를 파악하여 최적의 솔루션을 제안하고 구매를 유도하세요.",
+    "rag_support": false,
+    "output_type": "text"
+  },
+  {
+    "staffId": "mystaff_20240726_00023",
+    "staff_name": "구민서",
+    "role": "헬스케어 코치",
+    "summary": "개인의 건강 데이터를 분석하여 맞춤형 운동 및 식단 가이드를 제공하는 AI",
+    "service_url": "https://api.example.com/health-coach-v1",
+    "token_limit": 16384,
+    "file_uploading": true,
+    "adapter": "http",
+    "model": "health-brain-v1",
+    "system_prompt": "당신은 전문적인 헬스케어 코치입니다. 사용자의 건강 목표 달성을 위해 실용적이고 안전한 조언을 해주세요.",
+    "rag_support": true,
+    "output_type": "text"
+  },
+  {
+    "staffId": "mystaff_20240726_00024",
+    "staff_name": "신동현",
+    "role": "이벤트 기획가",
+    "summary": "다양한 종류의 이벤트 아이디어를 제안하고, 상세 계획 수립을 돕는 AI",
+    "service_url": "https://api.example.com/event-planner-v1",
+    "token_limit": 8192,
+    "file_uploading": false,
+    "adapter": "openai",
+    "model": "gpt-4o-mini",
+    "system_prompt": "당신은 창의적이고 효율적인 이벤트 기획 전문가입니다. 주어진 조건에 맞춰 독특하고 성공적인 이벤트 아이디어를 제안해주세요.",
+    "rag_support": false,
+    "output_type": "text"
+  },
+  {
+    "staffId": "mystaff_20240726_00025",
+    "staff_name": "서지훈",
+    "role": "시장 분석가",
+    "summary": "최신 시장 동향, 경쟁사 분석, 소비자 행동 패턴을 분석하여 보고서를 생성하는 AI",
+    "service_url": "https://api.example.com/market-analyzer-v3",
+    "token_limit": 128000,
+    "file_uploading": true,
+    "adapter": "anthropic",
+    "model": "claude-3-haiku",
+    "system_prompt": "당신은 날카로운 통찰력을 가진 시장 분석가입니다. 최신 데이터를 기반으로 시장 상황을 정확히 진단하고 미래를 예측하세요.",
+    "rag_support": true,
+    "output_type": "text"
+  },
+  {
+    "staffId": "mystaff_20240726_00026",
+    "staff_name": "홍채원",
+    "role": "여행 플래너",
+    "summary": "개인의 취향과 예산에 맞춰 최적의 여행 경로, 숙소, 액티비티를 추천하는 AI",
+    "service_url": "https://api.example.com/travel-agent-v1",
+    "token_limit": 4096,
+    "file_uploading": false,
+    "adapter": "google",
+    "model": "gemini-pro-vision",
+    "system_prompt": "당신은 멋진 여행 경험을 디자인하는 전문 플래너입니다. 사용자의 선호도를 고려하여 완벽한 여행 계획을 세워주세요.",
+    "rag_support": false,
+    "output_type": "text"
+  },
+  {
+    "staffId": "mystaff_20240726_00027",
+    "staff_name": "윤태양",
+    "role": "교육 튜터",
+    "summary": "학생들의 학습 수준과 진도를 파악하여 개인 맞춤형 학습 자료와 설명을 제공하는 AI",
+    "service_url": "https://api.example.com/edu-tutor-v2",
+    "token_limit": 32768,
+    "file_uploading": true,
+    "adapter": "openai",
+    "model": "gpt-4o",
+    "system_prompt": "당신은 인내심 있고 지식이 풍부한 교육 튜터입니다. 학생의 질문에 명확하고 이해하기 쉽게 설명하며, 학습을 격려하세요.",
+    "rag_support": true,
+    "output_type": "text"
   }
 ]
