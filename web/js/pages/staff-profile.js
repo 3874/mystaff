@@ -73,19 +73,18 @@ function loadStaffAgent(staffData) {
   const avatarUrl = `../img/avatar/avatar-${avatarNumber}.png`;
   $('.author-box-picture').attr('src', avatarUrl);
   $('.author-box-picture').attr('alt', staffData.staff_name || 'Agent');
-
-  // Populate staff ID
-  $('.author-box-staffId').text(`Staff ID: ${staffData.staffId || 'N/A'}`);
-
-  // Populate name
+  $('.author-box-staffId').text(staffData.staffId || 'N/A');
   $('.author-box-name').text(staffData.staff_name || 'Unnamed Agent');
-
-  // Populate job/role
   $('.author-box-job').text(staffData.role || 'No role specified');
-
-  // Populate description
-  $('.author-box-description').text(staffData.summary || 'No description available.');
-
+  $('.author-box-summary').text(staffData.summary || 'No description available.');
+  $('.author-box-adapter').text(staffData.adapter || 'Unnamed Agent');
+  $('.author-box-model').text(staffData.model || 'No mode specified');
+  $('.author-box-url').text(staffData.service_url || 'No service url available.');
+  $('.author-box-output').text(staffData.output_type || 'No output type specified');
+  $('.author-box-systemprompt').text(staffData.system_prompt || 'No system prompt available.');
+  $('.author-box-maxtoken').text(staffData.token_limit || 'No max token specified');
+  $('.author-box-fileupload').text(staffData.file_uploading ? 'Enabled' : 'Disabled');
+  $('.author-box-ragSupport').text(staffData.rag_support ? 'Enabled' : 'Disabled');
 }
 
 

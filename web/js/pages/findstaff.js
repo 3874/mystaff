@@ -39,7 +39,7 @@ async function initializeFindStaffPage() {
               <div>
                 <h5 class="mb-1">${agent.staff_name || 'Unnamed Agent'}</h5>
                 <p class="mb-1 text-muted">${agent.role || 'No role specified'}</p>
-                <small>${agent.description || 'No description.'}</small>
+                <small>${agent.summary || 'No summary.'}</small>
               </div>
             </div>
             <div class="d-flex justify-content-end">
