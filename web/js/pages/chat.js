@@ -52,7 +52,7 @@ async function initializeChat() {
         const finalUrl = await FindUrl(agent);
         window.location.href = finalUrl;
     }
-
+    
     await loadChatSession(sessionId);
     await loadSessionList();
 }
