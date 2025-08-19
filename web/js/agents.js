@@ -36,32 +36,32 @@ export async function handleMsg(processedInput, agent) {
 // ---- 프롬프트/토큰 로직 ----
 async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) {
   // 출력 예산: 전체의 25% 또는 최소 1024토큰 중 큰 값 택일 (모델 상황에 맞게 조정 가능)
-  const OUTPUT_BUDGET = Math.max(1024, Math.floor(token_limit * 0.25));
+  const OUTPUT_BUDGET = Math.max(2048, Math.floor(token_limit * 0.25));
   const HARD_OVERHEAD = 64; // role/구분자 등 여유
 
   const mkP1 = () => `
-You are a concise, professional assistant.
-User message: ${input}
+    You are a concise, professional assistant.
+    User message: ${input}
 
---- CHAT HISTORY ---
-${historyJson}
---- END CHAT HISTORY ---
+    --- CHAT HISTORY ---
+    ${historyJson}
+    --- END CHAT HISTORY ---
 
---- CURRENT LTM ---
-${ltm}
---- END CURRENT LTM ---
+    --- CURRENT LTM ---
+    ${ltm}
+    --- END CURRENT LTM ---
 
-Reply directly to the user in plain text. Be precise and helpful.`.trim();
+    Reply directly to the user in plain text. Be precise and helpful.`.trim();
 
   const mkP2 = () => `
-You are a concise, professional assistant.
-User message: ${input}
+    You are a concise, professional assistant.
+    User message: ${input}
 
---- CURRENT LTM ---
-${ltm}
---- END CURRENT LTM ---
+    --- CURRENT LTM ---
+    ${ltm}
+    --- END CURRENT LTM ---
 
-Reply directly to the user in plain text. Be precise and helpful.`.trim();
+    Reply directly to the user in plain text. Be precise and helpful.`.trim();
 
   const mkP3 = () => `${input}`.trim();
 

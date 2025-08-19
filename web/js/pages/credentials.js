@@ -59,6 +59,7 @@ $(document).ready(function() {
             await updateData('mydata', userId, mydata);
             localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
             alert('Credentials saved successfully!');
+            window.location.href = './mystaff.html'; // Redirect to staff page after saving
         } catch (error) {
             console.error("Error saving credentials:", error);
             alert('Error saving credentials.');

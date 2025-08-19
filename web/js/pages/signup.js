@@ -53,18 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
           company,
           secretKey,
           password, // Note: Storing passwords in plain text is not secure for production.
-          mystaff: []
+          mystaff: [],
+          credentials: {}
         };
 
         await addData('mydata', newUser);
         
-        // For simplicity, just storing a flag. Old code stored the whole user object.
-        localStorage.setItem("mystaff_loggedin", "true");
-        localStorage.setItem("mystaff_user", email);
-
-
         alert('Registration successful!');
-        window.location.href = './mystaff.html'; // Redirect to chat page
+        window.location.href = './signin.html'; // Redirect to chat page
 
       } catch (error) {
         console.error('Registration failed:', error);

@@ -29,14 +29,14 @@
   },
   {
     "staffId": "mystaff_20240726_00020",
-    "staff_name": "오진우",
+    "staff_name": "연팔앤",
     "role": "창작 작가",
     "summary": "다양한 주제와 형식으로 창의적인 글쓰기를 지원하고 아이디어를 제안하는 AI",
-    "service_url": "https://api.openai.com/v1/chat/completions",
+    "service_url": "http://ai.yleminvest.com:5678/webhook/mystaff-chat",
     "token_limit": 8192,
     "file_uploading": false,
-    "adapter": "openai",
-    "model": "gpt-4o",
+    "adapter": "http",
+    "model": "gpt-4o-mini",
     "system_prompt": "당신은 상상력이 풍부한 작가입니다. 주어진 주제에 대해 독창적이고 흥미로운 콘텐츠를 작성해주세요.",
     "rag_support": false,
     "output_type": "text"

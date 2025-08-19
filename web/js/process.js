@@ -50,7 +50,6 @@ export async function compareLTMbyServer(currentChat, currentLTM) {
     Please analyze the chat history and update the LTM with any new information, modifications, or deletions.
     Provide only the raw string for the updated LTM.
     `;
-
     const res = await openAIChatAdapter({
         prompt,
         agent: {

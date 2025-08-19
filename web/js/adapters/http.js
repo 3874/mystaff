@@ -1,33 +1,30 @@
+function assertOk(resp, data) {
+  if (!resp.ok) {
+    throw new Error(`HTTP error! status: ${resp.status}, data: ${JSON.stringify(data)}`);
+  }
+}
+
 // adapters/http.js
 // 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
 export async function genericHttpAdapter({ prompt, agent }) {
-  const url = agent?.serviceUrl;
-  if (!url) throw new Error('HTTP adapter serviceUrl missing');
-
-  const method = agent?.method || 'POST';
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(agent?.headers || {}),
-  };
-
-  // 옵션: Bearer 토큰
-  if (agent?.apiKey && !headers.Authorization) {
-    headers.Authorization = `Bearer ${agent.apiKey}`;
-  }
+  let url = agent.service_url;
+  url = 'http://ai.yleminvest.com:5678/webhook/mystaff-chat';
 
   const payload = {
-    prompt,
-    context: agent?.context || null,
+    chatInput: prompt,
+    sessionId: 'dflajdl-fjalsdfjal9-970jdsf'
   };
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: method.toUpperCase() === 'GET' ? undefined : JSON.stringify(payload),
+  const resp = await fetch(url, {
+    method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `mystaff`,
+      },
+    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) return await res.json();
-  return await res.text();
+  const data = await resp.json().catch(() => ({}));
+  assertOk(resp, data);
+  return data[0]?.output || 'No response from server';
 }

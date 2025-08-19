@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const user = await getDataByKey('mydata', email);
+        const credentials = user ? user.credentials : {};
+        console.log(credentials);
 
         if (user && user.password === password) {
           // Note: Storing passwords in plain text is not secure.
@@ -24,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Login successful!');
           
           localStorage.setItem("mystaff_loggedin", "true");
-          localStorage.setItem("mystaff_user", user.myId); // Store user's ID (email)
-
-          window.location.href = './mystaff.html'; // Redirect to the main chat page
+          localStorage.setItem("mystaff_user", user.myId); 
+          localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
+          window.location.href = './mystaff.html'; 
         } else {
           alert('Invalid email or password.');
         }

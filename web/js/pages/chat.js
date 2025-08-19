@@ -8,8 +8,16 @@ import { getAgentById } from '../allAgentsCon.js';
 let sessionId = null;
 let mystaff = null;
 let currentChat = [];
+let staffId = null;
 
 $(document).ready(async function() {
+    const isLoggedIn = localStorage.getItem('mystaff_loggedin');
+
+    if (isLoggedIn !== 'true') {
+        // If not logged in, redirect to the sign-in page
+        alert('You must be logged in to view this page.');
+        window.location.href = './signin.html';
+    } 
     await initializeChat();
     bindUIEvents();
 });
@@ -17,44 +25,41 @@ $(document).ready(async function() {
 async function initializeChat() {
 
     const params = new URLSearchParams(window.location.search);
-    sessionId = params.get('sessionId');
-    const staffId = params.get('staffId');
+    staffId = params.get('staffId');
+    if (!staffId || staffId === 'undefined' || staffId === null) {
+        sessionId = params.get('sessionId');
+    } else {
+        sessionId = null;
+        const apikeys = localStorage.getItem('mystaff_credentials');
+        const apikeysObj = JSON.parse(apikeys || '{}');
+        const agent = await getAgentById(staffId) || {};
+        console.log(agent);
+        console.log(typeof agent);
+        let apikey = '';
 
-    if (!sessionId && !staffId) {
-        window.location.href = 'mystaff.html';
-        return;
-    } else if (!sessionId && staffId) {
-        const agent = await getAgentById(staffId);
-        checkApiKey(agent);
-        if (!agent) {
-            window.location.href = 'mystaff.html';
+        if (!agent.adapter) {
+            alert('Please select a staff member to chat with.');
+            window.location.href = './mystaff.html';
             return;
-        } else {
-            const finalUrl = await FindUrl(agent);
-            window.location.href = finalUrl;
-            return;
+        } else if (agent.adapter && agent.adapter !== 'http') {
+            apikey = apikeysObj[agent.adapter] || '';
+            if (!apikey || apikey.trim() === '' || apikey === 'undefined') {
+                alert(`Please set your ${agent.adapter} API key in the credentials page.`);
+                window.location.href = './credentials.html';
+                return;
+            }
         }
-    } 
+        const finalUrl = await FindUrl(agent);
+        window.location.href = finalUrl;
+    }
 
     await loadChatSession(sessionId);
     await loadSessionList();
 }
 
 function checkApiKey(mystaff) {
-    const apikeys = localStorage.getItem('mystaff_credentials');
-    const apikeysObj = JSON.parse(apikeys || '{}');
-    if (mystaff.adapter && mystaff.adapter !== 'http') {
-        const apikey = apikeysObj[mystaff.adapter] || '';
-        if (!apikey) {
-            alert(`Please set your ${mystaff.adapter} API key in the credentials page.`);
-            window.location.href = 'credentials.html';
-            return;
-        }
-    } else {
-        
-    }
-    
 
+    
 }
 
 async function loadChatSession(id) {

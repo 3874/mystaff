@@ -1,10 +1,12 @@
 // adapters/openai.js
 // OpenAI Chat Completions
 // Docs: https://platform.openai.com/docs/api-reference/chat
-const credentials = localStorage.getItem("mystaff_credentials");
-const OPENAI_API_KEY = JSON.parse(credentials || '{}').openai;
 
 export async function openAIChatAdapter({ prompt, agent }) {
+  const credentials = localStorage.getItem("mystaff_credentials");
+  const OPENAI_API_KEY = JSON.parse(credentials || '{}').openai;
+  console.log(OPENAI_API_KEY);
+  
   const apiKey = agent?.apiKey || OPENAI_API_KEY;
   const model = agent?.model || 'gpt-4o-mini';
   const url = agent?.serviceUrl || 'https://api.openai.com/v1/chat/completions';

@@ -9,7 +9,7 @@ $(document).ready(function() {
   if (isLoggedIn !== 'true') {
     // If not logged in, redirect to the sign-in page
     alert('You must be logged in to view this page.');
-    window.location.href = 'signin.html';
+    window.location.href = './signin.html';
   } else {
     // If logged in, proceed to load the staff agents
     loadStaffAgents();
