@@ -1,4 +1,5 @@
 import { getAllAgents } from '../allAgentsCon.js';
+import { signOut } from '../utils.js';
 
 $(document).ready(function() {
   // Check for login status
@@ -10,7 +11,13 @@ $(document).ready(function() {
   } else {
     initializeFindStaffPage();
   }
+  
+  $('#signOutBtn').on('click', function(e) {
+    e.preventDefault();
+    signOut();
+  });
 });
+
 
 async function initializeFindStaffPage() {
   try {

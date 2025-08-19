@@ -1,5 +1,6 @@
 import { getDataByKey, updateData } from '../database.js'; // Import updateData
 import { getAgentById } from '../allAgentsCon.js'; // Import the function
+import { signOut } from '../utils.js';
 
 $(document).ready(async function() {
   // Check for login status
@@ -29,11 +30,6 @@ $(document).ready(async function() {
       return;
     }
 
-    const staffData = await getAgentById(staffId);
-    console.log(staffData);
-    loadStaffAgent(staffData);
-
-    // Hire button click handler
     $('.hire-btn').on('click', async function(e) {
       e.preventDefault(); // Prevent default link behavior
 
@@ -64,7 +60,20 @@ $(document).ready(async function() {
 
       window.location.href = './mystaff.html'; // Redirect to mystaff.html
     });
+
+    const staffData = await getAgentById(staffId);
+    console.log(staffData);
+    loadStaffAgent(staffData);
+    
   }
+
+
+
+
+  $('#signOutBtn').on('click', function(e) {
+    e.preventDefault();
+    signOut();
+  });
 });
 
 function loadStaffAgent(staffData) {

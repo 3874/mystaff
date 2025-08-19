@@ -15,7 +15,6 @@ $(document).ready(async function() {
 });
 
 async function initializeChat() {
-    checkApiKey();
 
     const params = new URLSearchParams(window.location.search);
     sessionId = params.get('sessionId');
@@ -26,6 +25,7 @@ async function initializeChat() {
         return;
     } else if (!sessionId && staffId) {
         const agent = await getAgentById(staffId);
+        checkApiKey(agent);
         if (!agent) {
             window.location.href = 'mystaff.html';
             return;
@@ -40,28 +40,25 @@ async function initializeChat() {
     await loadSessionList();
 }
 
-function checkApiKey() {
-    const apiKey = localStorage.getItem("OPENAI_API_KEY");
-    const modalElement = $('#apiKeyModal')[0];
-    if (!modalElement) return;
-
-    const apiKeyModal = new bootstrap.Modal(modalElement);
-
-    if (!apiKey) {
-        apiKeyModal.show();
-        $('#saveApiKeyBtn').on('click', () => {
-            const inputVal = $('#apiKeyInput').val();
-            if (inputVal) {
-                localStorage.setItem("OPENAI_API_KEY", inputVal);
-                apiKeyModal.hide();
-            }
-        });
+function checkApiKey(mystaff) {
+    const apikeys = localStorage.getItem('mystaff_credentials');
+    const apikeysObj = JSON.parse(apikeys || '{}');
+    if (mystaff.adapter && mystaff.adapter !== 'http') {
+        const apikey = apikeysObj[mystaff.adapter] || '';
+        if (!apikey) {
+            alert(`Please set your ${mystaff.adapter} API key in the credentials page.`);
+            window.location.href = 'credentials.html';
+            return;
+        }
+    } else {
+        
     }
+    
+
 }
 
 async function loadChatSession(id) {
     const chatData = await getDataByKey('chat', id);
-    console.log(chatData);
     if (chatData) {
         currentChat = chatData.msg || [];
         renderMessages(currentChat);
@@ -84,7 +81,6 @@ async function loadSessionList() {
     const filteredSessions = allSessions.filter(session => session.staffId === mystaff.staffId);
 
     filteredSessions.forEach(session => { // Iterate over filteredSessions
-        console.log('Session object:', session); // Keep for debugging
         const isActive = session.sessionId === sessionId ? 'active' : '';
         const listItem = `
             <li class="list-group-item ${isActive} d-flex justify-content-between align-items-center" data-session-id="${session.sessionId}">

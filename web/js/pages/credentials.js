@@ -28,12 +28,12 @@ $(document).ready(function() {
 
             const credentials = mydata.credentials || {};
             if (credentials) {
-                if (credentials.openaiKey) $('#openai-key').val(credentials.openaiKey);
-                if (credentials.geminiKey) $('#gemini-key').val(credentials.geminiKey);
-                if (credentials.claudeKey) $('#claude-key').val(credentials.claudeKey);
-                if (credentials.grokKey) $('#grok-key').val(credentials.grokKey);
-                if (credentials.llamaKey) $('#llama-key').val(credentials.llamaKey);
-                if (credentials.deepseekKey) $('#deepseek-key').val(credentials.deepseekKey);
+                if (credentials.openai) $('#openai-key').val(credentials.openai);
+                if (credentials.gemini) $('#gemini-key').val(credentials.gemini);
+                if (credentials.claude) $('#claude-key').val(credentials.claude);
+                if (credentials.grok) $('#grok-key').val(credentials.grok);
+                if (credentials.llama) $('#llama-key').val(credentials.llama);
+                if (credentials.deepseek) $('#deepseek-key').val(credentials.deepseek);
             }
         } catch (error) {
             console.error("Error loading credentials:", error);
@@ -45,18 +45,19 @@ $(document).ready(function() {
         event.preventDefault(); // Prevent default form submission
 
         const credentials = {
-            openaiKey: $('#openai-key').val(),
-            geminiKey: $('#gemini-key').val(),
-            claudeKey: $('#claude-key').val(),
-            grokKey: $('#grok-key').val(),
-            llamaKey: $('#llama-key').val(),
-            deepseekKey: $('#deepseek-key').val()
+            openai: $('#openai-key').val(),
+            gemini: $('#gemini-key').val(),
+            claude: $('#claude-key').val(),
+            grok: $('#grok-key').val(),
+            llama3: $('#llama-key').val(),
+            deepseek: $('#deepseek-key').val()
         };
 
         mydata.credentials = credentials;
 
         try {
             await updateData('mydata', userId, mydata);
+            localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
             alert('Credentials saved successfully!');
         } catch (error) {
             console.error("Error saving credentials:", error);

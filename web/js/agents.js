@@ -24,7 +24,8 @@ export async function handleMsg(processedInput, agent) {
 
   try {
     const adapter = getAdapter(agent?.adapter || 'openai');
-    const output = await adapter({ prompt: finalPrompt, agent }); // <- FinalPrompt 사용
+    console.log(adapter);
+    const output = await adapter({ prompt: finalPrompt, agent }); 
     return typeof output === 'string' ? output : JSON.stringify(output);
   } catch (err) {
     console.error('Adapter error:', err);

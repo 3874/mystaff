@@ -1,7 +1,8 @@
 // adapters/openai.js
 // OpenAI Chat Completions
 // Docs: https://platform.openai.com/docs/api-reference/chat
-const OPENAI_API_KEY = localStorage.getItem("OPENAI_API_KEY");
+const credentials = localStorage.getItem("mystaff_credentials");
+const OPENAI_API_KEY = JSON.parse(credentials || '{}').openai;
 
 export async function openAIChatAdapter({ prompt, agent }) {
   const apiKey = agent?.apiKey || OPENAI_API_KEY;

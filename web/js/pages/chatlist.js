@@ -1,6 +1,7 @@
 import { getAllData, deleteData, updateData } from '../database.js';
 import { getAgentById } from '../allAgentsCon.js'; // Assuming this is needed to get staff name
 import { deleteLTM } from '../memory.js'; // For deleting LTM associated with chat
+import { signOut } from '../utils.js';
 
 $(document).ready(async function() {
     // Check for login status
@@ -14,6 +15,11 @@ $(document).ready(async function() {
         await loadChatList();
         bindChatListEvents();
     }
+
+    $('#signOutBtn').on('click', function(e) {
+        e.preventDefault();
+        signOut();
+    });
 });
 
 async function loadChatList() {

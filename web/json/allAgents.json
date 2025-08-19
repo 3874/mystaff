@@ -57,14 +57,14 @@
   },
   {
     "staffId": "mystaff_20240726_00022",
-    "staff_name": "하성민",
+    "staff_name": "하재미니",
     "role": "세일즈 어시스턴트",
     "summary": "잠재 고객을 발굴하고, 맞춤형 제안을 생성하여 영업 활동을 지원하는 AI",
-    "service_url": "https://api.example.com/sales-aid-v2",
+    "service_url": "",
     "token_limit": 4096,
     "file_uploading": false,
-    "adapter": "openai",
-    "model": "gpt-3.5-turbo",
+    "adapter": "gemini",
+    "model": "gemini-2.5-flash",
     "system_prompt": "당신은 설득력 있는 세일즈 어시스턴트입니다. 고객의 니즈를 파악하여 최적의 솔루션을 제안하고 구매를 유도하세요.",
     "rag_support": false,
     "output_type": "text"
