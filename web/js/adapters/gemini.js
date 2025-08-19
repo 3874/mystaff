@@ -1,6 +1,6 @@
 import { getDataByKey } from '../database.js';
 
-export async function geminiChatAdapter({ prompt, agent }) {
+export async function geminiChatAdapter({ prompt, agent, sessionId }) {
   const credentials = localStorage.getItem("mystaff_credentials");
   const GEMINI_API_KEY = JSON.parse(credentials || '{}').gemini;
   const model = agent?.model || 'gemini-2.5-flash'; // Changed to gemini-pro as a common default

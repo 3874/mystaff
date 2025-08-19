@@ -6,13 +6,12 @@ function assertOk(resp, data) {
 
 // adapters/http.js
 // 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
-export async function genericHttpAdapter({ prompt, agent }) {
-  let url = agent.service_url;
-  url = 'http://ai.yleminvest.com:5678/webhook/mystaff-chat';
+export async function genericHttpAdapter({ prompt, agent, sessionId }) {
+  const url = agent.service_url;
 
   const payload = {
     chatInput: prompt,
-    sessionId: 'dflajdl-fjalsdfjal9-970jdsf'
+    sessionId: sessionId
   };
 
   const resp = await fetch(url, {

@@ -201,7 +201,7 @@ async function sendMessage() {
     $inputEl.val('');
 
     const processedInput = await preprocess(sessionId, text, mystaff);
-    const response = await handleMsg(processedInput, mystaff);
+    const response = await handleMsg(processedInput, mystaff, sessionId);
 
     currentChat.pop();
     const chatTurn = { user: text, system: response, date: new Date().toISOString() };

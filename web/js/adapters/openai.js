@@ -2,10 +2,9 @@
 // OpenAI Chat Completions
 // Docs: https://platform.openai.com/docs/api-reference/chat
 
-export async function openAIChatAdapter({ prompt, agent }) {
+export async function openAIChatAdapter({ prompt, agent, sessionId }) {
   const credentials = localStorage.getItem("mystaff_credentials");
   const OPENAI_API_KEY = JSON.parse(credentials || '{}').openai;
-  console.log(OPENAI_API_KEY);
   
   const apiKey = agent?.apiKey || OPENAI_API_KEY;
   const model = agent?.model || 'gpt-4o-mini';

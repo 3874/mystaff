@@ -9,7 +9,6 @@ export async function preprocess(sessionId, input, agent) {
   const chat = await getDataByKey('chat', sessionId);
   const last10 = (chat?.msg || []).slice(-10);
   const ltm = await loadLTM(sessionId);
-  console.log(agent);
   const prompt = {
     input,
     context: last10,

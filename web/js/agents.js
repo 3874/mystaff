@@ -1,7 +1,7 @@
 import { getAdapter } from './adapters/index.js';
 
 // ---- 메인 핸들러 ----
-export async function handleMsg(processedInput, agent) {
+export async function handleMsg(processedInput, agent, sessionId) {
   const input = processedInput?.input ?? "";
   const history = processedInput?.context ?? [];
   const ltm = processedInput?.ltm ?? "";
@@ -24,8 +24,7 @@ export async function handleMsg(processedInput, agent) {
 
   try {
     const adapter = getAdapter(agent?.adapter || 'openai');
-    console.log(adapter);
-    const output = await adapter({ prompt: finalPrompt, agent }); 
+    const output = await adapter({ prompt: finalPrompt, agent, sessionId }); 
     return typeof output === 'string' ? output : JSON.stringify(output);
   } catch (err) {
     console.error('Adapter error:', err);
