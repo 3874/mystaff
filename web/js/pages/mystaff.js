@@ -98,23 +98,25 @@ async function loadStaffAgents() {
           if (agent) { // Check if agent was found
             console.log(agent);
             const listItem = `
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <h5 class="mb-1">${agent.staff_name || 'Unnamed Agent'}</h5>
-                  <p class="mb-1 text-muted">${agent.role || 'No role specified'}</p>
-                  <small>${agent.summary || 'No description.'}</small>
+              <div class="col-12 col-md-6 mb-4">
+                <div class="card h-100">
+                  <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${agent.staff_name || 'Unnamed Agent'}</h5>
+                    <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
+                    <p class="card-text flex-grow-1">${agent.summary || 'No description.'}</p>
+                    <div class="d-flex flex-row gap-2 mt-auto">
+                      <a href="./chat.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary">Chat</a>
+                      <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staffId}">Fire</button>
+                    </div>
+                  </div>
                 </div>
-                <div class="d-flex flex-row gap-2">
-                <a href="./chat.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary">Chat</a>
-                <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staffId}">Fire</button>
-                </div>
-              </li>
+              </div>
             `;
             $defaultList.append(listItem);
           }
         });
       } else {
-        $defaultList.html('<li class="list-group-item">You have no staff agents.</li>');
+        $defaultList.html('<div class="col-12"><p class="text-center">You have no staff agents.</p></div>');
       }
       
 

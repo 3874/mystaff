@@ -81,9 +81,9 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="./createAIstaff.html">
-                <i class="fa fa-plus-square"></i>
-                Create AI Staff
+              <a class="nav-link active" href="./settings.html">
+                <i class="fa fa-sliders"></i>
+                Settings
               </a>
             </li>
           </ul>
@@ -102,6 +102,12 @@
         <!-- Header section, similar to chat.html's chat title area -->
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
           <h1 class="h2">My Staff of <span id="company-name"></span></h1>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="./createAIstaff.html" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus-square"></i>
+              Create Agent
+            </a>
+          </div>
         </div>
         <!-- Scrollable content area, similar to chatMessages -->
         <div class="main-scroll-area">
@@ -112,9 +118,9 @@
                   <h4>MyStaff Bot</h4>
                 </div>
                 <div class="card-body">
-                  <ul id="default-member-list" class="list-group">
+                  <div id="default-member-list" class="row">
                     <!-- Default members will be dynamically generated here -->
-                  </ul>
+                  </div>
                 </div>
               </div>
             </div>

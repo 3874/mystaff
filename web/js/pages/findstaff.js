@@ -40,19 +40,19 @@ async function initializeFindStaffPage() {
         const avatarNumber = (index % 5) + 1;
         const avatarUrl = `../img/avatar/avatar-${avatarNumber}.png`;
         const listItem = `
-          <li class="list-group-item d-flex justify-content-between align-items-center mb-3 border rounded ms-3">
-            <div class="d-flex align-items-center ms-3">
-              <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="rounded-circle me-3" style="width: 60px; height: 60px;">
-              <div>
-                <h5 class="mb-1">${agent.staff_name || 'Unnamed Agent'}</h5>
-                <p class="mb-1 text-muted">${agent.role || 'No role specified'}</p>
-                <small>${agent.summary || 'No summary.'}</small>
+              <div class="col-12 col-md-6 mb-4">
+                <div class="card h-100">
+                  <div class="card-body d-flex align-items-center">
+                    <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="rounded-circle me-3" style="width: 60px; height: 60px;">
+                    <div class="flex-grow-1">
+                      <h5 class="card-title">${agent.staff_name || 'Unnamed Agent'}</h5>
+                      <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
+                      <p class="card-text">${agent.summary || 'No summary.'}</p>
+                    </div>
+                    <a href="./staff-profile.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary ms-3">Detail</a>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="d-flex justify-content-end">
-            <a href="./staff-profile.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary ms-auto me-3">Detail</a>
-            </div>
-          </li>
         `;
         $allStaffList.append(listItem);
       }

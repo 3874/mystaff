@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>ChatList &mdash; MyStaff</title>
-
+  <title>Settings &mdash; MyStaff</title>
   <!-- General CSS Files -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <style>
+    /* Custom styles from chat.html, adapted for mystaff.html */
     body, html {
       height: 100%;
     }
@@ -30,42 +29,21 @@
         position: sticky;
         top: 0;
     }
-    .chat-container {
-      height: 100vh; /* Full viewport height */
-      display: flex;
-      flex-direction: column;
-    }
-    #chatMessages {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 1rem;
-    }
-    #sidebar {
-        height: 100vh;
-        overflow-y: auto;
-    }
-    .msg-user {
-      text-align: right;
-      margin: 0.5rem 0;
-      color: #bb86fc;
-    }
-    .msg-system {
-      text-align: left;
-      margin: 0.5rem 0;
-      color: #03dac6;
-    }
   </style>
 </head>
-
-<body>
-
+<body class="bg-body">
+  <nav class="navbar navbar-dark bg-dark d-md-none">
+    <a class="navbar-brand" href="#">My Staff</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
   <div class="container-fluid h-100">
     <div class="row h-100">
       <!-- Sidebar -->
       <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse">
         <div class="position-sticky pt-3">
           <div class="sidebar-brand text-center my-3">
-            <!-- Added text-decoration-none for dark theme visibility -->
             <a href="./mystaff.html" class="h4 text-decoration-none">My Staff</a>
           </div>
           <ul class="nav flex-column">
@@ -82,13 +60,13 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="./findstaff.html">
+              <a class="nav-link" href="./findstaff.html">
                 <i class="fas fa-search"></i>
                 Find Your Staff
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="./credentials.html">
+              <a class="nav-link" href="./credentials.html">
                 <i class="fa fa-lock"></i>
                 Credentials
               </a>
@@ -107,20 +85,49 @@
           </div>
         </div>
       </nav>
-
-      <!-- Chat List Window -->
+      <!-- Main Content -->
       <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-0 main-content-container">
+        <!-- Header section -->
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
-            <h1 class="h2" id="chatTitle">Working Chats</h1>
+          <h1 class="h2">Settings</h1>
         </div>
-
-        <div id="chatlist" class="flex-grow-1 overflow-y-auto p-3">
-            <ul class="list-group list-group-flush">
-                <!-- Chat list items will be populated here by JavaScript -->
-            </ul>
+        <!-- Scrollable content area -->
+        <div class="main-scroll-area">
+          <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+              <div class="card bg-body-tertiary mb-4">
+                <div class="card-header">
+                  <h4>Feature Settings</h4>
+                </div>
+                <div class="card-body">
+                  <form id="settings-form">
+                    <!-- RAG Setting -->
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" id="rag-switch">
+                      <label class="form-check-label" for="rag-switch">Enable External RAG (Retrieval-Augmented Generation)</label>
+                      <small class="d-block text-muted">Allows the AI to access and reference a knowledge base for more accurate answers.</small>
+                    </div>
+                    <!-- Long-Term Memory Setting -->
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" id="long-term-memory-switch">
+                      <label class="form-check-label" for="long-term-memory-switch">Enable External LTM (Long-Term Memory)</label>
+                      <small class="d-block text-muted">Allows the AI to remember past conversations and context.</small>
+                    </div>
+                    <!-- File Server Setting -->
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" id="file-server-switch">
+                      <label class="form-check-label" for="file-server-switch">Enable External File Server</label>
+                      <small class="d-block text-muted">Allows the AI to access and manage files on a dedicated server.</small>
+                    </div>
+                    <div class="form-group d-flex justify-content-end mt-4">
+                      <button type="submit" class="btn btn-primary btn-lg">Save Settings</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <!-- No input area for chatlist.html -->
       </main>
     </div>
   </div>
@@ -128,6 +135,6 @@
   <!-- General JS Scripts -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/pages/chatlist.js" type="module"></script>
+  <script src="../js/pages/settings.js" type="module"></script>
 </body>
 </html>
