@@ -264,12 +264,15 @@ async function FindUrl(mystaff) {
 
   if (!finalSessionId) {
     // If no existing session found, create a new one
-    finalSessionId = crypto.getRandomValues(new Uint8Array(32));
+    finalSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
+        return ('0' + byte.toString(16)).slice(-2);
+      }).join('');
     await addData('chat', {
         sessionId: finalSessionId,
         staffId: staffId,
-        title: 'New Chat',
-        msg: []
+        title: 'No Title',
+        msg: [],
+        attendants: [],
     });
   }
 
@@ -277,3 +280,16 @@ async function FindUrl(mystaff) {
   return Furl;
 }
 
+// async function NewChat(staffId, staffs) {
+//     const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
+//         return ('0' + byte.toString(16)).slice(-2);
+//         }).join('');
+//     // if staffid is not provided, put staffs into attendants.    
+//     await addData('chat', {
+//         sessionId: finalSessionId,
+//         staffId: staffId,
+//         title: 'No Title',
+//         msg: [],
+//         attendants: [],
+//     });
+// }
