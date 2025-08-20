@@ -234,7 +234,7 @@ async function sendMessage() {
 
     const formData = new FormData();
     formData.append('file', file);
-    const fileUrl = 'http://172.30.1.84:5678/mystaff-file';
+    const fileUrl = 'http://172.30.1.84:5678/webhook/mystaff-file';
 
     try {
         // IMPORTANT: Replace '/api/upload' with your actual server endpoint
@@ -247,8 +247,13 @@ async function sendMessage() {
         });
 
         if (response.ok) {
-            const result = await response.json();
-            console.log('File uploaded successfully:', result);
+            const responseText = await response.text();
+            if (responseText) {
+                const result = JSON.parse(responseText);
+                console.log('File uploaded successfully:', result);
+            } else {
+                console.log('File uploaded successfully: Server returned an empty response.');
+            }
             alert('File uploaded successfully!');
             // Optionally, add code here to display the file in the chat
         } else {
@@ -262,12 +267,12 @@ async function sendMessage() {
     }
 }
 
-async function handleFileUploadtoLocal(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const content = await file.text();
-    await addData('myfiles', { sessionId, staffId: mystaff?.staff_id?.S || null, contents: content });
-}
+// async function handleFileUpload(event) {
+//     const file = event.target.files[0];
+//     if (!file) return;
+//     const content = await file.text();
+//     await addData('myfiles', { sessionId, staffId: mystaff?.staff_id?.S || null, contents: content });
+// }
 
 async function FindUrl(mystaff) {
   const outputType = mystaff.output_type;
