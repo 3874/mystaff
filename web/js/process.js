@@ -24,31 +24,31 @@ export async function postprocess(sessionID, currentChat) {
     await updateData('chat', sessionID, { msg: currentChat });
     const currentLTM = await loadLTM(sessionID);
     
-    // In compareLTMbyServer, we now pass the whole chat history.
-    // The function itself should handle extracting the relevant parts.
+    // LTM 업데이트
     const newLTM = await compareLTMbyServer(currentChat, currentLTM);
     console.log(newLTM);
     await updateLTM(sessionID, JSON.stringify(newLTM));
 }
 
 export async function compareLTMbyServer(currentChat, currentLTM) {
-    const prompt = `
-    You are an AI assistant that helps maintain a user's Long-Term Memory (LTM).
-    Based on the recent conversation below, please update the LTM.
+    const systemPrompt = `You are an AI assistant that helps maintain a user's Long-Term Memory (LTM).
+      Based on the recent conversation below, determine if there is a need to update the LTM. 
+      If an update is necessary, proceed with the update. 
+      If not, send the existing LTM as is.`;
 
-    The user's recent chat history is:
-    --- CHAT HISTORY ---
-    ${JSON.stringify(currentChat, null, 2)}
-    --- END CHAT HISTORY ---
+    const chatData = `
+      The user's current chat is:
+      --- CURRENT CHAT ---
+      ${JSON.stringify(currentChat, null, 2)}
+      --- CURRENT CHAT ---
 
-    The user's current LTM is:
-    --- CURRENT LTM ---
-    ${currentLTM}
-    --- END CURRENT LTM ---
+      The user's current LTM is:
+      --- CURRENT LTM ---
+      ${JSON.stringify(currentLTM, null, 2)}
+      --- END CURRENT LTM ---
+      `;
 
-    Please analyze the chat history and update the LTM with any new information, modifications, or deletions.
-    Provide only the raw string for the updated LTM.
-    `;
+    const prompt = (systemPrompt + chatData).trim();
     const res = await openAIChatAdapter({
         prompt,
         agent: {

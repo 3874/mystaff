@@ -50,11 +50,13 @@
       <!-- Chat Window -->
       <main class="col-md-9 ms-sm-auto col-lg-10 px-0 chat-container">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
-            <h1 class="h2" id="chatTitle">Chat</h1>
+            <h1 class="h2">Chat with <span id="chatAgentName"></span></h1>
         </div>
-
-        <div id="chatMessages"></div>
-
+        <div id="chatMessages">
+        </div>
+        <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display:none;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
         <div class="mt-auto p-3 bg-body-tertiary border-top">
             <div class="input-group">
               <button class="btn btn-outline-secondary" type="button" id="fileUploadBtn">+</button>

@@ -4,6 +4,7 @@ import { deleteLTM } from '../memory.js';
 import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
 import { getAgentById } from '../allAgentsCon.js';
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; // Import marked.js
 
 let sessionId = null;
 let mystaff = null;
@@ -57,10 +58,6 @@ async function initializeChat() {
     await loadSessionList();
 }
 
-function checkApiKey(mystaff) {
-
-    
-}
 
 async function loadChatSession(id) {
     const chatData = await getDataByKey('chat', id);
@@ -70,10 +67,12 @@ async function loadChatSession(id) {
 
         if (chatData.staffId) {
             mystaff = await getAgentById(chatData.staffId);
+            console.log(mystaff);
+            $('#chatAgentName').text(mystaff.staff_name || "Chat");
         } else {
             mystaff = null;
         }
-        $('#chatTitle').text(chatData.title || "Chat");
+        
     }
 }
 
@@ -114,9 +113,11 @@ function renderMessages(msgs) {
                 </div>`;
         }
         if (m.system) {
+            const systemHtml = marked.parse(m.system);
             messagesHtml += `
                 <div class="msg-system">
-                    <p>${m.system}</p>
+                    <p>System Response:</p>
+                    <div>${systemHtml}</div>
                     <span class="msg-date text-muted small">${new Date(m.date).toLocaleString()}</span>
                 </div>`;
         }
@@ -187,6 +188,9 @@ function bindUIEvents() {
 
 async function sendMessage() {
     const $inputEl = $('#messageInput');
+    const $sendBtn = $('#sendBtn');
+    const $spinner = $('#loadingSpinner'); // Assuming you add this to chat.html
+
     const text = $inputEl.val().trim();
     if (!text) return;
 
@@ -195,20 +199,33 @@ async function sendMessage() {
         return;
     }
 
+    // Disable input and show spinner
+    $inputEl.prop('disabled', true);
+    $sendBtn.prop('disabled', true);
+    $spinner.show();
+
     const tempUserMsg = { user: text, date: new Date().toISOString() };
     currentChat.push(tempUserMsg);
     renderMessages(currentChat);
     $inputEl.val('');
 
-    const processedInput = await preprocess(sessionId, text, mystaff);
-    const response = await handleMsg(processedInput, mystaff, sessionId);
+    try {
+        const processedInput = await preprocess(sessionId, text, mystaff);
+        const response = await handleMsg(processedInput, mystaff, sessionId);
 
-    currentChat.pop();
-    const chatTurn = { user: text, system: response, date: new Date().toISOString() };
-    currentChat.push(chatTurn);
+        currentChat.pop();
+        const chatTurn = { user: text, system: response, date: new Date().toISOString() };
+        currentChat.push(chatTurn);
 
-    renderMessages(currentChat);
-    await postprocess(sessionId, currentChat);
+        renderMessages(currentChat);
+        $inputEl.prop('disabled', false);
+        $sendBtn.prop('disabled', false);
+        $spinner.hide();
+        await postprocess(sessionId, currentChat);
+    } catch (error) {
+        console.error("Error sending message:", error);
+        alert("An error occurred while sending your message. Please try again.");
+    } 
 }
 
 async function handleFileUpload(event) {
