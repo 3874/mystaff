@@ -40,16 +40,13 @@ async function loadChatList() {
             const listItem = `
                 <li class="list-group-item d-flex justify-content-between align-items-center" data-session-id="${session.sessionId}">
                     <div>
-                        <h5 class="mb-1 session-title" style="cursor:pointer;">${session.title || "Untitled Chat"}</h5>
-                        <small class="text-muted">Staff: ${staffName}</small>
+                        <a class="dropdown-item open-chat" href="chat.html?sessionId=${session.sessionId}">
+                            <h5 class="mb-1 session-title" style="cursor:pointer;">${session.title || "Untitled Chat"}</h5>
+                            <small class="text-muted">Staff: ${staffName}</small>
+                        </a>
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item open-chat" href="chat.html?sessionId=${session.sessionId}">Open Chat</a></li>
-                            <li><a class="dropdown-item edit-title" href="#">Edit Title</a></li>
-                            <li><a class="dropdown-item delete-session" href="#">Delete</a></li>
-                        </ul>
+                        <button class="btn btn-sm btn-danger delete-session" type="button">Delete</button>
                     </div>
                 </li>`;
             $chatListUl.append(listItem);
@@ -64,28 +61,27 @@ function bindChatListEvents() {
         // No preventDefault here, let the link navigate
     });
 
-    $('#chatlist').on('click', '.edit-title', async function(e) {
-        e.preventDefault();
-        const $listItem = $(this).closest('li');
-        const sessionIdToEdit = $listItem.data('session-id');
-        const currentTitle = $listItem.find('.session-title').text();
-        const newTitle = prompt("Enter new title", currentTitle);
-        if (newTitle) {
-            await updateData('chat', sessionIdToEdit, { title: newTitle });
-            loadChatList(); // Reload the list to show updated title
-        }
-    });
-
     $('#chatlist').on('click', '.delete-session', async function(e) {
         e.preventDefault();
         if (confirm('Are you sure you want to delete this chat session?')) {
-            const $listItem = $(this).closest('li');
-            const sessionIdToDelete = $listItem.data('session-id');
+            try {
+                const $listItem = $(this).closest('.list-group-item');
+                const sessionIdToDelete = $listItem.data('session-id');
 
-            await deleteData('chat', sessionIdToDelete);
-            await deleteLTM(sessionIdToDelete); // Delete associated LTM
+                if (!sessionIdToDelete) {
+                    console.error('Could not find session ID to delete.');
+                    alert('An error occurred. Could not determine which session to delete.');
+                    return;
+                }
 
-            loadChatList(); // Reload the list after deletion
+                await deleteData('chat', sessionIdToDelete);
+                await deleteLTM(sessionIdToDelete); // Delete associated LTM
+
+                loadChatList(); // Reload the list after deletion
+            } catch (error) {
+                console.error('Error deleting chat session:', error);
+                alert('An error occurred while deleting the chat session.');
+            }
         }
     });
 }

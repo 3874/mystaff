@@ -28,7 +28,7 @@ async function initializeFindStaffPage() {
       return;
     }
 
-    const $allStaffList = $('#all-staff-row');
+    const $allStaffList = $('#paid-staff-row');
 
     $allStaffList.empty();
 
