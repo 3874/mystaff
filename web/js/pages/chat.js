@@ -264,7 +264,7 @@ async function FindUrl(mystaff) {
 
   if (!finalSessionId) {
     // If no existing session found, create a new one
-    finalSessionId = crypto.randomUUID();
+    finalSessionId = crypto.getRandomValues(new Uint8Array(32));
     await addData('chat', {
         sessionId: finalSessionId,
         staffId: staffId,
