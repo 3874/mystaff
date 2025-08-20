@@ -105,6 +105,7 @@ async function loadStaffAgents() {
                     <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
                     <p class="card-text flex-grow-1">${agent.summary || 'No description.'}</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
+                      <a href="./staff-profile.html?staffId=${agent.staffId}" class="btn btn-sm btn-warning">Detail</a>
                       <a href="./chat.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary">Chat</a>
                       <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staffId}">Fire</button>
                     </div>
