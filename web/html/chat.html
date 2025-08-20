@@ -2,12 +2,20 @@
 <html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>Mystaff Chat</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+  <title>Chat &mdash; MyStaff</title>
+  <!-- General CSS Files -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* Custom styles to retain the layout */
     body, html {
       height: 100%;
+    }
+    #sidebarMenu {
+        height: 100vh;
+        overflow-y: auto;
+        position: sticky;
+        top: 0;
     }
     .chat-container {
       height: 100vh; /* Full viewport height */
@@ -18,10 +26,6 @@
       flex-grow: 1;
       overflow-y: auto;
       padding: 1rem;
-    }
-    #sidebar {
-        height: 100vh;
-        overflow-y: auto;
     }
     .msg-user {
       text-align: right;
@@ -35,18 +39,67 @@
     }
   </style>
 </head>
-<body>
-
+<body class="bg-body">
+  <nav class="navbar navbar-dark bg-dark d-md-none">
+    <a class="navbar-brand" href="#">MyStaff</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
   <div class="container-fluid h-100">
     <div class="row h-100">
       <!-- Sidebar -->
-      <aside id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-body-tertiary p-0">
-          <div class="position-sticky pt-3">
-              <h2 class="px-3"><a href="./mystaff.html" class="text-decoration-none text-reset">MyStaff</a></h2>
-              <ul id="sessionList" class="list-group list-group-flush"></ul>
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse">
+        <div class="position-sticky pt-3">
+          <div class="sidebar-brand text-center my-3">
+            <a href="./mystaff.html" class="h4 text-decoration-none">MyStaff</a>
           </div>
-      </aside>
-
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="./mystaff.html">
+                <i class="fas fa-users"></i>
+                MyStaff
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./chatlist.html">
+                <i class="fa fa-list"></i>
+                Chat List
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./findstaff.html">
+                <i class="fas fa-search"></i>
+                Find Your Staff
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./credentials.html">
+                <i class="fa fa-lock"></i>
+                Credentials
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./settings.html">
+                <i class="fa fa-sliders"></i>
+                Settings
+              </a>
+            </li>
+          </ul>
+          <hr>
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Chat Sessions</span>
+          </h6>
+          <ul id="sessionList" class="nav flex-column mb-2">
+            <!-- Session list will be populated here -->
+          </ul>
+          <div class="mt-4 p-3">
+            <button id="signOutBtn" class="btn btn-danger btn-block mt-2 w-100">
+              <i class="fas fa-sign-out-alt"></i> Sign-Out
+            </button>
+          </div>
+        </div>
+      </nav>
       <!-- Chat Window -->
       <main class="col-md-9 ms-sm-auto col-lg-10 px-0 chat-container">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
