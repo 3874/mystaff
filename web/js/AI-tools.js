@@ -22,7 +22,7 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
 
     // Turn 0: Host asks the first question
     const host = participants[0];
-    const initialPrompt = topic;
+    const initialPrompt = `${topic}`;
     
     let processedInput = await preprocess(sessionId, initialPrompt, host, []);
     let response = await handleMsg(processedInput, host, sessionId);
@@ -41,7 +41,7 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
         const speakerIndex = currentTurn % participants.length;
         const currentSpeaker = participants[speakerIndex];
 
-        const inputForNextAgent = lastMessage;
+        const inputForNextAgent = `Based on ${lastMessage}, you have to answer the question if the questions are helpful to tackle the topic. And ask the relevent questions to know more about the topic.`;
         
         processedInput = await preprocess(sessionId, inputForNextAgent, currentSpeaker, conversationHistory);
         response = await handleMsg(processedInput, currentSpeaker, sessionId);

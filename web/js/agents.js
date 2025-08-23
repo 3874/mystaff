@@ -11,11 +11,13 @@ export async function handleMsg(processedInput, agent, sessionId) {
   const historyArr = Array.isArray(history) ? history : [history];
   const historyJson = JSON.stringify(historyArr.slice(-10), null, 2);
 
+  const ltmJson = JSON.stringify(ltm, null, 2);
+
   // 모델별 토크나이저
   const encode = await loadTokenizerForAgent(agent);
 
   // 프롬프트 생성 + 토큰 예산 체크
-  const finalPrompt = await generatePrompt({ input, historyJson, ltm, token_limit, encode });
+  const finalPrompt = await generatePrompt({ input, historyJson, ltmJson, token_limit, encode });
 
   if (finalPrompt === "##tooLong##") {
     alert('Too long input data');
@@ -39,28 +41,26 @@ async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) 
   const HARD_OVERHEAD = 64; // role/구분자 등 여유
 
   const mkP1 = () => `
-    You are a concise, professional assistant.
-    User message: ${input}
+    ${input}, based on
 
     --- CHAT HISTORY ---
     ${historyJson}
     --- END CHAT HISTORY ---
 
     --- CURRENT LTM ---
-    ${ltm}
+    ${ltm} 
     --- END CURRENT LTM ---
 
-    Reply directly to the user in plain text. Be precise and helpful.`.trim();
+    Be precise and helpful.`.trim();
 
   const mkP2 = () => `
-    You are a concise, professional assistant.
-    User message: ${input}
+    ${input}, based on
 
     --- CURRENT LTM ---
-    ${ltm}
+    ${ltm} 
     --- END CURRENT LTM ---
 
-    Reply directly to the user in plain text. Be precise and helpful.`.trim();
+    Be precise and helpful.`.trim();
 
   const mkP3 = () => `${input}`.trim();
 

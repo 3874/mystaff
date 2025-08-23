@@ -32,9 +32,9 @@ export async function postprocess(sessionID, currentChat) {
 
 export async function compareLTMbyServer(currentChat, currentLTM) {
     const systemPrompt = `You are an AI assistant that helps maintain a user's Long-Term Memory (LTM).
-      Based on the recent conversation below, determine if there is a need to update the LTM. 
-      If an update is necessary, proceed with the update. 
-      If not, send the existing LTM as is.`;
+      Based on the recent conversation below, compare LTM and your conversation. 
+      If the conversation is very crucial and LTM doesn't include the contents of conversation, update LTM.
+      If not, return the existing LTM as is.`;
 
     const chatData = `
       The user's current chat is:

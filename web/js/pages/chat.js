@@ -5,7 +5,7 @@ import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
 import { getAllAgents, getAgentById } from '../allAgentsCon.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; // Import marked.js
-import { startDiscussion } from '../AI-tools.js';
+import { handleCommand } from '../commands.js';
 
 let sessionId = null;
 let mystaff = null;
@@ -211,16 +211,23 @@ async function sendMessage() {
     const text = $inputEl.val().trim();
     if (!text) return;
 
-    if (text === '/토론시작') {
-        const topic = prompt("Enter the topic for discussion:");
-        if (topic) {
-            const userMessage = { user: topic, date: new Date().toISOString() };
-            currentChat.push(userMessage);
+    if (text.startsWith('/')) {
+        const userMessage = { user: text, date: new Date().toISOString() };
+        currentChat.push(userMessage);
+        renderMessages(currentChat);
+        $inputEl.val('');
+
+        const context = {
+            sessionId,
+            currentChat,
+            renderMessages,
+            postprocess
+        };
+        const commandIsValid = await handleCommand(text, context);
+
+        if (!commandIsValid) {
+            currentChat.pop(); // Remove the invalid command message
             renderMessages(currentChat);
-            $inputEl.val('');
-            startDiscussion(topic, { sessionId, currentChat, renderMessages, postprocess });
-        } else {
-            $inputEl.val('');
         }
         return;
     }
