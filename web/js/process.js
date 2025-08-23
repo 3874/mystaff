@@ -5,9 +5,9 @@ import { getDataByKey, updateData } from './database.js';
 import { updateLTM, loadLTM } from './memory.js';
 import { openAIChatAdapter } from './adapters/openai.js';
 
-export async function preprocess(sessionId, input, agent) {
-  const chat = await getDataByKey('chat', sessionId);
-  const last10 = (chat?.msg || []).slice(-10);
+export async function preprocess(sessionId, input, agent, history = null) {
+  const chatHistory = history ? history : (await getDataByKey('chat', sessionId))?.msg || [];
+  const last10 = chatHistory.slice(-10);
   const ltm = await loadLTM(sessionId);
   const prompt = {
     input,

@@ -27,15 +27,25 @@
       overflow-y: auto;
       padding: 1rem;
     }
-    .msg-user {
-      text-align: right;
+    .msg-container {
       margin: 0.5rem 0;
-      color: #bb86fc;
+    }
+    .msg-content {
+      text-align: left;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+    }
+    .msg-content p {
+        margin-bottom: 0.25rem;
+    }
+    .msg-user {
+        background-color: #007bff;
+        color: white;
     }
     .msg-system {
-      text-align: left;
-      margin: 0.5rem 0;
-      color: #03dac6;
+        background-color: #6c757d;
+        color: white;
     }
   </style>
 </head>
@@ -107,10 +117,18 @@
       <main class="col-md-9 ms-sm-auto col-lg-10 px-0 chat-container">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
             <h1 class="h2">Chat with <span id="chatAgentName"></span></h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <button type="button" id="attendantsBtn" class="btn btn-sm btn-outline-secondary me-2">
+                    Attendants
+                </button>
+                <button type="button" id="inviteBtn" class="btn btn-sm btn-outline-info">
+                    Invite
+                </button>
+            </div>
         </div>
         <div id="chatMessages">
         </div>
-        <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display:none;">
+        <div id="loadingSpinner" class_="spinner-border text-primary" role="status" style="display:none;">
           <span class="visually-hidden">Loading...</span>
         </div>
         <div class="mt-auto p-3 bg-body-tertiary border-top">
@@ -131,5 +149,46 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Chat Script -->
   <script type="module" src="../js/pages/chat.js"></script>
+
+  <!-- Invite Modal -->
+  <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="inviteModalLabel">Invite Staff</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul id="staffList" class="list-group">
+            <!-- Staff list will be populated here -->
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="sendInviteBtn">Send Invites</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendants Modal -->
+  <div class="modal fade" id="attendantsModal" tabindex="-1" aria-labelledby="attendantsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="attendantsModalLabel">Chat Participants</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul id="attendantsList" class="list-group">
+            <!-- Attendants list will be populated here -->
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

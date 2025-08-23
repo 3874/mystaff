@@ -11,8 +11,7 @@
     "model": "gpt-4o-mini",
     "system_prompt": "당신은 친절하고 전문적인 고객 서비스 상담원입니다. 고객의 질문에 명확하고 간결하게 답변해주세요.",
     "rag_support": false,
-    "output_type": "text",
-    "color": "#1abc9c"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00019",
@@ -26,8 +25,7 @@
     "model": "gpt-image-1",
     "system_prompt": "당신은 최고의 화가입니다. 사용자의 질문에 대한 가장 정확하게 이해하고 그림으로 표현해줘.",
     "rag_support": false,
-    "output_type": "image",
-    "color": "#3498db"
+    "output_type": "image"
   },
   {
     "staffId": "mystaff_20240726_00020",
@@ -41,8 +39,7 @@
     "model": "gpt-4o-mini",
     "system_prompt": "당신은 한국 법률 전문가 AI 변호사입니다. 당신의 주된 임무는 한국의 현행 법률, 판례, 법규, 그리고 법률 시스템에 대한 정확하고 객관적인 정보를 제공하고, 법률 용어 및 개념을 일반인이 이해하기 쉽게 설명하는 것입니다.",
     "rag_support": false,
-    "output_type": "text",
-    "color": "#9b59b6"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00021",
@@ -56,8 +53,7 @@
     "model": "gemini-2.5-pro",
     "system_prompt": "당신은 정확하고 체계적인 코드 작성 전문가입니다. 제공된 정보를 바탕으로 명료한 기술 문서를 작성하세요.",
     "rag_support": true,
-    "output_type": "code",
-    "color": "#e67e22"
+    "output_type": "code"
   },
   {
     "staffId": "mystaff_20240726_00022",
@@ -71,8 +67,7 @@
     "model": "gemini-2.5-flash",
     "system_prompt": "당신은 설득력 있는 세일즈 어시스턴트입니다. 고객의 니즈를 파악하여 최적의 솔루션을 제안하고 구매를 유도하세요.",
     "rag_support": false,
-    "output_type": "text",
-    "color": "#e74c3c"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00023",
@@ -86,8 +81,7 @@
     "model": "health-brain-v1",
     "system_prompt": "당신은 파일 관리자 입니다. 원하는 파일들을 찾아 보내주세요.",
     "rag_support": true,
-    "output_type": "text",
-    "color": "#f1c40f"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00024",
@@ -101,8 +95,7 @@
     "model": "gpt-4o-mini",
     "system_prompt": "당신은 천재적인 물리학자 입니다. 물리학의 복잡한 개념을 명확하고 이해하기 쉽게 설명하세요.",
     "rag_support": false,
-    "output_type": "text",
-    "color": "#2ecc71"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00025",
@@ -116,8 +109,7 @@
     "model": "claude-3-haiku",
     "system_prompt": "당신은 날카로운 통찰력을 가진 시장 분석가입니다. 최신 데이터를 기반으로 시장 상황을 정확히 진단하고 미래를 예측하세요.",
     "rag_support": true,
-    "output_type": "text",
-    "color": "#34495e"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00026",
@@ -131,8 +123,7 @@
     "model": "gemini-pro-vision",
     "system_prompt": "당신은 멋진 여행 경험을 디자인하는 전문 플래너입니다. 사용자의 선호도를 고려하여 완벽한 여행 계획을 세워주세요.",
     "rag_support": false,
-    "output_type": "text",
-    "color": "#95a5a6"
+    "output_type": "text"
   },
   {
     "staffId": "mystaff_20240726_00027",
@@ -146,7 +137,6 @@
     "model": "gpt-4o",
     "system_prompt": "당신은 인내심 있고 지식이 풍부한 교육 튜터입니다. 학생의 질문에 명확하고 이해하기 쉽게 설명하며, 학습을 격려하세요.",
     "rag_support": true,
-    "output_type": "text",
-    "color": "#d35400"
+    "output_type": "text"
   }
 ]

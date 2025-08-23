@@ -3,9 +3,8 @@ import { getDataByKey, getAllData, addData, updateData, deleteData } from '../da
 import { deleteLTM } from '../memory.js';
 import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
-import { getAllAgents, getAgentById } from '../allAgentsCon.js';
+import { getAgentById } from '../allAgentsCon.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; // Import marked.js
-import { startDiscussion } from '../AI-tools.js';
 
 let sessionId = null;
 let mystaff = null;
@@ -102,11 +101,12 @@ async function loadSessionList() {
     });
 }
 
-async function renderMessages(msgs) {
+function renderMessages(msgs) {
     const $container = $('#chatMessages');
     let messagesHtml = '';
-    
-    for (const m of msgs) {
+    const staffName = mystaff ? mystaff.staff_name : "System";
+
+    msgs.forEach(m => {
         if (m.user) {
             messagesHtml += `
                 <div class="msg-container">
@@ -118,26 +118,17 @@ async function renderMessages(msgs) {
                 </div>`;
         }
         if (m.system) {
-            const speakerName = m.speaker || (mystaff ? mystaff.staff_name : "System");
-            let bgColor = '#6c757d'; // Default color
-            if (m.speakerId) {
-                const agent = await getAgentById(m.speakerId);
-                if (agent && agent.color) {
-                    bgColor = agent.color;
-                }
-            }
-            
             const systemHtml = marked.parse(m.system);
             messagesHtml += `
                 <div class="msg-container">
-                    <div class="msg-content msg-system" style="background-color: ${bgColor};">
-                        <p><b>${speakerName}:</b></p>
+                    <div class="msg-content msg-system">
+                        <p><b>${staffName}:</b></p>
                         <div>${systemHtml}</div>
-                        <span class="msg-date text-muted small" style="color: #ccc;">${new Date(m.date).toLocaleString()}</span>
+                        <span class="msg-date text-muted small">${new Date(m.date).toLocaleString()}</span>
                     </div>
                 </div>`;
         }
-    }
+    });
     $container.html(messagesHtml);
     $container.prop('scrollTop', $container.prop('scrollHeight'));
 }
@@ -153,10 +144,6 @@ function bindUIEvents() {
     });
 
     $('#fileInput').on('change', handleFileUpload);
-
-    $('#inviteBtn').on('click', openInviteModal);
-
-    $('#attendantsBtn').on('click', openAttendantsModal);
 
     // Event delegation for session list actions
     $('#sessionList').on('click', '.session-title', function() {
@@ -208,51 +195,18 @@ function bindUIEvents() {
 
 async function sendMessage() {
     const $inputEl = $('#messageInput');
+    const $sendBtn = $('#sendBtn');
+    const $spinner = $('#loadingSpinner'); // Assuming you add this to chat.html
+
     const text = $inputEl.val().trim();
     if (!text) return;
-
-    if (text === '/토론시작') {
-        const topic = prompt("Enter the topic for discussion:");
-        if (topic) {
-            const userMessage = { user: topic, date: new Date().toISOString() };
-            currentChat.push(userMessage);
-            renderMessages(currentChat);
-            $inputEl.val('');
-            startDiscussion(topic, { sessionId, currentChat, renderMessages, postprocess });
-        } else {
-            $inputEl.val('');
-        }
-        return;
-    }
 
     if (!mystaff) {
         alert("Please select a staff member to chat with.");
         return;
     }
 
-    let responder = mystaff; // Default to host
-    let messageToSend = text;
-
-    if (text.startsWith('@')) {
-        const mention = text.split(' ')[0].substring(1);
-        messageToSend = text.substring(mention.length + 2).trim(); // Remove mention from message
-
-        const chatData = await getDataByKey('chat', sessionId);
-        const participants = [chatData.staffId, ...(chatData.attendants || [])];
-        
-        const allAgents = await getAllAgents();
-        const mentionedAgent = allAgents.find(agent => agent.staff_name === mention && participants.includes(agent.staffId));
-
-        if (mentionedAgent) {
-            responder = mentionedAgent;
-        } else {
-            alert(`Agent "${mention}" is not a participant in this chat.`);
-            return; 
-        }
-    }
-
-    const $sendBtn = $('#sendBtn');
-    const $spinner = $('#loadingSpinner');
+    // Disable input and show spinner
     $inputEl.prop('disabled', true);
     $sendBtn.prop('disabled', true);
     $spinner.show();
@@ -263,23 +217,22 @@ async function sendMessage() {
     $inputEl.val('');
 
     try {
-        const processedInput = await preprocess(sessionId, messageToSend, responder);
-        const response = await handleMsg(processedInput, responder, sessionId);
+        const processedInput = await preprocess(sessionId, text, mystaff);
+        const response = await handleMsg(processedInput, mystaff, sessionId);
 
         currentChat.pop();
-        const chatTurn = { user: text, system: response, date: new Date().toISOString(), speaker: responder.staff_name, speakerId: responder.staffId };
+        const chatTurn = { user: text, system: response, date: new Date().toISOString() };
         currentChat.push(chatTurn);
 
         renderMessages(currentChat);
-    } catch (error) {
-        console.error("Error sending message:", error);
-        alert("An error occurred while sending your message. Please try again.");
-    } finally {
         $inputEl.prop('disabled', false);
         $sendBtn.prop('disabled', false);
         $spinner.hide();
         await postprocess(sessionId, currentChat);
-    }
+    } catch (error) {
+        console.error("Error sending message:", error);
+        alert("An error occurred while sending your message. Please try again.");
+    } 
 }
 
 // async function handleFileUploadtoServer(event) {
@@ -371,91 +324,6 @@ async function FindUrl(mystaff) {
 
   Furl = `${Furl}?sessionId=${finalSessionId}`;
   return Furl;
-}
-
-async function openInviteModal() {
-    const chatData = await getDataByKey('chat', sessionId);
-    const currentParticipants = [chatData.staffId, ...(chatData.attendants || [])];
-
-    const allAgents = await getAllAgents();
-    const availableAgents = allAgents.filter(agent => !currentParticipants.includes(agent.staffId));
-
-    const $staffList = $('#staffList');
-    $staffList.empty();
-
-    availableAgents.forEach(agent => {
-        const listItem = `
-            <li class="list-group-item">
-                <input class="form-check-input me-1" type="checkbox" value="${agent.staffId}" id="staff-${agent.staffId}">
-                <label class="form-check-label" for="staff-${agent.staffId}">${agent.staff_name}</label>
-            </li>
-        `;
-        $staffList.append(listItem);
-    });
-
-    const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
-    inviteModal.show();
-
-    $('#sendInviteBtn').off('click').on('click', async () => {
-        const selectedStaff = [];
-        $('#staffList input:checked').each(function() {
-            selectedStaff.push($(this).val());
-        });
-
-        if (selectedStaff.length > 0) {
-            const existingAttendants = chatData.attendants || [];
-            const newAttendants = [...new Set([...existingAttendants, ...selectedStaff])];
-            await updateData('chat', sessionId, { attendants: newAttendants });
-            alert('Invitations sent!');
-            inviteModal.hide();
-        } else {
-            alert('Please select at least one staff member to invite.');
-        }
-    });
-}
-
-async function openAttendantsModal() {
-    const chatData = await getDataByKey('chat', sessionId);
-    const attendants = chatData.attendants || [];
-    const participants = [chatData.staffId, ...attendants];
-
-    const $attendantsList = $('#attendantsList');
-    $attendantsList.empty();
-
-    for (const staffId of participants) {
-        const agent = await getAgentById(staffId);
-        if (agent) {
-            let listItem;
-            if (staffId === chatData.staffId) {
-                listItem = `<li class="list-group-item">${agent.staff_name} (Host)</li>`;
-            } else {
-                listItem = `
-                    <li class="list-group-item d-flex justify-content-between align-items-center" data-staff-id-li="${staffId}">
-                        ${agent.staff_name}
-                        <button type="button" class="btn-close" aria-label="Close" data-staff-id-btn="${staffId}"></button>
-                    </li>
-                `;
-            }
-            $attendantsList.append(listItem);
-        }
-    }
-
-    const attendantsModal = new bootstrap.Modal(document.getElementById('attendantsModal'));
-    attendantsModal.show();
-
-    // Use event delegation to handle clicks on dynamically added buttons
-    $('#attendantsList').off('click', '.btn-close').on('click', '.btn-close', async function() {
-        const staffIdToRemove = $(this).data('staff-id-btn');
-        if (confirm(`Are you sure you want to remove this participant?`)) {
-            const currentChatData = await getDataByKey('chat', sessionId);
-            const currentAttendants = currentChatData.attendants || [];
-            const newAttendants = currentAttendants.filter(id => id !== staffIdToRemove);
-            await updateData('chat', sessionId, { attendants: newAttendants });
-            
-            // Just remove the item from the list in the DOM
-            $(this).closest('li').remove();
-        }
-    });
 }
 
 // async function NewChat(staffId, staffs) {
