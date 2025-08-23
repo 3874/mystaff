@@ -1,6 +1,9 @@
 // utils.js
+import {  getAllData } from './database.js';
+import { addData } from './database.js';
 
-export function signOut() {
+
+export async function signOut() {
     localStorage.clear(); // Clears all items from localStorage
     window.location.href = './signin.html'; // Redirects to the sign-in page
 }

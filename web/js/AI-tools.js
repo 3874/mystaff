@@ -41,7 +41,7 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
         const speakerIndex = currentTurn % participants.length;
         const currentSpeaker = participants[speakerIndex];
 
-        const inputForNextAgent = `Based on ${lastMessage}, you have to answer the question if the questions are helpful to tackle the topic. And ask the relevent questions to know more about the topic.`;
+        const inputForNextAgent = `Based on ${lastMessage}, reply to the other participants in detail and ask questions regarding the topic, if you have any.`;
         
         processedInput = await preprocess(sessionId, inputForNextAgent, currentSpeaker, conversationHistory);
         response = await handleMsg(processedInput, currentSpeaker, sessionId);

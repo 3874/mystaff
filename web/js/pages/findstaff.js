@@ -11,7 +11,6 @@ $(document).ready(function() {
   } else {
     initializeFindStaffPage();
   }
-  
   $('#signOutBtn').on('click', function(e) {
     e.preventDefault();
     signOut();

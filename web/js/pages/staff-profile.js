@@ -67,9 +67,6 @@ $(document).ready(async function() {
     
   }
 
-
-
-
   $('#signOutBtn').on('click', function(e) {
     e.preventDefault();
     signOut();

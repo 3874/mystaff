@@ -1,18 +1,21 @@
 // chat.js (jQuery version)
-import { getDataByKey, getAllData, addData, updateData, deleteData } from '../database.js';
+import { getDataByKey, getAllData, updateData, deleteData } from '../database.js';
 import { deleteLTM } from '../memory.js';
 import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
-import { getAllAgents, getAgentById } from '../allAgentsCon.js';
+import { getAgentById } from '../allAgentsCon.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; // Import marked.js
 import { handleCommand } from '../commands.js';
 import { FindUrl, handleFileUpload } from '../utils.js';
+import { getAllAgents } from '../allAgentsCon.js';
 
 
 let sessionId = null;
 let mystaff = null;
 let currentChat = [];
 let staffId = null;
+let mydata = null;
+
 
 $(document).ready(async function() {
     const isLoggedIn = localStorage.getItem('mystaff_loggedin');
@@ -22,6 +25,14 @@ $(document).ready(async function() {
         alert('You must be logged in to view this page.');
         window.location.href = './signin.html';
     } 
+    const userId = localStorage.getItem('mystaff_user');
+    if (!userId) {
+      console.error('User ID not found in localStorage.');
+      alert('An error occurred. Please sign in again.');
+      return;
+    }
+    mydata = await getDataByKey('mydata', userId);
+
     await initializeChat();
     bindUIEvents();
 });
@@ -294,26 +305,40 @@ async function sendMessage() {
 async function openInviteModal() {
     const chatData = await getDataByKey('chat', sessionId);
     const currentParticipants = [chatData.staffId, ...(chatData.attendants || [])];
+    console.log(currentParticipants);
 
-    const allAgents = await getAllAgents();
-    const availableAgents = allAgents.filter(agent => !currentParticipants.includes(agent.staffId));
-
+    const availablAgentsIds = mydata.mystaff;
     const $staffList = $('#staffList');
     $staffList.empty();
 
-    availableAgents.forEach(agent => {
-        const listItem = `
-            <li class="list-group-item">
-                <input class="form-check-input me-1" type="checkbox" value="${agent.staffId}" id="staff-${agent.staffId}">
-                <label class="form-check-label" for="staff-${agent.staffId}">${agent.staff_name}</label>
-            </li>
-        `;
+    for (let i = 0; i < availablAgentsIds.length; i++) {
+        let agent = await getAgentById(availablAgentsIds[i]);
+        if (!agent) continue; // Skip if agent not found
+
+        let listItem;
+        if (availablAgentsIds[i] === chatData.staffId) {
+            // Host - no checkbox, just display name with (Host)
+            listItem = `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${agent.staff_name} <span class="badge bg-primary rounded-pill">Host</span>
+                </li>
+            `;
+        } else {
+            // Other staff - with checkbox for inviting
+            listItem = `
+                <li class="list-group-item">
+                    <input class="form-check-input me-1" type="checkbox" value="${availablAgentsIds[i]}" id="staff-${availablAgentsIds[i]}">
+                    <label class="form-check-label" for="staff-${availablAgentsIds[i]}">${agent.staff_name}</label>
+                </li>
+            `;
+        }
         $staffList.append(listItem);
-    });
+    }
 
     const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
     inviteModal.show();
 
+    // Restore the 'sendInviteBtn' functionality
     $('#sendInviteBtn').off('click').on('click', async () => {
         const selectedStaff = [];
         $('#staffList input:checked').each(function() {
@@ -375,17 +400,3 @@ async function openAttendantsModal() {
         }
     });
 }
-
-// async function NewChat(staffId, staffs) {
-//     const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
-//         return ('0' + byte.toString(16)).slice(-2);
-//         }).join('');
-//     // if staffid is not provided, put staffs into attendants.    
-//     await addData('chat', {
-//         sessionId: finalSessionId,
-//         staffId: staffId,
-//         title: 'No Title',
-//         msg: [],
-//         attendants: [],
-//     });
-// }

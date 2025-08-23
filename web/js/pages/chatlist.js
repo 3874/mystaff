@@ -16,10 +16,6 @@ $(document).ready(async function() {
         bindChatListEvents();
     }
 
-    $('#signOutBtn').on('click', function(e) {
-        e.preventDefault();
-        signOut();
-    });
 });
 
 async function loadChatList() {
