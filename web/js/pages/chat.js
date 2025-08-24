@@ -1,5 +1,5 @@
 // chat.js (jQuery version)
-import { getDataByKey, getAllData, updateData, deleteData } from '../database.js';
+import { getDataByKey, getAllData, updateData, deleteData, addData } from '../database.js';
 import { deleteLTM } from '../memory.js';
 import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
@@ -8,6 +8,7 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; 
 import { handleCommand } from '../commands.js';
 import { FindUrl, handleFileUpload } from '../utils.js';
 import { getAllAgents } from '../allAgentsCon.js';
+import { signOut } from '../utils.js';
 
 
 let sessionId = null;
@@ -35,6 +36,11 @@ $(document).ready(async function() {
 
     await initializeChat();
     bindUIEvents();
+
+    $('#signOutBtn').on('click', function(e) {
+        e.preventDefault();
+        signOut();
+    });
 });
 
 async function initializeChat() {
@@ -101,7 +107,7 @@ async function loadSessionList() {
     filteredSessions.forEach(session => { // Iterate over filteredSessions
         const isActive = session.sessionId === sessionId ? 'active' : '';
         const listItem = `
-            <li class="list-group-item ${isActive} d-flex justify-content-between align-items-center" data-session-id="${session.sessionId}">
+            <li class="list-group-item chat-session-item ${isActive} d-flex justify-content-between align-items-center mb-2 small" data-session-id="${session.sessionId}">
                 <span class="session-title" style="cursor:pointer;">${session.title || "Untitled"}</span>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
@@ -170,6 +176,36 @@ function bindUIEvents() {
     $('#inviteBtn').on('click', openInviteModal);
 
     $('#attendantsBtn').on('click', openAttendantsModal);
+
+    // New Chat button functionality
+    $('#newChat').on('click', async () => {
+        // Generate a new sessionId
+        const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
+            return ('0' + byte.toString(16)).slice(-2);
+        }).join('');
+
+        // Determine the staffId for the new chat
+        // If there's a current staff, use that staff's ID for the new chat
+        // Otherwise, the new chat will start without a specific staff, and the user can select one later.
+        const newChatStaffId = mystaff ? mystaff.staffId : null;
+
+        try {
+            // Create a new chat entry in the database
+            await addData('chat', {
+                sessionId: newSessionId,
+                staffId: newChatStaffId,
+                title: 'New Chat', // Default title for the new chat
+                msg: [],
+                attendants: [],
+            });
+
+            // Redirect to the new chat session
+            window.location.href = `chat.html?sessionId=${newSessionId}`;
+        } catch (error) {
+            console.error("Error creating new chat session:", error);
+            alert("Failed to create a new chat session. Please check the console for details.");
+        }
+    });
 
     // Event delegation for session list actions
     $('#sessionList').on('click', '.session-title', function() {

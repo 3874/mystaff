@@ -2,7 +2,7 @@
 // IndexedDB 기본 CRUD
 
 const DB_NAME = 'mystaff';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let db;
 
@@ -27,8 +27,8 @@ function openDB() {
       if (!db.objectStoreNames.contains('myfiles')) {
         db.createObjectStore('myfiles', { autoIncrement: true });
       }
-      if (!db.objectStoreNames.contains('mystaff')) {
-        db.createObjectStore('mystaff', { keyPath: 'staffId' });
+      if (!db.objectStoreNames.contains('diystaff')) {
+        db.createObjectStore('diystaff', { keyPath: 'staffId' });
       }
     };
     request.onsuccess = () => {
