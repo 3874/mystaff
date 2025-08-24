@@ -49,7 +49,7 @@ $(document).ready(async function() {
       
       loadStaffAgent(staffData);
 
-      $('.hire-btn').on('click', async function(e) {
+      $('.regist-btn').on('click', async function(e) {
         e.preventDefault(); // Prevent default link behavior
 
         const currentStaffId = staffId; // Get staffId again for clarity
