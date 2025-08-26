@@ -78,7 +78,6 @@ async function initializeChat() {
     await loadSessionList();
 }
 
-
 async function loadChatSession(id) {
     const chatData = await getDataByKey('chat', id);
     if (chatData) {
@@ -258,6 +257,8 @@ function bindUIEvents() {
 async function sendMessage() {
     const $inputEl = $('#messageInput');
     const text = $inputEl.val().trim();
+    const iteration = 4;
+
     if (!text) return;
 
     if (text.startsWith('/')) {
@@ -272,7 +273,7 @@ async function sendMessage() {
             renderMessages,
             postprocess
         };
-        const commandIsValid = await handleCommand(text, context);
+        const commandIsValid = await handleCommand(text, context, iteration);
 
         if (!commandIsValid) {
             currentChat.pop(); // Remove the invalid command message

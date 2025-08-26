@@ -62,6 +62,25 @@ $(document).ready(function() {
     }
   });
 
+  // Event listener for the "Detail" button
+  $('#default-member-list').on('click', '.detail-btn', function(event) {
+    event.preventDefault();
+    const staffId = $(this).data('staff-id');
+    setTimeout(() => {
+      window.location.href = `./staff-profile.html?staffId=${staffId}`;
+    }, 100);
+  });
+
+  // Event listener for the "Chat" button
+  $('#default-member-list').on('click', '.chat-btn', async function(event) {
+    event.preventDefault();
+    const staffId = $(this).data('staff-id');
+    const mystaff = await getAgentById(staffId);
+    const finalUrl = await FindUrl(mystaff);
+    setTimeout(() => {
+        window.location.href = finalUrl;
+    }, 100);
+  });
 });
 
 
@@ -105,8 +124,8 @@ async function loadStaffAgents() {
                     <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
                     <p class="card-text flex-grow-1">${agent.summary || 'No description.'}</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
-                      <a href="./staff-profile.html?staffId=${agent.staffId}" class="btn btn-sm btn-warning">Detail</a>
-                      <a href="./chat.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary">Chat</a>
+                      <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${agent.staffId}">Detail</button>
+                      <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staffId}">Chat</button>
                       <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staffId}">Fire</button>
                     </div>
                   </div>

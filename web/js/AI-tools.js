@@ -3,7 +3,7 @@ import { getAgentById } from './allAgentsCon.js';
 import { preprocess } from './process.js';
 import { handleMsg } from './agents.js';
 
-export async function startDiscussion(topic, { sessionId, currentChat, renderMessages, postprocess }) {
+export async function startDiscussion(topic, { sessionId, currentChat, renderMessages, postprocess }, iteration) {
     const chatData = await getDataByKey('chat', sessionId);
     const participantsIds = [chatData.staffId, ...(chatData.attendants || [])];
     const participants = [];
@@ -36,12 +36,16 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
     await new Promise(resolve => setTimeout(resolve, 1500));
 
 
-    // Turns 1-9: All participants discuss
-    while (currentTurn < 10) {
+    while (currentTurn < iteration) {
         const speakerIndex = currentTurn % participants.length;
         const currentSpeaker = participants[speakerIndex];
+        let inputForNextAgent = `Based on ${lastMessage}, first answer directly and explain your reasoning in detail. `;
 
-        const inputForNextAgent = `Based on ${lastMessage}, reply to the other participants in detail and ask questions regarding the topic, if you have any.`;
+        if ((currentTurn + 1) == iteration ) {
+            inputForNextAgent += `Finally, summarize the discussion in detail.`;
+        } else {
+            inputForNextAgent += `Then, if you have one, ask exactly one most important and non-redundant question at the end.`;
+        }
         
         processedInput = await preprocess(sessionId, inputForNextAgent, currentSpeaker, conversationHistory);
         response = await handleMsg(processedInput, currentSpeaker, sessionId);
@@ -55,6 +59,7 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
         renderMessages(currentChat);
 
         currentTurn++;
+        inputForNextAgent = '';
         await new Promise(resolve => setTimeout(resolve, 1500));
     }
    

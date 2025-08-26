@@ -21,7 +21,7 @@ export async function openAIChatAdapter({ prompt, agent, sessionId }) {
     body: JSON.stringify({
       model,
       messages: [
-        { role: 'system', content: agent?.systemPrompt || 'You are a concise, professional assistant.' },
+        { role: 'system', content: agent?.system_prompt || 'You are a concise, professional assistant.' },
         { role: 'user', content: prompt },
       ],
       temperature: agent?.temperature ?? 0.3,

@@ -16,7 +16,7 @@ export async function geminiChatAdapter({ prompt, agent, sessionId }) {
     },
     body: JSON.stringify({
       contents: [
-        { role: 'user', parts: [{ text: agent?.systemPrompt || 'You are a concise, professional assistant.' }] },
+        { role: 'user', parts: [{ text: agent?.system_prompt || 'You are a concise, professional assistant.' }] },
         { role: 'user', parts: [{ text: prompt }] },
       ],
       generationConfig: {
