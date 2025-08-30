@@ -12,7 +12,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     const file = event.target.files[0];
     if (!file) return;
     const content = await file.text();
-    await addData('myfiles', { sessionId, staffId: mystaff?.staff_id?.S || null, contents: content });
+    await addData('myfiles', { sessionId, staffId: mystaff.staffId || null, contents: content });
 }
 
 // async function handleFileUploadtoServer(event) {

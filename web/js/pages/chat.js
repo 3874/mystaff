@@ -170,7 +170,9 @@ function bindUIEvents() {
         $('#fileInput').click();
     });
 
-    $('#fileInput').on('change', handleFileUpload);
+    $('#fileInput').on('change', (event) => {
+        handleFileUpload(event, sessionId, mystaff);
+    });
 
     $('#inviteBtn').on('click', openInviteModal);
 
