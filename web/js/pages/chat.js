@@ -22,7 +22,6 @@ $(document).ready(async function() {
     const isLoggedIn = localStorage.getItem('mystaff_loggedin');
 
     if (isLoggedIn !== 'true') {
-        // If not logged in, redirect to the sign-in page
         alert('You must be logged in to view this page.');
         window.location.href = './signin.html';
     } 
@@ -44,7 +43,6 @@ $(document).ready(async function() {
 });
 
 async function initializeChat() {
-
     const params = new URLSearchParams(window.location.search);
     staffId = params.get('staffId');
     if (!staffId || staffId === 'undefined' || staffId === null) {
@@ -54,8 +52,6 @@ async function initializeChat() {
         const apikeys = localStorage.getItem('mystaff_credentials');
         const apikeysObj = JSON.parse(apikeys || '{}');
         const agent = await getAgentById(staffId) || {};
-        console.log(agent);
-        console.log(typeof agent);
         let apikey = '';
 
         if (!agent.adapter) {
@@ -86,12 +82,10 @@ async function loadChatSession(id) {
 
         if (chatData.staffId) {
             mystaff = await getAgentById(chatData.staffId);
-            console.log(mystaff);
             $('#chatAgentName').text(mystaff.staff_name || "Chat");
         } else {
             mystaff = null;
         }
-        
     }
 }
 
@@ -100,10 +94,9 @@ async function loadSessionList() {
     const $list = $('#sessionList');
     $list.empty();
 
-    // Filter sessions by current staffId
     const filteredSessions = allSessions.filter(session => session.staffId === mystaff.staffId);
 
-    filteredSessions.forEach(session => { // Iterate over filteredSessions
+    filteredSessions.forEach(session => {
         const isActive = session.sessionId === sessionId ? 'active' : '';
         const listItem = `
             <li class="list-group-item chat-session-item ${isActive} d-flex justify-content-between align-items-center mb-2 small" data-session-id="${session.sessionId}">
@@ -112,6 +105,7 @@ async function loadSessionList() {
                     <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item edit-title" href="#">Edit Title</a></li>
+                        <li><a class="dropdown-item mgt-files" href="#">Manage Files</a></li>
                         <li><a class="dropdown-item delete-session" href="#">Delete</a></li>
                     </ul>
                 </div>
@@ -137,7 +131,7 @@ async function renderMessages(msgs) {
         }
         if (m.system) {
             const speakerName = m.speaker || (mystaff ? mystaff.staff_name : "System");
-            let bgColor = '#6c757d'; // Default color
+            let bgColor = '#6c757d';
             if (m.speakerId) {
                 const agent = await getAgentById(m.speakerId);
                 if (agent && agent.color) {
@@ -178,37 +172,24 @@ function bindUIEvents() {
 
     $('#attendantsBtn').on('click', openAttendantsModal);
 
-    // New Chat button functionality
     $('#newChat').on('click', async () => {
-        // Generate a new sessionId
-        const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
-            return ('0' + byte.toString(16)).slice(-2);
-        }).join('');
-
-        // Determine the staffId for the new chat
-        // If there's a current staff, use that staff's ID for the new chat
-        // Otherwise, the new chat will start without a specific staff, and the user can select one later.
+        const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('');
         const newChatStaffId = mystaff ? mystaff.staffId : null;
-
         try {
-            // Create a new chat entry in the database
             await addData('chat', {
                 sessionId: newSessionId,
                 staffId: newChatStaffId,
-                title: 'New Chat', // Default title for the new chat
+                title: 'New Chat',
                 msg: [],
                 attendants: [],
             });
-
-            // Redirect to the new chat session
             window.location.href = `chat.html?sessionId=${newSessionId}`;
         } catch (error) {
             console.error("Error creating new chat session:", error);
-            alert("Failed to create a new chat session. Please check the console for details.");
+            alert("Failed to create a new chat session.");
         }
     });
 
-    // Event delegation for session list actions
     $('#sessionList').on('click', '.session-title', function() {
         const newSessionId = $(this).closest('li').data('session-id');
         if (newSessionId !== sessionId) {
@@ -233,19 +214,13 @@ function bindUIEvents() {
         if (confirm('Are you sure you want to delete this session?')) {
             const $listItem = $(this).closest('.list-group-item');
             const sessionToDeleteId = $listItem.data('session-id');
-            const chatData = await getDataByKey('chat', sessionToDeleteId);
-            const staffIdToDelete = chatData.staffId;
-
             await deleteData('chat', sessionToDeleteId);
             await deleteLTM(sessionToDeleteId);
-
             if (sessionToDeleteId === sessionId) {
                 const allSessions = await getAllData('chat');
-                const nextSession = allSessions.find(s => s.staffId === staffIdToDelete);
+                const nextSession = allSessions.find(s => s.staffId === mystaff.staffId);
                 if (nextSession) {
                     window.location.href = `chat.html?sessionId=${nextSession.sessionId}`;
-                } else if (staffIdToDelete) {
-                    window.location.href = `chat.html?staffId=${staffIdToDelete}`;
                 } else {
                     window.location.href = 'chat.html';
                 }
@@ -254,13 +229,38 @@ function bindUIEvents() {
             }
         }
     });
+
+    $('#sessionList').on('click', '.mgt-files', async function(e) {
+        e.preventDefault();
+        const sessionLi = $(this).closest('.chat-session-item');
+        const sessionIdForFiles = sessionLi.data('session-id');
+        await openManageFilesModal(sessionIdForFiles);
+    });
+
+    // Event delegation for deleting files from the modal
+    $('#manageFilesModal').on('click', '.delete-file-btn', async function() {
+        const $listItem = $(this).closest('li');
+        const fileId = $listItem.data('file-id');
+
+        if (confirm('Are you sure you want to delete this file?')) {
+            try {
+                await deleteData('myfiles', fileId);
+                $listItem.remove();
+                if ($('#fileList').children().length === 0) {
+                    $('#fileList').append('<li class="list-group-item">No files found for this session.</li>');
+                }
+                alert('File deleted successfully.');
+            } catch (error) {
+                console.error('Error deleting file:', error);
+                alert('Failed to delete the file.');
+            }
+        }
+    });
 }
 
 async function sendMessage() {
     const $inputEl = $('#messageInput');
     const text = $inputEl.val().trim();
-    const iteration = 4;
-
     if (!text) return;
 
     if (text.startsWith('/')) {
@@ -269,16 +269,11 @@ async function sendMessage() {
         renderMessages(currentChat);
         $inputEl.val('');
 
-        const context = {
-            sessionId,
-            currentChat,
-            renderMessages,
-            postprocess
-        };
-        const commandIsValid = await handleCommand(text, context, iteration);
+        const context = { sessionId, currentChat, renderMessages, postprocess };
+        const commandIsValid = await handleCommand(text, context, 4);
 
         if (!commandIsValid) {
-            currentChat.pop(); // Remove the invalid command message
+            currentChat.pop();
             renderMessages(currentChat);
         }
         return;
@@ -289,12 +284,12 @@ async function sendMessage() {
         return;
     }
 
-    let responder = mystaff; // Default to host
+    let responder = mystaff;
     let messageToSend = text;
 
     if (text.startsWith('@')) {
         const mention = text.split(' ')[0].substring(1);
-        messageToSend = text.substring(mention.length + 2).trim(); // Remove mention from message
+        messageToSend = text.substring(mention.length + 2).trim();
 
         const chatData = await getDataByKey('chat', sessionId);
         const participants = [chatData.staffId, ...(chatData.attendants || [])];
@@ -332,7 +327,7 @@ async function sendMessage() {
         renderMessages(currentChat);
     } catch (error) {
         console.error("Error sending message:", error);
-        alert("An error occurred while sending your message. Please try again.");
+        alert("An error occurred while sending your message.");
     } finally {
         $inputEl.prop('disabled', false);
         $sendBtn.prop('disabled', false);
@@ -344,32 +339,19 @@ async function sendMessage() {
 async function openInviteModal() {
     const chatData = await getDataByKey('chat', sessionId);
     const currentParticipants = [chatData.staffId, ...(chatData.attendants || [])];
-    console.log(currentParticipants);
-
     const availablAgentsIds = mydata.mystaff;
     const $staffList = $('#staffList');
     $staffList.empty();
 
     for (let i = 0; i < availablAgentsIds.length; i++) {
         let agent = await getAgentById(availablAgentsIds[i]);
-        if (!agent) continue; // Skip if agent not found
+        if (!agent) continue;
 
         let listItem;
         if (availablAgentsIds[i] === chatData.staffId) {
-            // Host - no checkbox, just display name with (Host)
-            listItem = `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${agent.staff_name} <span class="badge bg-primary rounded-pill">Host</span>
-                </li>
-            `;
+            listItem = `<li class="list-group-item d-flex justify-content-between align-items-center">${agent.staff_name} <span class="badge bg-primary rounded-pill">Host</span></li>`;
         } else {
-            // Other staff - with checkbox for inviting
-            listItem = `
-                <li class="list-group-item">
-                    <input class="form-check-input me-1" type="checkbox" value="${availablAgentsIds[i]}" id="staff-${availablAgentsIds[i]}">
-                    <label class="form-check-label" for="staff-${availablAgentsIds[i]}">${agent.staff_name}</label>
-                </li>
-            `;
+            listItem = `<li class="list-group-item"><input class="form-check-input me-1" type="checkbox" value="${availablAgentsIds[i]}" id="staff-${availablAgentsIds[i]}"><label class="form-check-label" for="staff-${availablAgentsIds[i]}">${agent.staff_name}</label></li>`;
         }
         $staffList.append(listItem);
     }
@@ -377,12 +359,9 @@ async function openInviteModal() {
     const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
     inviteModal.show();
 
-    // Restore the 'sendInviteBtn' functionality
     $('#sendInviteBtn').off('click').on('click', async () => {
         const selectedStaff = [];
-        $('#staffList input:checked').each(function() {
-            selectedStaff.push($(this).val());
-        });
+        $('#staffList input:checked').each(function() { selectedStaff.push($(this).val()); });
 
         if (selectedStaff.length > 0) {
             const existingAttendants = chatData.attendants || [];
@@ -411,12 +390,7 @@ async function openAttendantsModal() {
             if (staffId === chatData.staffId) {
                 listItem = `<li class="list-group-item">${agent.staff_name} (Host)</li>`;
             } else {
-                listItem = `
-                    <li class="list-group-item d-flex justify-content-between align-items-center" data-staff-id-li="${staffId}">
-                        ${agent.staff_name}
-                        <button type="button" class="btn-close" aria-label="Close" data-staff-id-btn="${staffId}"></button>
-                    </li>
-                `;
+                listItem = `<li class="list-group-item d-flex justify-content-between align-items-center" data-staff-id-li="${staffId}">${agent.staff_name}<button type="button" class="btn-close" aria-label="Close" data-staff-id-btn="${staffId}"></button></li>`;
             }
             $attendantsList.append(listItem);
         }
@@ -425,17 +399,46 @@ async function openAttendantsModal() {
     const attendantsModal = new bootstrap.Modal(document.getElementById('attendantsModal'));
     attendantsModal.show();
 
-    // Use event delegation to handle clicks on dynamically added buttons
     $('#attendantsList').off('click', '.btn-close').on('click', '.btn-close', async function() {
         const staffIdToRemove = $(this).data('staff-id-btn');
         if (confirm(`Are you sure you want to remove this participant?`)) {
             const currentChatData = await getDataByKey('chat', sessionId);
-            const currentAttendants = currentChatData.attendants || [];
-            const newAttendants = currentAttendants.filter(id => id !== staffIdToRemove);
+            const newAttendants = (currentChatData.attendants || []).filter(id => id !== staffIdToRemove);
             await updateData('chat', sessionId, { attendants: newAttendants });
-            
-            // Just remove the item from the list in the DOM
             $(this).closest('li').remove();
         }
     });
+}
+
+async function openManageFilesModal(sessionIdForFiles) {
+    try {
+        const allFiles = await getAllData('myfiles');
+        const sessionFiles = allFiles.filter(file => file.sessionId === sessionIdForFiles);
+
+        const $fileList = $('#fileList');
+        $fileList.empty();
+
+        if (sessionFiles.length > 0) {
+            sessionFiles.forEach(file => {
+                const fileName = file.fileName || 'Unnamed File';
+                const fileItemHtml = `
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-file-id="${file.id}">
+                        <span>${fileName}</span>
+                        <button type="button" class="btn btn-danger btn-sm delete-file-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </li>`;
+                $fileList.append(fileItemHtml);
+            });
+        } else {
+            $fileList.append('<li class="list-group-item">No files found for this session.</li>');
+        }
+
+        const filesModal = new bootstrap.Modal(document.getElementById('manageFilesModal'));
+        filesModal.show();
+
+    } catch (error) {
+        console.error('Error opening file management modal:', error);
+        alert('Could not load the file list.');
+    }
 }
