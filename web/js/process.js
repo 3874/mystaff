@@ -2,60 +2,96 @@
 // 입력 전처리 + 출력 후처리
 
 import { getDataByKey, updateData } from './database.js';
-import { updateLTM, loadLTM } from './memory.js';
-import { openAIChatAdapter } from './adapters/openai.js';
 
 export async function preprocess(sessionId, input, agent, history = null) {
   const chatHistory = history ? history : (await getDataByKey('chat', sessionId))?.msg || [];
   const last10 = chatHistory.slice(-10);
-  const ltm = await loadLTM(sessionId);
+  const ltm = await getDataByKey('LTM', sessionId);
   const prompt = {
     input,
     context: last10,
-    ltm: ltm?.contents || '',
-    token_limit: agent?.token_limit || 2048
+    ltm: ltm.contents || '',
+    token_limit: agent?.adapter.token_limit || 2048
   };
+  console.log(prompt);
 
   return prompt;
 }
 
+export async function postprocess(sessionId, currentChat) {
+  const chatTurn = 5;
+  await updateData('chat', sessionId, { msg: currentChat });
+  const lastChat = currentChat[currentChat.length - 1];
 
-export async function postprocess(sessionID, currentChat) {
-    await updateData('chat', sessionID, { msg: currentChat });
-    const currentLTM = await loadLTM(sessionID);
-    
-    // LTM 업데이트
-    const newLTM = await compareLTMbyServer(currentChat, currentLTM);
-    console.log(newLTM);
-    await updateLTM(sessionID, JSON.stringify(newLTM));
+  let newLTM = '';
+  const currentLTM = await getDataByKey('LTM', sessionId);
+
+  if (currentLTM && currentLTM.contents){
+    newLTM = await generateLTM(currentChat.slice(-chatTurn), currentLTM.contents);
+  } else {
+    newLTM = {"first chat": `${lastChat.user}: ${lastChat.system}`};
+  }
+
+  await updateData('LTM', sessionId, {contents: newLTM});
 }
 
-export async function compareLTMbyServer(currentChat, currentLTM) {
-    const systemPrompt = `You are an AI assistant that helps maintain a user's Long-Term Memory (LTM).
-      Based on the recent conversation below, compare LTM and your conversation. 
-      If the conversation is very crucial and LTM doesn't include the contents of conversation, update LTM.
-      If not, return the existing LTM as is.`;
+export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
 
-    const chatData = `
-      The user's current chat is:
-      --- CURRENT CHAT ---
-      ${JSON.stringify(currentChat, null, 2)}
-      --- CURRENT CHAT ---
+  const endpoint = "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      The user's current LTM is:
-      --- CURRENT LTM ---
-      ${JSON.stringify(currentLTM, null, 2)}
-      --- END CURRENT LTM ---
-      `;
-
-    const prompt = (systemPrompt + chatData).trim();
-    const res = await openAIChatAdapter({
-        prompt,
-        agent: {
-            apiKey: '',
-            serviceUrl: '',
-            model: ''
-        }
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        currentChat,
+        currentLTM
+      })
     });
-    return res;
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`API ${res.status} ${res.statusText} — ${text || "no body"}`);
+    }
+
+    const raw = await res.json().catch(() => ({}));
+
+    let data = typeof raw?.body === "string" ? safeParseJSON(raw.body) : (raw?.body ?? raw);
+
+    let ltm =
+      (data && typeof data === "object" && data.ltm) ??
+      (data && typeof data === "object" && data.ltm_raw
+        ? safeParseJSON(data.ltm_raw) ?? currentLTM
+        : null);
+    
+    if (!ltm) {
+      ltm = currentLTM;
+    } 
+    return ltm;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.error("generateLTM timed out after " + timeout + "ms");
+      // Return currentLTM on timeout to avoid breaking the flow
+      return currentLTM;
+    }
+    // 타임아웃/네트워크/파싱 에러 로깅
+    console.error("compareLTMbyServer failed:", err);
+    // also return currentLTM on other errors
+    return currentLTM;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  // 안전한 JSON 파서
+  function safeParseJSON(s) {
+    try {
+      return JSON.parse(s);
+    } catch {
+      return null;
+    }
+  }
 }
+

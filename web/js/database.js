@@ -85,7 +85,13 @@ export async function updateData(storeName, key, newData) {
     getReq.onerror = () => reject(getReq.error);
     getReq.onsuccess = () => {
       const existingData = getReq.result; // This is undefined if not found
-      const dataToWrite = { ...existingData, ...newData };
+      
+      // If newData is not a plain object, wrap it in an object with a 'contents' property.
+      const dataToMerge = (newData !== null && typeof newData === 'object' && !Array.isArray(newData))
+        ? newData
+        : { contents: newData };
+
+      const dataToWrite = { ...existingData, ...dataToMerge };
 
       if (typeof store.keyPath === 'string') {
         dataToWrite[store.keyPath] = key;
@@ -95,20 +101,6 @@ export async function updateData(storeName, key, newData) {
       putReq.onsuccess = () => resolve(true);
       putReq.onerror = () => reject(putReq.error);
     };
-  });
-}
-
-export async function updateLTMInDB(sessionId, newLTM) {
-  const store = await getStore('LTM', 'readwrite');
-  return new Promise((resolve, reject) => {
-    const next = {
-        sessionId: sessionId,
-        contents: String(newLTM ?? '')
-    };
-
-    const putReq = store.put(next);
-    putReq.onsuccess = () => resolve(next);
-    putReq.onerror = () => reject(putReq.error);
   });
 }
 

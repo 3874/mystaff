@@ -22,7 +22,6 @@ $(document).ready(async function() {
     // extract the staffId from url and getAgentById
     const urlParams = new URLSearchParams(window.location.search);
     const staffId = urlParams.get('staffId');
-    console.log(staffId);
 
     if (!staffId) {
       alert('No staffId');
@@ -79,18 +78,29 @@ function loadStaffAgent(staffData) {
   const avatarUrl = `../img/avatar/avatar-${avatarNumber}.png`;
   $('.author-box-picture').attr('src', avatarUrl);
   $('.author-box-picture').attr('alt', staffData.staff_name || 'Agent');
-  $('.author-box-staffId').text(staffData.staffId || 'N/A');
+  $('.author-box-staffId').text(staffData.staff_id || 'N/A');
   $('.author-box-name').text(staffData.staff_name || 'Unnamed Agent');
-  $('.author-box-job').text(staffData.role || 'No role specified');
+  $('.author-box-role').text(staffData.role || 'No role specified');
   $('.author-box-summary').text(staffData.summary || 'No description available.');
-  $('.author-box-adapter').text(staffData.adapter || 'Unnamed Agent');
-  $('.author-box-model').text(staffData.model || 'No mode specified');
-  $('.author-box-url').text(staffData.service_url || 'No service url available.');
-  $('.author-box-output').text(staffData.output_type || 'No output type specified');
-  $('.author-box-systemprompt').text(staffData.system_prompt || 'No system prompt available.');
-  $('.author-box-maxtoken').text(staffData.token_limit || 'No max token specified');
-  $('.author-box-fileupload').text(staffData.file_uploading ? 'Enabled' : 'Disabled');
-  $('.author-box-ragSupport').text(staffData.rag_support ? 'Enabled' : 'Disabled');
+  $('.author-box-input').text(JSON.stringify(staffData.input_format) || 'No input type specified');
+  $('.author-box-output').text(JSON.stringify(staffData.output_format) || 'No output type specified');
+  
+  // staffData.adapter는 object type 이다. 만약 값이 있다면 $('.author-box-adapter')아래 테이블로 넣자
+  const adapterData = staffData.adapter;
+  let tableHtml = '';
+  if (adapterData && typeof adapterData === 'object' && Object.keys(adapterData).length > 0) {
+    for (const [key, value] of Object.entries(adapterData)) {
+      tableHtml += `
+        <tr>
+          <th class="text-center border" style="width: 25%;">${key}</th>
+          <td class="border" style="width: 75%;">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</td>
+        </tr>
+      `;
+    }
+  }
+
+  $('.author-box-adapter').append(tableHtml);
+
 }
 
 

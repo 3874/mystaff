@@ -18,7 +18,6 @@ export async function getAllAgents() {
     }
 
     const raw = await res.json();
-    console.log(raw);
     // Lambda Proxy 통합이므로 body가 문자열 JSON일 가능성 있음
     const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
 
@@ -31,8 +30,7 @@ export async function getAllAgents() {
 
 
 export async function getAgentById(staffId) {
-  const endpoint =
-    "https://yef2g1t5g.execute-api.ap-northeast-2.amazonaws.com/default/myAIstaff";
+  const endpoint = "https://yfef2g1t5g.execute-api.ap-northeast-2.amazonaws.com/default/myAIstaff";
 
   const res = await fetch(endpoint, {
     method: "POST",

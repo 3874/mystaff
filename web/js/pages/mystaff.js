@@ -1,4 +1,4 @@
-import { getDataByKey, getAllData, updateData } from '../../js/database.js'; // Import getAllData
+import { getDataByKey, updateData } from '../../js/database.js'; // Import getAllData
 import { getAgentById } from '../allAgentsCon.js'; // Import the function
 import { signOut, FindUrl } from '../utils.js';
 
@@ -94,7 +94,6 @@ async function loadStaffAgents() {
     }
 
     const userData = await getDataByKey('mydata', userId);
-    console.log(userData);
 
     if (userData) {
       // Populate company name
@@ -114,8 +113,7 @@ async function loadStaffAgents() {
         const agents = await Promise.all(agentPromises);
 
         agents.forEach(agent => {
-          if (agent) { // Check if agent was found
-            console.log(agent);
+          if (agent) { 
             const listItem = `
               <div class="col-12 col-md-6 mb-4">
                 <div class="card h-100">
@@ -124,9 +122,9 @@ async function loadStaffAgents() {
                     <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
                     <p class="card-text flex-grow-1">${agent.summary || 'No description.'}</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
-                      <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${agent.staffId}">Detail</button>
-                      <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staffId}">Chat</button>
-                      <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staffId}">Fire</button>
+                      <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${agent.staff_id}">Detail</button>
+                      <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staff_id}">Chat</button>
+                      <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staff_id}">Fire</button>
                     </div>
                   </div>
                 </div>

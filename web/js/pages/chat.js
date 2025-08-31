@@ -43,33 +43,35 @@ $(document).ready(async function() {
 async function initializeChat() {
     const params = new URLSearchParams(window.location.search);
     staffId = params.get('staffId');
-    if (!staffId || staffId === 'undefined' || staffId === null) {
-        sessionId = params.get('sessionId');
-    } else {
+    sessionId = params.get('sessionId');
+    if (sessionId) {
+        await loadChatSession(sessionId);
+        await loadSessionList();
+    } else if (staffId) {
         sessionId = null;
         const apikeys = localStorage.getItem('mystaff_credentials');
         const apikeysObj = JSON.parse(apikeys || '{}');
         const agent = await getAgentById(staffId) || {};
         let apikey = '';
 
-        if (!agent.adapter) {
+        if (!agent.adapter.name) {
             alert('Please select a staff member to chat with.');
             window.location.href = './mystaff.html';
             return;
-        } else if (agent.adapter && agent.adapter !== 'http') {
-            apikey = apikeysObj[agent.adapter] || '';
+        } else if (agent.adapter.name && agent.adapter.name !== 'http') {
+            apikey = apikeysObj[agent.adapter.name] || '';
             if (!apikey || apikey.trim() === '' || apikey === 'undefined') {
-                alert(`Please set your ${agent.adapter} API key in the credentials page.`);
+                alert(`Please set your ${agent.adapter.name} API key in the credentials page.`);
                 window.location.href = './credentials.html';
                 return;
             }
         }
         const finalUrl = await FindUrl(agent);
         window.location.href = finalUrl;
+    } else {
+        window.location.href = `mystaff.html`;
     }
     
-    await loadChatSession(sessionId);
-    await loadSessionList();
 }
 
 async function loadChatSession(id) {
@@ -92,7 +94,7 @@ async function loadSessionList() {
     const $list = $('#sessionList');
     $list.empty();
 
-    const filteredSessions = allSessions.filter(session => session.staffId === mystaff.staffId);
+    const filteredSessions = allSessions.filter(session => session.staffId === mystaff.staff_id);
 
     filteredSessions.forEach(session => {
         const isActive = session.sessionId === sessionId ? 'active' : '';
@@ -172,7 +174,7 @@ function bindUIEvents() {
 
     $('#newChat').on('click', async () => {
         const newSessionId = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('');
-        const newChatStaffId = mystaff ? mystaff.staffId : null;
+        const newChatStaffId = mystaff ? mystaff.staff_id : null;
         try {
             await addData('chat', {
                 sessionId: newSessionId,
@@ -216,7 +218,7 @@ function bindUIEvents() {
             await deleteLTM(sessionToDeleteId);
             if (sessionToDeleteId === sessionId) {
                 const allSessions = await getAllData('chat');
-                const nextSession = allSessions.find(s => s.staffId === mystaff.staffId);
+                const nextSession = allSessions.find(s => s.staffId === mystaff.staff_id);
                 if (nextSession) {
                     window.location.href = `chat.html?sessionId=${nextSession.sessionId}`;
                 } else {
@@ -293,7 +295,7 @@ async function sendMessage() {
         const participants = [chatData.staffId, ...(chatData.attendants || [])];
         
         const allAgents = await getAllAgents();
-        const mentionedAgent = allAgents.find(agent => agent.staff_name === mention && participants.includes(agent.staffId));
+        const mentionedAgent = allAgents.find(agent => agent.staff_name === mention && participants.includes(agent.staff_));
 
         if (mentionedAgent) {
             responder = mentionedAgent;
@@ -319,9 +321,8 @@ async function sendMessage() {
         const response = await handleMsg(processedInput, responder, sessionId);
 
         currentChat.pop();
-        const chatTurn = { user: text, system: response, date: new Date().toISOString(), speaker: responder.staff_name, speakerId: responder.staffId };
+        const chatTurn = { user: text, system: response, date: new Date().toISOString(), speaker: responder.staff_name, speakerId: responder.staff_id };
         currentChat.push(chatTurn);
-
         renderMessages(currentChat);
     } catch (error) {
         console.error("Error sending message:", error);

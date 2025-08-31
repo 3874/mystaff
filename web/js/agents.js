@@ -5,13 +5,14 @@ export async function handleMsg(processedInput, agent, sessionId) {
   const input = processedInput?.input ?? "";
   const history = processedInput?.context ?? [];
   const ltm = processedInput?.ltm ?? "";
-  const token_limit = processedInput?.token_limit ?? (agent?.token_limit ?? 8192);
+  const token_limit = processedInput?.token_limit ?? 128000;
 
   // 안전 직렬화
   const historyArr = Array.isArray(history) ? history : [history];
   const historyJson = JSON.stringify(historyArr.slice(-10), null, 2);
 
   const ltmJson = JSON.stringify(ltm, null, 2);
+  console.log(ltmJson);
 
   // 모델별 토크나이저
   const encode = await loadTokenizerForAgent(agent);
@@ -25,7 +26,7 @@ export async function handleMsg(processedInput, agent, sessionId) {
   }
 
   try {
-    const adapter = getAdapter(agent?.adapter || 'openai');
+    const adapter = getAdapter(agent?.adapter.name || 'openai');
     const output = await adapter({ prompt: finalPrompt, agent, sessionId }); 
     return typeof output === 'string' ? output : JSON.stringify(output);
   } catch (err) {
@@ -34,11 +35,10 @@ export async function handleMsg(processedInput, agent, sessionId) {
   }
 }
 
-// ---- 프롬프트/토큰 로직 ----
 async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) {
-  // 출력 예산: 전체의 25% 또는 최소 1024토큰 중 큰 값 택일 (모델 상황에 맞게 조정 가능)
+
   const OUTPUT_BUDGET = Math.max(2048, Math.floor(token_limit * 0.25));
-  const HARD_OVERHEAD = 64; // role/구분자 등 여유
+  const HARD_OVERHEAD = 64; 
 
   const mkP1 = () => `
     ${input}, based on

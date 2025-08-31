@@ -7,21 +7,22 @@ function assertOk(resp, data) {
 // adapters/http.js
 // 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
 export async function genericHttpAdapter({ prompt, agent, sessionId }) {
-  const url = agent.service_url;
+  const url = agent.adapter.apiUrl;
 
   const payload = {
     chatInput: prompt,
     sessionId: sessionId
   };
 
+  const api_headers = agent.adapter.headers;
+  const api_method = agent.adapter.method || 'POST';
+
   const resp = await fetch(url, {
-    method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `mystaff`,
-      },
+    method: api_method,
+    headers: api_headers,
     body: JSON.stringify(payload),
   });
+  console.log(resp);
 
   const data = await resp.json().catch(() => ({}));
   assertOk(resp, data);

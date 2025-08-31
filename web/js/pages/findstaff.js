@@ -27,7 +27,7 @@ async function initializeFindStaffPage() {
       return;
     }
 
-    const $allStaffList = $('#paid-staff-row');
+    const $allStaffList = $('#ex-staff-row');
 
     $allStaffList.empty();
 
@@ -39,19 +39,18 @@ async function initializeFindStaffPage() {
         const avatarNumber = (index % 5) + 1;
         const avatarUrl = `../img/avatar/avatar-${avatarNumber}.png`;
         const listItem = `
-              <div class="col-12 col-md-6 mb-4">
-                <div class="card h-100">
-                  <div class="card-body d-flex align-items-center">
-                    <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="rounded-circle me-3" style="width: 60px; height: 60px;">
-                    <div class="flex-grow-1">
-                      <h5 class="card-title">${agent.staff_name || 'Unnamed Agent'}</h5>
-                      <p class="card-text text-muted">${agent.role || 'No role specified'}</p>
-                      <p class="card-text">${agent.summary || 'No summary.'}</p>
-                    </div>
-                    <a href="./staff-profile.html?staffId=${agent.staffId}" class="btn btn-sm btn-primary ms-3">Detail</a>
-                  </div>
-                </div>
+          <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+              <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="card-img-top rounded-circle mx-auto mt-3" style="width: 100px; height: 100px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">${agent.staff_name || 'Unnamed Agent'}</h5>
+                <a href="./staff-profile.html?staffId=${agent.staff_id}" class="btn btn-primary btn-sm mb-2">Detail</a>
+                <br><br>
+                <h6 class="card-subtitle mb-2 text-muted">${agent.role || 'No role specified'}</h6>
+                <p class="card-text">${agent.summary || 'No summary.'}</p>
               </div>
+            </div>
+          </div>
         `;
         $allStaffList.append(listItem);
       }

@@ -1,6 +1,8 @@
 // utils.js
-import {  getAllData, addData } from './database.js';
+import {  getAllData, addData, getDataByKey, updateData } from './database.js';
+import { generateLTM } from './process.js';
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
+
 // mammoth.js is loaded via <script> tag in chat.html, creating a global 'mammoth' object.
 
 // PDF.js가 백그라운드에서 작동하려면 worker 설정이 필요합니다.
@@ -91,17 +93,12 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
 
 export async function FindUrl(mystaff) {
-  const outputType = mystaff.output_type;
-  const staffId = mystaff.staffId;
-  let Furl;
+  const staffId = mystaff.staff_id;
+  const Furl = './chat.html';
 
   if (!staffId) {
     window.location.href = 'mystaff.html';
     return;
-  } else if (!outputType || outputType === 'text') {
-    Furl = `chat.html`;
-  } else {
-    Furl = `chat-${outputType}.html`;
   } 
 
   let finalSessionId = null;
@@ -131,6 +128,6 @@ export async function FindUrl(mystaff) {
     });
   }
 
-  Furl = `${Furl}?sessionId=${finalSessionId}`;
-  return Furl;
+  const Finalurl = `${Furl}?sessionId=${finalSessionId}`;
+  return Finalurl;
 }
