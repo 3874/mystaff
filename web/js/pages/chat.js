@@ -3,12 +3,10 @@ import { getDataByKey, getAllData, updateData, deleteData, addData } from '../da
 import { deleteLTM } from '../memory.js';
 import { handleMsg } from '../agents.js';
 import { preprocess, postprocess } from '../process.js';
-import { getAgentById } from '../allAgentsCon.js';
+import { getAgentById, getAllAgents } from '../allAgentsCon.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; // Import marked.js
 import { handleCommand } from '../commands.js';
-import { FindUrl, handleFileUpload } from '../utils.js';
-import { getAllAgents } from '../allAgentsCon.js';
-import { signOut } from '../utils.js';
+import { FindUrl, handleFileUpload, signOut } from '../utils.js';
 
 
 let sessionId = null;

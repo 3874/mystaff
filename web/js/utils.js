@@ -89,45 +89,6 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     }
 }
 
-// async function handleFileUploadtoServer(event) {
-//     const file = event.target.files[0];
-//     if (!file) return;
-
-//     const formData = new FormData();
-//     formData.append('file', file);
-//     const fileUrl = 'http://172.30.1.84:5678/webhook/mystaff-file';
-
-//     try {
-//         // IMPORTANT: Replace '/api/upload' with your actual server endpoint
-//         const response = await fetch(fileUrl, {
-//             method: 'POST',
-//             headers: {
-//                 'Authorization': 'mystaff'
-//             },
-//             body: formData,
-//         });
-
-//         if (response.ok) {
-//             const responseText = await response.text();
-//             if (responseText) {
-//                 const result = JSON.parse(responseText);
-//                 console.log('File uploaded successfully:', result);
-//             } else {
-//                 console.log('File uploaded successfully: Server returned an empty response.');
-//             }
-//             alert('File uploaded successfully!');
-//             // Optionally, add code here to display the file in the chat
-//         } else {
-//             const errorText = await response.text();
-//             console.error('File upload failed:', errorText);
-//             alert(`File upload failed: ${errorText}`);
-//          }
-//     } catch (error) {
-//         console.error('Error uploading file:', error);
-//         alert('An error occurred while uploading the file.');
-//     }
-// }
-
 
 export async function FindUrl(mystaff) {
   const outputType = mystaff.output_type;

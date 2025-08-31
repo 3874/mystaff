@@ -2,7 +2,7 @@
 // IndexedDB 기본 CRUD
 
 const DB_NAME = 'mystaff';
-const DB_VERSION = 4; // DB 버전을 4로 올립니다.
+const DB_VERSION = 1; // DB 버전을 4로 올립니다.
 
 let db;
 

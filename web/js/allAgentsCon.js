@@ -61,3 +61,13 @@ export async function addAgent(agent) {
 }
 
 
+// export async function getAllAgents() {
+//   const res = await fetch('../json/allAgents.json');
+//   return await res.json();
+// }
+
+// export async function getAgentById(staffId) {
+//   const agents = await getAllAgents();
+//   return agents.find(a => a.staffId === staffId);
+// }
+

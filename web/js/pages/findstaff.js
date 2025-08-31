@@ -1,6 +1,5 @@
 import { getAllAgents } from '../allAgentsCon.js';
 import { signOut } from '../utils.js';
-import { getAllData } from '../database.js';
 
 $(document).ready(function() {
   // Check for login status
