@@ -1,5 +1,3 @@
-import { getDataByKey } from '../database.js';
-
 export async function geminiChatAdapter({ prompt, agent, sessionId }) {
   const credentials = localStorage.getItem("mystaff_credentials");
   const GEMINI_API_KEY = JSON.parse(credentials || '{}').gemini;
@@ -16,11 +14,11 @@ export async function geminiChatAdapter({ prompt, agent, sessionId }) {
     },
     body: JSON.stringify({
       contents: [
-        { role: 'user', parts: [{ text: agent?.system_prompt || 'You are a concise, professional assistant.' }] },
+        { role: 'user', parts: [{ text: agent?.adapter.system_prompt || 'You are a concise, professional assistant.' }] },
         { role: 'user', parts: [{ text: prompt }] },
       ],
       generationConfig: {
-        temperature: agent?.temperature ?? 0.3,
+        temperature: agent?.adapter.temperature ?? 0.3,
       },
     }),
   });

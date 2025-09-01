@@ -74,18 +74,23 @@ async function initializeChat() {
     
 }
 
-async function loadChatSession(id) {
-    const chatData = await getDataByKey('chat', id);
-    if (chatData) {
+async function loadChatSession(sessionId) {
+    const chatData = await getDataByKey('chat', sessionId);
+    if (chatData && chatData.staffId) {
+        mystaff = await getAgentById(chatData.staffId);
+        let staffName = mystaff.staff_name;
+        $('#chatAgentName').text(staffName || "Chat");
         currentChat = chatData.msg || [];
-        renderMessages(currentChat);
-
-        if (chatData.staffId) {
-            mystaff = await getAgentById(chatData.staffId);
-            $('#chatAgentName').text(mystaff.staff_name || "Chat");
-        } else {
-            mystaff = null;
+        if (currentChat.length === 0) {
+            currentChat = [{
+                system: "Welcome to Chat!",
+                speaker: staffName,
+                date: new Date().toISOString()
+            }];
         }
+        renderMessages(currentChat);
+    } else {
+        mystaff = null;
     }
 }
 
