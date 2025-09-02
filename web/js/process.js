@@ -109,3 +109,28 @@ export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
     clearTimeout(timeoutId);
   }
 }
+
+
+export async function generateLTM2(currentChat, currentLTM) {
+  try {
+    const response = await fetch('http://localhost:5678/webhook/mystaff-ltm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ currentChat: currentChat, currentLTM: currentLTM }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP 오류! 상태: ${response.status}\n${errorText}`);
+    }
+
+    const responseData = await response.json();
+    // The original code expected responseText.message.content
+    return responseData.message.content;
+  } catch (error) {
+    console.error('generateLTM2 요청 실패:', error);
+    throw error; // Re-throw the error so the caller can handle it.
+  }
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTM 테스트</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 2em;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        h1 {
+            color: #343a40;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        label {
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 0.5em;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        button {
+            padding: 0.5em 1em;
+            cursor: pointer;
+            align-self: flex-start;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+        }
+        #result {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <h1>LTM 생성 테스트</h1>
+    <div class="container">
+        <label for="chat">Chat (currentChat):</label>
+        <textarea id="chat" placeholder="채팅 내용을 입력하세요..."></textarea>
+
+        <label for="ltm">LTM (currentLTM):</label>
+        <textarea id="ltm" placeholder="기존 LTM 내용을 입력하세요..."></textarea>
+
+        <button id="submit-btn">전송 및 LTM 생성</button>
+
+        <label for="result">결과:</label>
+        <textarea id="result" readonly></textarea>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#submit-btn').on('click', function() {
+                const chat = $('#chat').val();
+                const ltm = $('#ltm').val();
+                const $resultArea = $('#result');
+                
+                $resultArea.val('요청 중...');
+    
+                $.ajax({
+                    url: 'http://localhost:5678/webhook-test/mystaff-ltm',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ currentChat: chat, currentLTM: ltm })
+                })
+                .done(function(responseText) {
+                    console.log(responseText);
+                    $resultArea.val(responseText.message.content);
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('요청 실패:', textStatus, errorThrown);
+                    const errorMessage = `HTTP 오류! 상태: ${jqXHR.status}\n${jqXHR.responseText}`;
+                    $resultArea.val(`오류가 발생했습니다: ${errorMessage}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
