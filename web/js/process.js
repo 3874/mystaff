@@ -35,11 +35,15 @@ export async function postprocess(sessionId, currentChat) {
   let chatTextForLTM = "";
   if (Array.isArray(currentChat) && currentChat.length > 0) {
     const lastMessageObject = currentChat[currentChat.length - 1];
-    if (lastMessageObject && typeof lastMessageObject.content === 'string') {
-      chatTextForLTM = lastMessageObject.content;
-    } else {
-      console.warn("Last message object does not have a 'content' property as a string. Using JSON.stringify for LTM generation.");
-      chatTextForLTM = JSON.stringify(lastMessageObject);
+    if (lastMessageObject) {
+      const parts = [];
+      if (lastMessageObject.user) {
+        parts.push(`User: ${lastMessageObject.user}`);
+      }
+      if (lastMessageObject.system) {
+        parts.push(`AI: ${lastMessageObject.system}`);
+      }
+      chatTextForLTM = parts.join('\n');
     }
   } else {
     console.warn("currentChat is not an array or is empty. Sending an empty string for currentChat in LTM generation.");
@@ -64,8 +68,17 @@ export async function postprocess(sessionId, currentChat) {
 
 
   if (newLTM && typeof newLTM === 'string' && newLTM.length > 0) {
-    const newLTMJObj = JSON.parse(newLTM);
-    await updateData('LTM', sessionId, { contents: newLTMJObj.body });
+    try {
+      const newLTMJObj = JSON.parse(newLTM);
+      if (newLTMJObj && typeof newLTMJObj.body === 'string') {
+        const content = newLTMJObj.body.replace(/^```markdown/, '').replace(/```$/, '').trim();
+        await updateData('LTM', sessionId, { contents: content });
+      } else {
+        console.warn("newLTMJObj.body is not a string or newLTMJObj is missing.");
+      }
+    } catch (error) {
+      console.error("Failed to parse newLTM JSON:", error);
+    }
   } else {
     console.warn("newLTM is not a valid non-empty string. Skipping LTM update.", newLTM);
   }
