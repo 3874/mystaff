@@ -34,9 +34,49 @@ $(document).ready(async function() {
     await initializeChat();
     bindUIEvents();
 
-    $('#signOutBtn').on('click', function(e) {
+        $('#signOutBtn').on('click', function(e) {
         e.preventDefault();
         signOut();
+    });
+
+    $('#messageInput').on('paste', function(e) {
+      const clipboardData = e.originalEvent.clipboardData;
+      if (clipboardData.files && clipboardData.files.length > 0) {
+        e.preventDefault(); // 파일 붙여넣기 시 기본 동작 방지
+        if (clipboardData.files.length > 1) {
+          alert('파일은 하나만 넣어주세요.');
+        } else {
+          const file = clipboardData.files[0];
+          const fileName = file.name;
+          const extension = fileName.split('.').pop().toLowerCase();
+          const allowedExtensions = ['docx', 'txt', 'doc', 'pdf'];
+
+          if (allowedExtensions.includes(extension)) {
+            const mockEvent = { target: { files: [file] } };
+            handleFileUpload(mockEvent, sessionId, mystaff);
+          } else {
+            alert('이 파일 형식은 저장이 불가합니다.');
+          }
+        }
+      } else {
+        const text = clipboardData.getData('text/plain');
+        const size = text.length;
+        const threshold = 500;
+
+        if (size > threshold) {
+          if (confirm('붙여넣은 텍스트가 500자를 초과합니다. 파일로 저장하시겠습니까?')) {
+            e.preventDefault(); // Prevent pasting into the textarea
+            const fileName = prompt('파일 이름을 입력하세요 (확장자 제외):', 'pasted-text');
+            if (fileName) {
+              const fullFileName = fileName + '.txt';
+              const textBlob = new Blob([text], { type: 'text/plain' });
+              const textFile = new File([textBlob], fullFileName, { type: 'text/plain' });
+              const mockEvent = { target: { files: [textFile] } };
+              handleFileUpload(mockEvent, sessionId, mystaff);
+            }
+          }
+        }
+      }
     });
 });
 
@@ -261,6 +301,28 @@ function bindUIEvents() {
             }
         }
     });
+
+    $('#messageInput').on('input', async function() {
+        const text = $(this).val().trim();
+        if (text === '/filesearch' || text === '/파일검색') {
+            await showFileSearchDropdown();
+        } else {
+            hideFileSearchDropdown();
+        }
+    });
+
+    $('#fileSearchDropdown').on('click', 'a.list-group-item', function(e) {
+        e.preventDefault();
+        const fileId = $(this).data('file-id');
+        $('#messageInput').val(`/filesearch ${fileId} `).focus();
+        hideFileSearchDropdown();
+    });
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#messageInput, #fileSearchDropdown').length) {
+            hideFileSearchDropdown();
+        }
+    });
 }
 
 async function sendMessage() {
@@ -300,7 +362,7 @@ async function sendMessage() {
         const participants = [chatData.staffId, ...(chatData.attendants || [])];
         
         const allAgents = await getAllAgents();
-        const mentionedAgent = allAgents.find(agent => agent.staff_name === mention && participants.includes(agent.staff_));
+        const mentionedAgent = allAgents.find(agent => agent.staff_name === mention && participants.includes(agent.staff_id));
 
         if (mentionedAgent) {
             responder = mentionedAgent;
@@ -336,6 +398,7 @@ async function sendMessage() {
         $inputEl.prop('disabled', false);
         $sendBtn.prop('disabled', false);
         $spinner.hide();
+        await updateData('chat', sessionId, { msg: currentChat });
         await postprocess(sessionId, currentChat);
     }
 }
@@ -445,4 +508,27 @@ async function openManageFilesModal(sessionIdForFiles) {
         console.error('Error opening file management modal:', error);
         alert('Could not load the file list.');
     }
+}
+
+async function showFileSearchDropdown() {
+    const $dropdown = $('#fileSearchDropdown');
+    const allFiles = await getAllData('myfiles');
+    const sessionFiles = allFiles.filter(file => file.sessionId === sessionId);
+
+    $dropdown.empty();
+
+    if (sessionFiles.length > 0) {
+        sessionFiles.forEach(file => {
+            const fileItem = `<a href="#" class="list-group-item list-group-item-action" data-file-id="${file.id}">${file.fileName}</a>`;
+            $dropdown.append(fileItem);
+        });
+    } else {
+        const noFilesItem = '<span class="list-group-item">No files found for this session.</span>';
+        $dropdown.append(noFilesItem);
+    }
+    $dropdown.show();
+}
+
+function hideFileSearchDropdown() {
+    $('#fileSearchDropdown').hide().empty();
 }

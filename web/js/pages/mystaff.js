@@ -27,6 +27,7 @@ $(document).ready(function() {
     window.location.href = finalUrl;
 
   });
+
   $('#signOutBtn').on('click', function(e) {
     e.preventDefault();
     signOut();

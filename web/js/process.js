@@ -14,23 +14,7 @@ export async function preprocess(sessionId, input, agent, history = null) {
   return prompt;
 }
 
-/**
- * 안전한 JSON 파서 (이 함수는 더 이상 LTM 처리에 사용되지 않지만, 다른 곳에서 사용될 수 있으므로 유지합니다.)
- * @param {string} s - 파싱할 JSON 문자열
- * @returns {object|null} 파싱된 객체 또는 null (파싱 실패 시)
- */
-function safeParseJSON(s) {
-  try {
-    return JSON.parse(s);
-  } catch (e) {
-    console.error("Failed to parse JSON string:", s, "Error:", e);
-    return null;
-  }
-}
-
 export async function postprocess(sessionId, currentChat) {
-
-  await updateData('chat', sessionId, { msg: currentChat });
 
   let chatTextForLTM = "";
   if (Array.isArray(currentChat) && currentChat.length > 0) {

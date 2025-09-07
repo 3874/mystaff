@@ -133,7 +133,10 @@
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-        <div class="mt-auto p-3 bg-body-tertiary border-top">
+        <div class="mt-auto p-3 bg-body-tertiary border-top" style="position: relative;">
+            <div id="fileSearchDropdown" class="list-group" style="display: none; position: absolute; bottom: 60px; width: calc(100% - 2rem); z-index: 1000;">
+              <!-- File search results will be appended here -->
+            </div>
             <div class="input-group">
               <button class="btn btn-outline-secondary" type="button" id="fileUploadBtn">+</button>
               <input type="file" id="fileInput" style="display:none;" />
@@ -153,6 +156,7 @@
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.7.0/mammoth.browser.min.js"></script>
   <!-- Chat Script -->
   <script type="module" src="../js/pages/chat.js"></script>
+  
 
   <!-- Invite Modal -->
   <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">

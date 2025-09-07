@@ -64,3 +64,48 @@ export async function startDiscussion(topic, { sessionId, currentChat, renderMes
     }
    
 }
+
+export async function filesearch(topic, fileId, context) {
+    let fileData = null;
+    let fileName = null;
+    let contents = null;
+    let staffId = null;
+
+    if (!fileId) {
+        console.error("getFileById: fileId is required.");
+        return null;
+        }
+        try {
+        fileData = await getDataByKey('myfiles', fileId);
+        } catch (error) {
+        console.error(`Error fetching file with ID ${fileId}:`, error);
+        return null;
+        }
+
+    if (fileData) {
+        fileName = fileData.fileName;
+        contents = fileData.contents;
+        staffId = fileData.staffId;
+    } else {
+        console.error(`File with ID ${fileId} not found.`);
+        alert(`File with ID ${fileId} not found.`);
+    }
+    
+    const responder = await getAgentById(staffId);
+    if (!responder) {
+        alert('Could not find the main agent for this chat.');
+        return;
+    }
+
+    const prompt = {"input": `${topic} from file contents: ${contents}`, "history": "", "ltm": ""};
+
+    const response = await handleMsg(prompt, responder, contents.sessionId);
+    
+    const systemMessage = { system: response, date: new Date().toISOString(), speaker: responder.staff_name, speakerId: responder.staff_id };
+    context.currentChat.push(systemMessage);
+    context.renderMessages(context.currentChat);
+
+
+}
+
+

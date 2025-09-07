@@ -77,7 +77,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
         const fileData = {
             id: fileId,
             sessionId: sessionId,
-            staffId: mystaff?.staffId || null,
+            staffId: mystaff?.staff_id || null,
             fileName: fileName,
             contents: content
         };
