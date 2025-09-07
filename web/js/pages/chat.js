@@ -259,8 +259,17 @@ function bindUIEvents() {
         if (confirm('Are you sure you want to delete this session?')) {
             const $listItem = $(this).closest('.list-group-item');
             const sessionToDeleteId = $listItem.data('session-id');
+
+            // Delete associated files from myfiles store
+            const allFiles = await getAllData('myfiles');
+            const filesToDelete = allFiles.filter(file => file.sessionId === sessionToDeleteId);
+            for (const file of filesToDelete) {
+                await deleteData('myfiles', file.id);
+            }
+
             await deleteData('chat', sessionToDeleteId);
             await deleteLTM(sessionToDeleteId);
+            
             if (sessionToDeleteId === sessionId) {
                 const allSessions = await getAllData('chat');
                 const nextSession = allSessions.find(s => s.staffId === mystaff.staff_id);
