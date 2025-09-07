@@ -73,7 +73,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
         }
 
         // Generate a unique ID for the file record.
-        const fileId = crypto.randomUUID();
+        const fileId = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => ('0' + byte.toString(16)).slice(-2)).join('');
         const fileData = {
             id: fileId,
             sessionId: sessionId,
