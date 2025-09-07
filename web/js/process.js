@@ -126,7 +126,7 @@ export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
 
 export async function generateLTM2(currentChat, currentLTM) {
   try {
-    const response = await fetch('http://localhost:5678/webhook/mystaff-ltm', {
+    const response = await fetch('http://ai.yleminvest.com:5678/webhook/mystaff-ltm', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
