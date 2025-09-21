@@ -1,21 +1,21 @@
-
-import { getDataByKey, updateData } from './database.js';
+import { getDataByKey, updateData } from "./database.js";
 
 export async function preprocess(sessionId, input, agent, history = null) {
-  const chatHistory = history ? history : (await getDataByKey('chat', sessionId))?.msg || [];
+  const chatHistory = history
+    ? history
+    : (await getDataByKey("chat", sessionId))?.msg || [];
   const last10 = chatHistory.slice(-10);
-  const ltm = await getDataByKey('LTM', sessionId) || {};
+  const ltm = (await getDataByKey("LTM", sessionId)) || {};
   const prompt = {
     input,
     context: last10,
-    ltm: ltm.contents || '', 
-    token_limit: agent.adapter.token_limit || 2048
+    ltm: ltm.contents || "",
+    token_limit: agent.adapter.token_limit || 2048,
   };
   return prompt;
 }
 
 export async function postprocess(sessionId, currentChat) {
-
   let chatTextForLTM = "";
   if (Array.isArray(currentChat) && currentChat.length > 0) {
     const lastMessageObject = currentChat[currentChat.length - 1];
@@ -27,96 +27,117 @@ export async function postprocess(sessionId, currentChat) {
       if (lastMessageObject.system) {
         parts.push(`AI: ${lastMessageObject.system}`);
       }
-      chatTextForLTM = parts.join('\n');
+      chatTextForLTM = parts.join("\n");
     }
   } else {
-    console.warn("currentChat is not an array or is empty. Sending an empty string for currentChat in LTM generation.");
+    console.warn(
+      "currentChat is not an array or is empty. Sending an empty string for currentChat in LTM generation."
+    );
     chatTextForLTM = "";
   }
 
-  let newLTM = null; 
-  const storedLTM = await getDataByKey('LTM', sessionId);
-  
-  let ltmTextForLLM = (storedLTM && typeof storedLTM.contents === 'string') ? storedLTM.contents : '';
-  
+  let newLTM = null;
+  const storedLTM = await getDataByKey("LTM", sessionId);
+
+  let ltmTextForLLM =
+    storedLTM && typeof storedLTM.contents === "string"
+      ? storedLTM.contents
+      : "";
+
   if (!ltmTextForLLM) {
-    console.log("No existing LTM found or contents are empty. Initializing LTM with an empty string for LLM.");
+    console.log(
+      "No existing LTM found or contents are empty. Initializing LTM with an empty string for LLM."
+    );
   }
 
   try {
     newLTM = await generateLTM(chatTextForLTM, ltmTextForLLM);
   } catch (error) {
     console.error("Error during generateLTM call:", error);
-    newLTM = ltmTextForLLM; 
+    newLTM = ltmTextForLLM;
   }
 
-
-  if (newLTM && typeof newLTM === 'string' && newLTM.length > 0) {
+  if (newLTM && typeof newLTM === "string" && newLTM.length > 0) {
     try {
       const newLTMJObj = JSON.parse(newLTM);
-      if (newLTMJObj && typeof newLTMJObj.body === 'string') {
-        const content = newLTMJObj.body.replace(/^```markdown/, '').replace(/```$/, '').trim();
-        await updateData('LTM', sessionId, { contents: content });
+      if (newLTMJObj && typeof newLTMJObj.body === "string") {
+        const content = newLTMJObj.body
+          .replace(/^```markdown/, "")
+          .replace(/```$/, "")
+          .trim();
+        await updateData("LTM", sessionId, { contents: content });
       } else {
-        console.warn("newLTMJObj.body is not a string or newLTMJObj is missing.");
+        console.warn(
+          "newLTMJObj.body is not a string or newLTMJObj is missing."
+        );
       }
     } catch (error) {
       console.error("Failed to parse newLTM JSON:", error);
     }
   } else {
-    console.warn("newLTM is not a valid non-empty string. Skipping LTM update.", newLTM);
+    console.warn(
+      "newLTM is not a valid non-empty string. Skipping LTM update.",
+      newLTM
+    );
   }
-
 }
 
 export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
-  const endpoint = "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
+  const endpoint =
+    "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" }, 
+      headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
-        currentChat: currentChat, 
-        currentLTM: currentLTM   
-      })
+        currentChat: currentChat,
+        currentLTM: currentLTM,
+      }),
     });
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`API ${res.status} ${res.statusText} — ${text || "no body"}`);
+      throw new Error(
+        `API ${res.status} ${res.statusText} — ${text || "no body"}`
+      );
     }
 
-    const newLTMContent = await res.text(); 
+    const newLTMContent = await res.text();
 
-    if (!newLTMContent || newLTMContent.trim() === '') {
+    if (!newLTMContent || newLTMContent.trim() === "") {
       return currentLTM;
     }
 
-    return newLTMContent;   
+    return newLTMContent;
   } catch (err) {
-    if (err.name === 'AbortError') {
-      return currentLTM; 
+    if (err.name === "AbortError") {
+      return currentLTM;
     }
-    return currentLTM; 
+    return currentLTM;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-
 export async function generateLTM2(currentChat, currentLTM) {
   try {
-    const response = await fetch('http://ai.yleminvest.com:5678/webhook/mystaff-ltm', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ currentChat: currentChat, currentLTM: currentLTM }),
-    });
+    const response = await fetch(
+      "http://ai.yleminvest.com:5678/webhook/mystaff-ltm",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentChat: currentChat,
+          currentLTM: currentLTM,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -127,7 +148,7 @@ export async function generateLTM2(currentChat, currentLTM) {
     // The original code expected responseText.message.content
     return responseData.message.content;
   } catch (error) {
-    console.error('generateLTM2 요청 실패:', error);
+    console.error("generateLTM2 요청 실패:", error);
     throw error; // Re-throw the error so the caller can handle it.
   }
 }

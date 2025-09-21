@@ -1,4 +1,5 @@
 import { getDataByKey } from '../../js/database.js';
+import { getDefaultAgents } from '../allAgentsCon.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
@@ -27,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem("mystaff_loggedin", "true");
           localStorage.setItem("mystaff_user", user.myId); 
           localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
+
+          const defaultAgents = await getDefaultAgents();
+          localStorage.setItem('mystaff_default_agent', JSON.stringify(defaultAgents));
+          
           window.location.href = './mystaff.html'; 
         } else {
           alert('Invalid email or password.');

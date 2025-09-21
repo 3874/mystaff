@@ -1,7 +1,22 @@
-import { getAdapter } from './adapters/index.js';
+import { getAdapter } from "./adapters/index.js";
+import { moderatorAdapter } from "./adapters/moderator.js";
 
 // ---- 메인 핸들러 ----
 export async function handleMsg(processedInput, agent, sessionId) {
+  if (agent?.adapter.name === "moderator") {
+    try {
+      const output = await moderatorAdapter({
+        prompt: processedInput,
+        agent,
+        sessionId,
+      });
+      return typeof output === "string" ? output : JSON.stringify(output);
+    } catch (err) {
+      console.error("Adapter error:", err);
+      return "지금은 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요.";
+    }
+  }
+  console.log(agent.adapter.name);
   const input = processedInput?.input ?? "";
   const history = processedInput?.context ?? [];
   const ltm = processedInput?.ltm ?? "";
@@ -18,29 +33,41 @@ export async function handleMsg(processedInput, agent, sessionId) {
   const encode = await loadTokenizerForAgent(agent);
 
   // 프롬프트 생성 + 토큰 예산 체크
-  const finalPrompt = await generatePrompt({ input, historyJson, ltmJson, token_limit, encode });
+  const finalPrompt = await generatePrompt({
+    input,
+    historyJson,
+    ltmJson,
+    token_limit,
+    encode,
+  });
 
   if (finalPrompt === "##tooLong##") {
-    alert('Too long input data');
+    alert("Too long input data");
     return;
   }
 
   try {
-    const adapter = getAdapter(agent?.adapter.name || 'openai');
-    const output = await adapter({ prompt: finalPrompt, agent, sessionId }); 
-    return typeof output === 'string' ? output : JSON.stringify(output);
+        const adapter = getAdapter(agent?.adapter?.name || 'openai');
+    const output = await adapter({ prompt: finalPrompt, agent, sessionId });
+    return typeof output === "string" ? output : JSON.stringify(output);
   } catch (err) {
-    console.error('Adapter error:', err);
-    return '지금은 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+    console.error("Adapter error:", err);
+    return "지금은 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요.";
   }
 }
 
-async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) {
-
+async function generatePrompt({
+  input,
+  historyJson,
+  ltm,
+  token_limit,
+  encode,
+}) {
   const OUTPUT_BUDGET = Math.max(2048, Math.floor(token_limit * 0.25));
-  const HARD_OVERHEAD = 64; 
+  const HARD_OVERHEAD = 64;
 
-  const mkP1 = () => `
+  const mkP1 = () =>
+    `
     ${input}, based on
 
     --- CHAT HISTORY ---
@@ -53,7 +80,8 @@ async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) 
 
     Be precise and helpful.`.trim();
 
-  const mkP2 = () => `
+  const mkP2 = () =>
+    `
     ${input}, based on
 
     --- CURRENT LTM ---
@@ -103,21 +131,22 @@ async function generatePrompt({ input, historyJson, ltm, token_limit, encode }) 
 
 // ---- 토크나이저 로더 ----
 async function loadTokenizerForAgent(agent) {
-  const model = (agent?.model || 'gpt-4o').toLowerCase();
+  const model = (agent?.model || "gpt-4o").toLowerCase();
 
   // 모델→인코딩 매핑
   // - gpt-4o, gpt-4.1, o1/o3/o4 계열: o200k_base
   // - gpt-4*, gpt-3.5*: cl100k_base
-  const encoding =
-    /(^gpt-4o\b)|(^gpt-4\.1\b)|(^o[134]\b)/.test(model) ? 'o200k_base' :
-    /(^gpt-4\b)|(^gpt-3\.5\b)/.test(model) ? 'cl100k_base' :
-    'o200k_base';
+  const encoding = /(^gpt-4o\b)|(^gpt-4\.1\b)|(^o[134]\b)/.test(model)
+    ? "o200k_base"
+    : /(^gpt-4\b)|(^gpt-3\.5\b)/.test(model)
+    ? "cl100k_base"
+    : "o200k_base";
 
   // UMD 스크립트 주입(브라우저)
   const globalName = `GPTTokenizer_${encoding}`;
   if (!window[globalName]) {
     await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
+      const s = document.createElement("script");
       s.src = `https://unpkg.com/gpt-tokenizer/dist/${encoding}.js`;
       s.onload = resolve;
       s.onerror = reject;
@@ -125,7 +154,7 @@ async function loadTokenizerForAgent(agent) {
     });
   }
   const ns = window[globalName];
-  if (!ns || typeof ns.encode !== 'function') {
+  if (!ns || typeof ns.encode !== "function") {
     throw new Error(`Tokenizer load failed for ${encoding}`);
   }
   return ns.encode; // (text:string)=>number[]

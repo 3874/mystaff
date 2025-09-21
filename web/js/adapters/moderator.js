@@ -8,19 +8,23 @@ function assertOk(resp, data) {
 
 // adapters/http.js
 // 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
-export async function genericHttpAdapter({ prompt, agent, sessionId }) {
+export async function moderatorAdapter({ prompt, agent, sessionId }) {
   const url = agent.adapter.apiUrl;
 
   const payload = {
-    prompt: prompt,
+    prompt: prompt.input,
+    history: prompt.context,
+    ltm: prompt.ltm,
     sessionId: sessionId,
+    //    attached: attached,
   };
 
+  console.log(payload);
+
   const api_headers = agent.adapter.headers;
-  const api_method = agent.adapter.method || "POST";
 
   const resp = await fetch(url, {
-    method: api_method,
+    method: "POST",
     headers: api_headers,
     body: JSON.stringify(payload),
   });
@@ -28,5 +32,6 @@ export async function genericHttpAdapter({ prompt, agent, sessionId }) {
   const data = await resp.json().catch(() => ({}));
   console.log(data);
   assertOk(resp, data);
+
   return data[0]?.output || "No response from server";
 }
