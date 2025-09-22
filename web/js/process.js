@@ -1,11 +1,13 @@
 import { getDataByKey, updateData } from "./database.js";
+import { genericHttpAdapter } from "./adapters/http.js";
+import { getDefaultAgentById } from "./allAgentsCon.js";
 
 export async function preprocess(sessionId, input, agent, history = null) {
   const chatHistory = history
     ? history
     : (await getDataByKey("chat", sessionId))?.msg || [];
   const last10 = chatHistory.slice(-10);
-  const ltm = (await getDataByKey("LTM", sessionId)) || {};
+  const ltm = (await getDataByKey("LTM", sessionId)) || "";
   const prompt = {
     input,
     context: last10,
@@ -38,6 +40,11 @@ export async function postprocess(sessionId, currentChat) {
 
   let newLTM = null;
   const storedLTM = await getDataByKey("LTM", sessionId);
+  const responder = await getDefaultAgentById("default_20250922_00001");
+  if (!responder) {
+    console.error("Responder not found. Aborting LTM generation.");
+    return;
+  }
 
   let ltmTextForLLM =
     storedLTM && typeof storedLTM.contents === "string"
@@ -51,28 +58,21 @@ export async function postprocess(sessionId, currentChat) {
   }
 
   try {
-    newLTM = await generateLTM(chatTextForLTM, ltmTextForLLM);
+    newLTM = await generateLTM(chatTextForLTM, ltmTextForLLM, responder, sessionId);
   } catch (error) {
     console.error("Error during generateLTM call:", error);
     newLTM = ltmTextForLLM;
   }
 
-  if (newLTM && typeof newLTM === "string" && newLTM.length > 0) {
+  if (newLTM && typeof newLTM === "string") {
     try {
-      const newLTMJObj = JSON.parse(newLTM);
-      if (newLTMJObj && typeof newLTMJObj.body === "string") {
-        const content = newLTMJObj.body
-          .replace(/^```markdown/, "")
-          .replace(/```$/, "")
-          .trim();
-        await updateData("LTM", sessionId, { contents: content });
-      } else {
-        console.warn(
-          "newLTMJObj.body is not a string or newLTMJObj is missing."
-        );
-      }
+      const content = newLTM
+        .replace(/^```markdown/, "")
+        .replace(/```$/, "")
+        .trim();
+      await updateData("LTM", sessionId, { contents: content });
     } catch (error) {
-      console.error("Failed to parse newLTM JSON:", error);
+      console.error("Failed to update LTM with new content:", error);
     }
   } else {
     console.warn(
@@ -82,14 +82,23 @@ export async function postprocess(sessionId, currentChat) {
   }
 }
 
-export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
-  const endpoint =
+export async function generateLTM(currentChat, currentLTM, agent, sessionId) { 
+  console.log(agent);
+  const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
+  const response = await genericHttpAdapter({ prompt, agent, sessionId });
+  console.log("LTM API response:", response);
+  return response;
+}
+
+
+export async function generateLTM2(currentChat, currentLTM, timeout = 18000) {
+  const url =
     "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const res = await fetch(endpoint, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
@@ -120,35 +129,5 @@ export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
     return currentLTM;
   } finally {
     clearTimeout(timeoutId);
-  }
-}
-
-export async function generateLTM2(currentChat, currentLTM) {
-  try {
-    const response = await fetch(
-      "http://ai.yleminvest.com:5678/webhook/mystaff-ltm",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentChat: currentChat,
-          currentLTM: currentLTM,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP 오류! 상태: ${response.status}\n${errorText}`);
-    }
-
-    const responseData = await response.json();
-    // The original code expected responseText.message.content
-    return responseData.message.content;
-  } catch (error) {
-    console.error("generateLTM2 요청 실패:", error);
-    throw error; // Re-throw the error so the caller can handle it.
   }
 }

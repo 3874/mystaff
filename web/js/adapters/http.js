@@ -15,7 +15,7 @@ export async function genericHttpAdapter({ prompt, agent, sessionId }) {
     prompt: prompt,
     sessionId: sessionId,
   };
-
+  console.log(payload);
   const api_headers = agent.adapter.headers;
   const api_method = agent.adapter.method || "POST";
 
@@ -24,7 +24,7 @@ export async function genericHttpAdapter({ prompt, agent, sessionId }) {
     headers: api_headers,
     body: JSON.stringify(payload),
   });
-
+  console.log(resp);
   const data = await resp.json().catch(() => ({}));
   console.log(data);
   assertOk(resp, data);

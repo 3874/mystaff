@@ -230,10 +230,10 @@ async function loadDefaultAgents() {
                   <div class="d-flex flex-row gap-2 mt-auto">
                     <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
                       agent.staff_id
-                    }">Detail</button>
+                    }">Detail</button>${(agent.adapter && agent.adapter.name === 'moderator') ? `
                     <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${
                       agent.staff_id
-                    }">Chat</button>
+                    }">Chat</button>` : ''}
                   </div>
                 </div>
               </div>

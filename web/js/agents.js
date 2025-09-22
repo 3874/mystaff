@@ -25,9 +25,7 @@ export async function handleMsg(processedInput, agent, sessionId) {
   // 안전 직렬화
   const historyArr = Array.isArray(history) ? history : [history];
   const historyJson = JSON.stringify(historyArr.slice(-10), null, 2);
-
   const ltmJson = JSON.stringify(ltm, null, 2);
-  console.log(ltmJson);
 
   // 모델별 토크나이저
   const encode = await loadTokenizerForAgent(agent);

@@ -1,11 +1,5 @@
 // chat.js (jQuery version)
-import {
-  getDataByKey,
-  getAllData,
-  updateData,
-  deleteData,
-  addData,
-} from "../database.js";
+import { getDataByKey, getAllData, updateData, deleteData, addData} from "../database.js";
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
@@ -524,9 +518,10 @@ async function sendMessage() {
     currentChat.pop(); // remove temp user message
     const userMessageTurn = { user: text, date: new Date().toISOString() };
     currentChat.push(userMessageTurn);
-
+    renderMessages(currentChat);
     const processedInput = await preprocess(sessionId, text, responder);
     const resp = await handleMsg(processedInput, responder, sessionId);
+
     const classify = JSON.parse(resp);
 
     if (
@@ -555,7 +550,9 @@ async function sendMessage() {
       }
     }
 
+    console.log(responder);
     const response = await handleMsg(processedInput, responder, sessionId);
+    console.log(response);
 
     const chatTurn = {
       system: response,
@@ -573,7 +570,8 @@ async function sendMessage() {
     $sendBtn.prop("disabled", false);
     $spinner.hide();
     await updateData("chat", sessionId, { msg: currentChat });
-    await postprocess(sessionId, currentChat);
+    let responder = await getDefaultAgentById("default_20250922_00001");
+    await postprocess(sessionId, currentChat, responder);
   }
 }
 
