@@ -3,6 +3,7 @@ import { moderatorAdapter } from "./adapters/moderator.js";
 
 // ---- 메인 핸들러 ----
 export async function handleMsg(processedInput, agent, sessionId) {
+  console.log(agent);
   if (agent?.adapter.name === "moderator") {
     try {
       const output = await moderatorAdapter({
@@ -45,7 +46,7 @@ export async function handleMsg(processedInput, agent, sessionId) {
   }
 
   try {
-        const adapter = getAdapter(agent?.adapter?.name || 'openai');
+    const adapter = getAdapter(agent?.adapter?.name || "openai");
     const output = await adapter({ prompt: finalPrompt, agent, sessionId });
     return typeof output === "string" ? output : JSON.stringify(output);
   } catch (err) {

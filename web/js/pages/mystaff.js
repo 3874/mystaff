@@ -105,7 +105,7 @@ $(document).ready(function () {
     let agentData = JSON.parse(agentDataJson);
     const mystaff = agentData.find((agent) => agent.staff_id === staffId);
     console.log(mystaff);
-    const finalUrl = await FindUrl(mystaff);
+    const finalUrl = await FindUrl(mystaff, 1);
     setTimeout(() => {
       window.location.href = finalUrl;
     }, 100);
@@ -230,10 +230,12 @@ async function loadDefaultAgents() {
                   <div class="d-flex flex-row gap-2 mt-auto">
                     <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
                       agent.staff_id
-                    }">Detail</button>${(agent.adapter && agent.adapter.name === 'moderator') ? `
-                    <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${
-                      agent.staff_id
-                    }">Chat</button>` : ''}
+                    }">Detail</button>${
+            agent.adapter && agent.adapter.name === "moderator"
+              ? `
+                    <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staff_id}">Chat</button>`
+              : ""
+          }
                   </div>
                 </div>
               </div>

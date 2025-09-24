@@ -101,9 +101,14 @@ export async function handleFileUpload(event, sessionId, mystaff) {
   }
 }
 
-export async function FindUrl(mystaff) {
+export async function FindUrl(mystaff, Fset = 0) {
   const staffId = mystaff.staff_id;
-  const Furl = "./chat.html";
+  let Furl = "";
+  if (Fset === 1) {
+    Furl = "./chat_moderator.html";
+  } else {
+    Furl = "./chat.html";
+  }
 
   if (!staffId) {
     window.location.href = "mystaff.html";

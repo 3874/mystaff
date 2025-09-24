@@ -1,14 +1,9 @@
-import {
-  getDataByKey,
-  getAllData,
-  updateData,
-  deleteData,
-  addData,
-} from "../database.js";
+// chat.js (jQuery version)
+import { getDataByKey, getAllData, updateData, deleteData, addData} from "../database.js";
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
-import { getAgentById, getAllAgents } from "../allAgentsCon.js";
+import { getAgentById, getDefaultAgentById } from "../allAgentsCon.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"; // Import marked.js
 import { handleCommand } from "../commands.js";
 import { FindUrl, handleFileUpload, signOut } from "../utils.js";
@@ -42,7 +37,7 @@ $(document).ready(async function () {
     signOut();
   });
 
-  $("#messageInput").on("paste", function (e) {
+  $("#messageInput").on("paste", async function (e) {
     const clipboardData = e.originalEvent.clipboardData;
     if (clipboardData.files && clipboardData.files.length > 0) {
       e.preventDefault(); // 파일 붙여넣기 시 기본 동작 방지
@@ -56,7 +51,7 @@ $(document).ready(async function () {
 
         if (allowedExtensions.includes(extension)) {
           const mockEvent = { target: { files: [file] } };
-          handleFileUpload(mockEvent, sessionId, mystaff);
+          await handleFileUpload(mockEvent, sessionId, mystaff);
         } else {
           alert("이 파일 형식은 저장이 불가합니다.");
         }
@@ -73,19 +68,19 @@ $(document).ready(async function () {
           )
         ) {
           e.preventDefault(); // Prevent pasting into the textarea
-          const fileName = prompt(
-            "파일 이름을 입력하세요 (확장자 제외):",
-            "pasted-text"
+          const originalCommand = $("#messageInput").val();
+          const fileName = `pasted-${Date.now()}.txt`;
+
+          const textBlob = new Blob([text], { type: "text/plain" });
+          const textFile = new File([textBlob], fileName, {
+            type: "text/plain",
+          });
+          const mockEvent = { target: { files: [textFile] } };
+          let fileData = await handleFileUpload(mockEvent, sessionId, mystaff);
+
+          $("#messageInput").val(
+            `/filesearch ${fileData.id} ${originalCommand}`.trim()
           );
-          if (fileName) {
-            const fullFileName = fileName + ".txt";
-            const textBlob = new Blob([text], { type: "text/plain" });
-            const textFile = new File([textBlob], fullFileName, {
-              type: "text/plain",
-            });
-            const mockEvent = { target: { files: [textFile] } };
-            handleFileUpload(mockEvent, sessionId, mystaff);
-          }
         }
       }
     }
@@ -131,6 +126,11 @@ async function loadChatSession(sessionId) {
   const chatData = await getDataByKey("chat", sessionId);
   if (chatData && chatData.staffId) {
     mystaff = await getAgentById(chatData.staffId);
+    if (mystaff === "Item not found") {
+      let agentDataJson = localStorage.getItem("mystaff_default_agent");
+      let agentData = JSON.parse(agentDataJson);
+      mystaff = agentData.find((agent) => agent.staff_id === chatData.staffId);
+    }
     let staffName = mystaff.staff_name;
     $("#chatAgentName").text(staffName || "Chat");
     currentChat = chatData.msg || [];
@@ -228,16 +228,23 @@ async function renderMessages(msgs) {
 function bindUIEvents() {
   $("#sendBtn").on("click", sendMessage);
   $("#messageInput").on("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter" && !e.shiftKey) {
+      sendMessage();
+      e.preventDefault(); // Prevent form submission
+    }
   });
 
   $("#fileUploadBtn").on("click", () => {
     $("#fileInput").click();
   });
 
-  $("#fileInput").on("change", (event) => {
-    handleFileUpload(event, sessionId, mystaff);
+  $("#fileInput").on("change", async (event) => {
+    await handleFileUpload(event, sessionId, mystaff);
   });
+
+  $("#inviteBtn").on("click", openInviteModal);
+
+  $("#attendantsBtn").on("click", openAttendantsModal);
 
   $("#newChat").on("click", async () => {
     const newSessionId = Array.from(
@@ -342,13 +349,72 @@ function bindUIEvents() {
     }
   });
 
+  // Create mentions container if it doesn't exist
+  if ($("#mentionsContainer").length === 0) {
+    const mentionsContainer =
+      '<div id="mentionsContainer" class="d-flex flex-wrap gap-2 mb-2"></div>';
+    $("#messageInput").before(mentionsContainer);
+  }
+
+  // Create attendants dropdown if it doesn't exist
+  if ($("#attendantsDropdown").length === 0) {
+    const dropdown =
+      '<div id="attendantsDropdown" class="list-group" style="display: none; position: absolute; z-index: 1000;"></div>';
+    $("#messageInput").parent().append(dropdown);
+  }
+
   $("#messageInput").on("input", async function () {
-    const text = $(this).val().trim();
-    if (text === "/filesearch" || text === "/파일검색") {
+    const text = $(this).val();
+    const cursorPos = this.selectionStart;
+
+    // Check for @mention
+    const textBeforeCursor = text.substring(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+    if (atMatch) {
+      hideFileSearchDropdown();
+      await showAttendantsDropdown(atMatch[1]);
+      return; // exit to avoid other checks
+    } else {
+      hideAttendantsDropdown();
+    }
+
+    // Check for /filesearch
+    if (text.trim() === "/filesearch" || text.trim() === "/파일검색") {
       await showFileSearchDropdown();
     } else {
       hideFileSearchDropdown();
     }
+  });
+
+  $("#attendantsDropdown").on("click", "a.list-group-item", function (e) {
+    e.preventDefault();
+    const staffName = $(this).data("staff-name");
+    const staffId = $(this).data("staff-id");
+
+    const mentionButton = `
+      <span class="badge bg-primary me-2" data-staff-id="${staffId}">
+        ${staffName}
+        <button type="button" class="btn-close btn-close-white ms-1" aria-label="Close"></button>
+      </span>`;
+    $("#mentionsContainer").html(mentionButton);
+
+    const $input = $("#messageInput");
+    const text = $input.val();
+    const cursorPos = $input[0].selectionStart;
+    const textBeforeCursor = text.substring(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/@(\w*)$/);
+    if (atMatch) {
+      const startIndex = atMatch.index;
+      const newText = text.substring(0, startIndex) + text.substring(cursorPos);
+      $input.val(newText).focus();
+      $input[0].setSelectionRange(startIndex, startIndex);
+    }
+    hideAttendantsDropdown();
+  });
+
+  $("#mentionsContainer").on("click", ".btn-close", function () {
+    $(this).parent().remove();
   });
 
   $("#fileSearchDropdown").on("click", "a.list-group-item", function (e) {
@@ -359,29 +425,66 @@ function bindUIEvents() {
   });
 
   $(document).on("click", function (e) {
-    if (!$(e.target).closest("#messageInput, #fileSearchDropdown").length) {
+    if (
+      !$(e.target).closest(
+        "#messageInput, #fileSearchDropdown, #attendantsDropdown"
+      ).length
+    ) {
       hideFileSearchDropdown();
+      hideAttendantsDropdown();
     }
   });
 }
 
 async function sendMessage() {
   const $inputEl = $("#messageInput");
-  const text = $inputEl.val().trim();
+  let text = $inputEl.val().trim();
+
+  const mentions = [];
+  const mentionedStaffIds = [];
+  $("#mentionsContainer .badge").each(function () {
+    let TstaffId = $(this).data("staff-id");
+    mentions.push(`@[${TstaffId}]`);
+    mentionedStaffIds.push(TstaffId);
+  });
+
+  let targetStaff;
+  if (mentionedStaffIds.length > 0) {
+    const targetStaffId = mentionedStaffIds[0];
+    targetStaff = await getAgentById(targetStaffId);
+  }
+
+  if (mentions.length > 0) {
+    text = mentions.join(" ") + " " + text;
+  }
+
   if (!text) return;
 
   if (text.startsWith("/")) {
-    const userMessage = { user: text, date: new Date().toISOString() };
-    currentChat.push(userMessage);
-    renderMessages(currentChat);
-    $inputEl.val("");
-
-    const context = { sessionId, currentChat, renderMessages, postprocess };
-    const commandIsValid = await handleCommand(text, context, 4);
-
-    if (!commandIsValid) {
-      currentChat.pop();
+    try {
+      const userMessage = { user: text, date: new Date().toISOString() };
+      currentChat.push(userMessage);
       renderMessages(currentChat);
+      $inputEl.val("");
+      $("#mentionsContainer").empty();
+
+      const context = { sessionId, currentChat, renderMessages, postprocess };
+      const commandIsValid = await handleCommand(text, context, 4);
+
+      if (!commandIsValid) {
+        currentChat.pop();
+        renderMessages(currentChat);
+      }
+    } catch (error) {
+      console.error("Error executing command:", error);
+      const errorMessage = {
+        system: "An error occurred while executing the command.",
+        date: new Date().toISOString(),
+      };
+      currentChat.push(errorMessage);
+      renderMessages(currentChat);
+    } finally {
+      await updateData("chat", sessionId, { msg: currentChat });
     }
     return;
   }
@@ -390,9 +493,6 @@ async function sendMessage() {
     alert("Please select a staff member to chat with.");
     return;
   }
-
-  let responder = mystaff;
-  let messageToSend = text;
 
   const $sendBtn = $("#sendBtn");
   const $spinner = $("#loadingSpinner");
@@ -406,16 +506,55 @@ async function sendMessage() {
   $inputEl.val("");
 
   try {
-    const processedInput = await preprocess(
-      sessionId,
-      messageToSend,
-      responder
-    );
-    const response = await handleMsg(processedInput, responder, sessionId);
+    let responder = mystaff;
 
-    currentChat.pop();
+    if (!responder) {
+      alert("Could not find a valid recipient for the message.");
+      currentChat.pop(); // remove temp user message
+      renderMessages(currentChat);
+      return;
+    }
+
+    currentChat.pop(); // remove temp user message
+    const userMessageTurn = { user: text, date: new Date().toISOString() };
+    currentChat.push(userMessageTurn);
+    renderMessages(currentChat);
+    const processedInput = await preprocess(sessionId, text, responder);
+    const resp = await handleMsg(processedInput, responder, sessionId);
+
+    const classify = JSON.parse(resp);
+
+    if (
+      typeof targetStaff === "object" &&
+      targetStaff != {} &&
+      targetStaff.staff_id
+    ) {
+      responder = targetStaff;
+    } else {
+      switch (classify.intent) {
+        case "search":
+          responder = await getDefaultAgentById("default_20250921_00003");
+          break;
+        case "code":
+          responder = await getDefaultAgentById("default_20250921_00002");
+          break;
+        case "task":
+          responder = await getDefaultAgentById("default_20250921_00002");
+          break;
+        case "image_generation":
+          responder = await getDefaultAgentById("default_20250921_00002");
+          break;
+        default:
+          responder = await getDefaultAgentById("default_20250921_00002");
+          break;
+      }
+    }
+
+    console.log(responder);
+    const response = await handleMsg(processedInput, responder, sessionId);
+    console.log(response);
+
     const chatTurn = {
-      user: text,
       system: response,
       date: new Date().toISOString(),
       speaker: responder.staff_name,
@@ -431,8 +570,101 @@ async function sendMessage() {
     $sendBtn.prop("disabled", false);
     $spinner.hide();
     await updateData("chat", sessionId, { msg: currentChat });
-    await postprocess(sessionId, currentChat);
+    let responder = await getDefaultAgentById("default_20250922_00001");
+    await postprocess(sessionId, currentChat, responder);
   }
+}
+
+async function openInviteModal() {
+  const chatData = await getDataByKey("chat", sessionId);
+  const currentParticipants = [
+    chatData.staffId,
+    ...(chatData.attendants || []),
+  ];
+  const availablAgentsIds = mydata.mystaff;
+  const $staffList = $("#staffList");
+  $staffList.empty();
+
+  for (let i = 0; i < availablAgentsIds.length; i++) {
+    let agent = await getAgentById(availablAgentsIds[i]);
+    if (!agent) continue;
+
+    let listItem;
+    if (availablAgentsIds[i] === chatData.staffId) {
+      listItem = `<li class="list-group-item d-flex justify-content-between align-items-center">${agent.staff_name} <span class="badge bg-primary rounded-pill">Host</span></li>`;
+    } else {
+      listItem = `<li class="list-group-item"><input class="form-check-input me-1" type="checkbox" value="${availablAgentsIds[i]}" id="staff-${availablAgentsIds[i]}"><label class="form-check-label" for="staff-${availablAgentsIds[i]}">${agent.staff_name}</label></li>`;
+    }
+    $staffList.append(listItem);
+  }
+
+  const inviteModal = new bootstrap.Modal(
+    document.getElementById("inviteModal")
+  );
+  inviteModal.show();
+
+  $("#sendInviteBtn")
+    .off("click")
+    .on("click", async () => {
+      const selectedStaff = [];
+      $("#staffList input:checked").each(function () {
+        selectedStaff.push($(this).val());
+      });
+
+      if (selectedStaff.length > 0) {
+        const existingAttendants = chatData.attendants || [];
+        const newAttendants = [
+          ...new Set([...existingAttendants, ...selectedStaff]),
+        ];
+        await updateData("chat", sessionId, { attendants: newAttendants });
+        alert("Invitations sent!");
+        inviteModal.hide();
+      } else {
+        alert("Please select at least one staff member to invite.");
+      }
+    });
+}
+
+async function openAttendantsModal() {
+  const chatData = await getDataByKey("chat", sessionId);
+  const attendants = chatData.attendants || [];
+  const participants = [chatData.staffId, ...attendants];
+
+  const $attendantsList = $("#attendantsList");
+  $attendantsList.empty();
+
+  for (const staffId of participants) {
+    const agent = await getAgentById(staffId);
+    if (agent) {
+      let listItem;
+      if (staffId === chatData.staffId) {
+        //        listItem = `<li class="list-group-item">${agent.staff_name} (Host)</li>`;
+        listItem = `<li class="list-group-item">Moderator (Host)</li>`;
+      } else {
+        listItem = `<li class="list-group-item d-flex justify-content-between align-items-center" data-staff-id-li="${staffId}">${agent.staff_name}<button type="button" class="btn-close" aria-label="Close" data-staff-id-btn="${staffId}"></button></li>`;
+      }
+      $attendantsList.append(listItem);
+    }
+  }
+
+  const attendantsModal = new bootstrap.Modal(
+    document.getElementById("attendantsModal")
+  );
+  attendantsModal.show();
+
+  $("#attendantsList")
+    .off("click", ".btn-close")
+    .on("click", ".btn-close", async function () {
+      const staffIdToRemove = $(this).data("staff-id-btn");
+      if (confirm(`Are you sure you want to remove this participant?`)) {
+        const currentChatData = await getDataByKey("chat", sessionId);
+        const newAttendants = (currentChatData.attendants || []).filter(
+          (id) => id !== staffIdToRemove
+        );
+        await updateData("chat", sessionId, { attendants: newAttendants });
+        $(this).closest("li").remove();
+      }
+    });
 }
 
 async function openManageFilesModal(sessionIdForFiles) {
@@ -495,4 +727,46 @@ async function showFileSearchDropdown() {
 
 function hideFileSearchDropdown() {
   $("#fileSearchDropdown").hide().empty();
+}
+
+async function showAttendantsDropdown(filter = "") {
+  const $dropdown = $("#attendantsDropdown");
+  const chatData = await getDataByKey("chat", sessionId);
+  if (!chatData) return;
+
+  const attendants = chatData.attendants || [];
+  const participants = [chatData.staffId, ...attendants];
+
+  $dropdown.empty();
+
+  let participantsFound = false;
+  for (const staffId of participants) {
+    const agent = await getAgentById(staffId);
+    if (
+      agent &&
+      agent.staff_name &&
+      agent.staff_name.toLowerCase().includes(filter.toLowerCase())
+    ) {
+      const participantItem = `<a href="#" class="list-group-item list-group-item-action" data-staff-id="${agent.staff_id}" data-staff-name="${agent.staff_name}">${agent.staff_name}</a>`;
+      $dropdown.append(participantItem);
+      participantsFound = true;
+    }
+  }
+
+  if (participantsFound) {
+    const inputPos = $("#messageInput").position();
+    const inputHeight = $("#messageInput").outerHeight();
+    $dropdown.css({
+      display: "block",
+      top: inputPos.top - $dropdown.outerHeight(),
+      left: inputPos.left,
+      width: $("#messageInput").outerWidth(),
+    });
+  } else {
+    $dropdown.hide();
+  }
+}
+
+function hideAttendantsDropdown() {
+  $("#attendantsDropdown").hide().empty();
 }

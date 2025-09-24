@@ -114,7 +114,7 @@ export async function filesearch(topic, fileId, context) {
     alert(`File with ID ${fileId} not found.`);
   }
 
-  const responder = await getDefaultAgentById(staffId);
+  const responder = await getAgentById(staffId);
   if (!responder) {
     alert("Could not find the main agent for this chat.");
     return;

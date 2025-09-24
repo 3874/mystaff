@@ -154,6 +154,22 @@
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4"
           >
             <h1 class="h2">Chat with <span id="chatAgentName"></span></h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <button
+                type="button"
+                id="attendantsBtn"
+                class="btn btn-sm btn-outline-secondary me-2"
+              >
+                Attendants
+              </button>
+              <button
+                type="button"
+                id="inviteBtn"
+                class="btn btn-sm btn-outline-info"
+              >
+                Invite
+              </button>
+            </div>
           </div>
           <div id="chatMessages">
             <div
@@ -212,7 +228,86 @@
     <!-- Mammoth.js for .docx parsing -->
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.7.0/mammoth.browser.min.js"></script>
     <!-- Chat Script -->
-    <script type="module" src="../js/pages/chat.js"></script>
+    <script type="module" src="../js/pages/chat_moderator.js"></script>
+
+    <!-- Invite Modal -->
+    <div
+      class="modal fade"
+      id="inviteModal"
+      tabindex="-1"
+      aria-labelledby="inviteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="inviteModalLabel">Invite Staff</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <ul id="staffList" class="list-group">
+              <!-- Staff list will be populated here -->
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="sendInviteBtn">
+              Invite
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendants Modal -->
+    <div
+      class="modal fade"
+      id="attendantsModal"
+      tabindex="-1"
+      aria-labelledby="attendantsModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="attendantsModalLabel">
+              Chat Participants
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <ul id="attendantsList" class="list-group">
+              <!-- Attendants list will be populated here -->
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Manage Files Modal -->
     <div
