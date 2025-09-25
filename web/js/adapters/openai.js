@@ -13,7 +13,11 @@ export async function openAIChatAdapter({ prompt, agent, sessionId }) {
   const url = agent?.adapter.apiUrl || 'https://api.openai.com/v1/chat/completions';
   const client = new OpenAI({apiKey: apiKey, dangerouslyAllowBrowser: true});
 
-  if (!apiKey) throw new Error('OpenAI apiKey missing');
+  if (!apiKey) {
+    alert('OpenAI API 키가 없습니다. Credential 페이지에서 설정해주세요.');
+    window.location.href = './credentials.html';
+    return;
+  }
 
   const response = await client.chat.completions.create({
     model: llm_model,
