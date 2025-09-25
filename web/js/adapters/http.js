@@ -8,25 +8,26 @@ function assertOk(resp, data) {
 
 // adapters/http.js
 // 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
-export async function genericHttpAdapter({ prompt, agent, sessionId }) {
-  const url = agent.adapter.apiUrl;
+export async function genericHttpAdapter( {processedInput, agent, sessionId} ) {
+  const url = agent?.adapter?.apiUrl;
+  //const url = "http://ai.yleminvest.com:5678/webhook-test/mystaff-llm"
 
   const payload = {
-    prompt: prompt,
+    input: processedInput,
     sessionId: sessionId,
   };
-  console.log(payload);
-  const api_headers = agent.adapter.headers;
-  const api_method = agent.adapter.method || "POST";
+  console.log("HTTP Adapter - Payload:", payload);
+  const api_headers = agent?.adapter?.headers;
+  const api_method = agent?.adapter?.method || "POST";
 
   const resp = await fetch(url, {
     method: api_method,
     headers: api_headers,
     body: JSON.stringify(payload),
   });
-  console.log(resp);
+
   const data = await resp.json().catch(() => ({}));
-  console.log(data);
+
   assertOk(resp, data);
   return data[0]?.output || "No response from server";
 }

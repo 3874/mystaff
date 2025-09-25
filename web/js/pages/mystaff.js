@@ -15,6 +15,27 @@ $(document).ready(function () {
     loadStaffAgents();
   }
 
+    const qaBotButton = `
+    <button id="qa-bot-fab" class="btn btn-primary rounded-circle shadow" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px; z-index: 1000; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-question"></i>
+    </button>
+  `;
+
+  $('body').append(qaBotButton);
+
+  // Click event for the QA bot button
+  $('#qa-bot-fab').on('click', async function(event) {
+    event.preventDefault();
+    let agentDataJson = localStorage.getItem("mystaff_default_agent");
+    let agentData = JSON.parse(agentDataJson);
+    const mystaff = agentData.find((agent) => agent.staff_id === "default_20220111_00001");
+    console.log(mystaff);
+    const finalUrl = await FindUrl(mystaff, 1);
+    setTimeout(() => {
+      $("#chatModal").modal('show');
+    }, 100);
+  });
+
   $("#hired-member-list").on("click", "a[data-id]", async function (event) {
     event.preventDefault();
 

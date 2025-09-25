@@ -3,15 +3,16 @@ import { genericHttpAdapter } from "./adapters/http.js";
 import { getDefaultAgentById } from "./allAgentsCon.js";
 
 export async function preprocess(sessionId, input, agent, history = null) {
-  const chatHistory = history
-    ? history
-    : (await getDataByKey("chat", sessionId))?.msg || [];
+  const regex = /^\<\[\<(.*?)\>\]\]\>/;
+  const fileName = input.match(regex);
+  const chatHistory = history ? history : (await getDataByKey("chat", sessionId))?.msg || [];
   const last10 = chatHistory.slice(-10);
   const ltm = (await getDataByKey("LTM", sessionId)) || "";
   const prompt = {
-    input,
-    context: last10,
+    prompt: input,
+    history: last10,
     ltm: ltm.contents || "",
+    file: fileName || "",
     token_limit: agent.adapter.token_limit || 2048,
   };
   return prompt;
@@ -83,7 +84,6 @@ export async function postprocess(sessionId, currentChat) {
 }
 
 export async function generateLTM(currentChat, currentLTM, agent, sessionId) { 
-  console.log(agent);
   const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
   const response = await genericHttpAdapter({ prompt, agent, sessionId });
   console.log("LTM API response:", response);

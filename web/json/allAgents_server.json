@@ -49,7 +49,7 @@
       "apiUrl": "http://ai.yleminvest.com:5678/webhook/fileflicker",
       "header": {
         "Content-Type": "application/json",
-        "Authorization": ""
+        "Authorization": "mystaff"
       },
       "token_limit": 128000
     },

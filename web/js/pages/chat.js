@@ -411,8 +411,9 @@ async function sendMessage() {
       messageToSend,
       responder
     );
-    const response = await handleMsg(processedInput, responder, sessionId);
 
+    const response = await handleMsg(processedInput, responder, sessionId);
+    
     currentChat.pop();
     const chatTurn = {
       user: text,

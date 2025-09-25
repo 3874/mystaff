@@ -1,13 +1,5 @@
 // utils.js
-import { getAllData, addData, getDataByKey, updateData } from "./database.js";
-import { generateLTM } from "./process.js";
-import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
-
-// mammoth.js is loaded via <script> tag in chat.html, creating a global 'mammoth' object.
-
-// PDF.js가 백그라운드에서 작동하려면 worker 설정이 필요합니다.
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+import { getAllData, addData } from "./database.js";
 
 export async function signOut() {
   localStorage.clear(); // Clears all items from localStorage
@@ -15,90 +7,44 @@ export async function signOut() {
 }
 
 export async function handleFileUpload(event, sessionId, mystaff) {
-  const file = event.target.files[0];
-  if (!file) return;
 
-  let content = "";
+  const file = event.target.files[0];
+  const url = mystaff?.adapter?.uploadUrl;
+  if (!file) return;
   const fileName = file.name || "";
-  const fileExtension = fileName.split(".").pop().toLowerCase();
+  const formData = new FormData();
+  const headers = {
+    "Authorization": mystaff?.adapter?.headers.Authorization || ""
+  }
+
+  formData.append("file", file);
+  formData.append("sessionId", sessionId);
+  formData.append("fileName", fileName);
 
   try {
-    switch (fileExtension) {
-      case "pdf":
-        const pdfReader = new FileReader();
-        pdfReader.readAsArrayBuffer(file);
-        content = await new Promise((resolve, reject) => {
-          pdfReader.onload = async (e) => {
-            try {
-              const pdf = await pdfjsLib.getDocument(e.target.result).promise;
-              let pdfText = "";
-              for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                pdfText +=
-                  textContent.items.map((item) => item.str).join(" ") + "\n";
-              }
-              resolve(pdfText);
-            } catch (error) {
-              reject(new Error("Failed to parse PDF file."));
-            }
-          };
-          pdfReader.onerror = () =>
-            reject(new Error("Failed to read PDF file."));
-        });
-        break;
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+      headers: headers,
+    });
 
-      case "docx":
-        const docxReader = new FileReader();
-        docxReader.readAsArrayBuffer(file);
-        content = await new Promise((resolve, reject) => {
-          docxReader.onload = async (e) => {
-            try {
-              const result = await mammoth.extractRawText({
-                arrayBuffer: e.target.result,
-              });
-              resolve(result.value);
-            } catch (error) {
-              reject(new Error("Failed to parse .docx file."));
-            }
-          };
-          docxReader.onerror = () =>
-            reject(new Error("Failed to read .docx file."));
-        });
-        break;
-
-      case "doc":
-        // .doc 파일은 브라우저에서 직접 파싱하기 매우 어렵습니다.
-        throw new Error(
-          ".doc files are not supported. Please convert to .docx or .pdf and try again."
-        );
-
-      default:
-        // 다른 모든 파일은 일반 텍스트로 처리합니다.
-        content = await file.text();
-        break;
+    if (!response.ok) {
+      // Throw an error with the response status text
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    // Generate a unique ID for the file record.
-    const fileId = Array.from(
-      crypto.getRandomValues(new Uint8Array(16)),
-      (byte) => ("0" + byte.toString(16)).slice(-2)
-    ).join("");
-    const fileData = {
-      id: fileId,
-      sessionId: sessionId,
-      staffId: mystaff?.staff_id || null,
-      fileName: fileName,
-      contents: content,
-    };
+    const responseData = await response.json();
+    console.log("File uploaded successfully:", responseData);
+    alert("File uploaded successfully!");
+    return responseData; // Return the server response
 
-    await addData("myfiles", fileData);
-    alert("File processed and uploaded successfully!");
-    return fileData;
   } catch (error) {
-    console.error("Error processing file:", error);
-    alert(`File processing failed: ${error.message}`);
+    console.error("Error uploading file:", error);
+    alert(`File upload failed: ${error.message}`);
+    return null;
   }
+
 }
 
 export async function FindUrl(mystaff, Fset = 0) {
