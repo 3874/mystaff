@@ -347,7 +347,7 @@ function bindUIEvents() {
   $("#messageInput").on("input", async function () {
     const text = $(this).val().trim();
 
-    if (text === "@") {
+    if (text.includes("@")) {
       await showFileSearchDropdown();
     } else {
       hideFileSearchDropdown();
@@ -357,7 +357,14 @@ function bindUIEvents() {
   $("#fileSearchDropdown").on("click", "a.list-group-item", function (e) {
     e.preventDefault();
     const fileId = $(this).data("file-id");
-    $("#messageInput").val(`@${fileId} `).focus();
+    const currentText = $("#messageInput").val();
+    const atIndex = currentText.lastIndexOf('@');
+    if (atIndex !== -1) {
+      const newText = currentText.substring(0, atIndex) + `@${fileId} `;
+      $("#messageInput").val(newText).focus();
+    } else {
+      $("#messageInput").val(currentText + `@${fileId} `).focus();
+    }
     hideFileSearchDropdown();
   });
 
