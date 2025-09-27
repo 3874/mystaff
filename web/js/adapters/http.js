@@ -6,11 +6,10 @@ function assertOk(resp, data) {
   }
 }
 
-// adapters/http.js
-// 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
-export async function genericHttpAdapter( {processedInput, agent, sessionId} ) {
+// adapters/moderator.js
+export async function genericHttpAdapter({ processedInput, agent, sessionId }) {
   const url = agent?.adapter?.apiUrl;
-  //const url = "http://ai.yleminvest.com:5678/webhook-test/mystaff-llm"
+  //const url = "http://172.30.1.84:5678/webhook-test/mystaff-llm";
 
   const payload = {
     input: processedInput,

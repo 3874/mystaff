@@ -8,7 +8,7 @@ import {
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
-import { getAgentById, getAllAgents } from "../allAgentsCon.js";
+import { getAgentById } from "../allAgentsCon.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"; // Import marked.js
 import { handleCommand } from "../commands.js";
 import { FindUrl, handleFileUpload, signOut } from "../utils.js";
@@ -104,6 +104,7 @@ async function initializeChat() {
     const apikeys = localStorage.getItem("mystaff_credentials");
     const apikeysObj = JSON.parse(apikeys || "{}");
     const agent = (await getAgentById(staffId)) || {};
+
     let apikey = "";
 
     if (!agent.adapter.name) {
@@ -131,6 +132,7 @@ async function loadChatSession(sessionId) {
   const chatData = await getDataByKey("chat", sessionId);
   if (chatData && chatData.staffId) {
     mystaff = await getAgentById(chatData.staffId);
+    console.log(mystaff);
     let staffName = mystaff.staff_name;
     $("#chatAgentName").text(staffName || "Chat");
     currentChat = chatData.msg || [];
@@ -344,7 +346,8 @@ function bindUIEvents() {
 
   $("#messageInput").on("input", async function () {
     const text = $(this).val().trim();
-    if (text === "/filesearch" || text === "/파일검색") {
+
+    if (text === "@") {
       await showFileSearchDropdown();
     } else {
       hideFileSearchDropdown();
@@ -354,7 +357,7 @@ function bindUIEvents() {
   $("#fileSearchDropdown").on("click", "a.list-group-item", function (e) {
     e.preventDefault();
     const fileId = $(this).data("file-id");
-    $("#messageInput").val(`/filesearch ${fileId} `).focus();
+    $("#messageInput").val(`@${fileId} `).focus();
     hideFileSearchDropdown();
   });
 
@@ -413,7 +416,7 @@ async function sendMessage() {
     );
 
     const response = await handleMsg(processedInput, responder, sessionId);
-    
+
     currentChat.pop();
     const chatTurn = {
       user: text,
