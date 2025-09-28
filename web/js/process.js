@@ -2,18 +2,61 @@ import { getDataByKey, updateData } from "./database.js";
 import { genericHttpAdapter } from "./adapters/http.js";
 import { getDefaultAgentById } from "./allAgentsCon.js";
 
+async function getFileContentById(fileId) {
+  if (!fileId) return null;
+  try {
+    const fileData = await getDataByKey("myfiles", fileId);
+    return fileData || null;
+  } catch (error) {
+    console.error(`Error fetching file with ID ${fileId}:`, error);
+    return null;
+  }
+}
+
 export async function preprocess(sessionId, input, agent, history = null) {
-  const regex = /^\<\[\<(.*?)\>\]\]\>/;
-  const fileName = input.match(regex);
-  const chatHistory = history ? history : (await getDataByKey("chat", sessionId))?.msg || [];
-  const last10 = chatHistory.slice(-10);
+  const regex = /(?<!\S)@(\S+)/g;
+  const matches = Array.from(input.matchAll(regex));
+  const chatHistory = history
+    ? history
+    : (await getDataByKey("chat", sessionId))?.msg || [];
+  const last20 = chatHistory.slice(-20);
   const ltm = (await getDataByKey("LTM", sessionId)) || "";
+
+  let allFilesInfo = [];
+  let modifiedInput = input;
+
+  if (matches.length > 0) {
+    const filePromises = matches.map((match) => getFileContentById(match[1]));
+    const filesData = await Promise.all(filePromises);
+
+    const fileIdToNameMap = {};
+    filesData.forEach((fileData, i) => {
+      if (fileData && fileData.fileName) {
+        const fileId = matches[i][1];
+        fileIdToNameMap[fileId] = fileData.fileName;
+      }
+    });
+
+    modifiedInput = input.replace(regex, (match, fileId) => {
+      return fileIdToNameMap[fileId] || match;
+    });
+
+    for (const fileData of filesData) {
+      if (fileData && fileData.contents) {
+        const { contents, fileName } = fileData;
+        allFilesInfo.push(`[File: ${fileName}]\n\n${contents}`);
+      }
+    }
+  }
+
   const prompt = {
-    prompt: input,
-    history: last10,
+    prompt: modifiedInput,
+    history: last20,
     ltm: ltm.contents || "",
-    file: fileName || "",
-    token_limit: agent.adapter.token_limit || 2048,
+    file:
+      allFilesInfo.join("\n\n---------------------------------------\n\n") ||
+      "",
+    token_limit: agent.adapter.token_limit || 128000,
   };
   return prompt;
 }
@@ -59,7 +102,12 @@ export async function postprocess(sessionId, currentChat) {
   }
 
   try {
-    newLTM = await generateLTM(chatTextForLTM, ltmTextForLLM, responder, sessionId);
+    newLTM = await generateLTM(
+      chatTextForLTM,
+      ltmTextForLLM,
+      responder,
+      sessionId
+    );
   } catch (error) {
     console.error("Error during generateLTM call:", error);
     newLTM = ltmTextForLLM;
@@ -83,13 +131,12 @@ export async function postprocess(sessionId, currentChat) {
   }
 }
 
-export async function generateLTM(currentChat, currentLTM, agent, sessionId) { 
+export async function generateLTM(currentChat, currentLTM, agent, sessionId) {
   const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
   const response = await genericHttpAdapter({ prompt, agent, sessionId });
   console.log("LTM API response:", response);
   return response;
 }
-
 
 export async function generateLTM2(currentChat, currentLTM, timeout = 18000) {
   const url =

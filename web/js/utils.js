@@ -55,6 +55,24 @@ export async function handleFileUpload(event, sessionId, mystaff) {
   const fileName = file.name || "";
   const fileExtension = fileName.split(".").pop().toLowerCase();
 
+  const fileExtensionPool = [
+    "doc",
+    "docx",
+    "pdf",
+    "pptx",
+    "txt",
+    "rtf",
+    "csv",
+    "xls",
+    "xlsx",
+  ];
+
+  if (!fileExtensionPool.includes(fileExtension)) {
+    // fileExtensionPook에 없는 확장자를 가지면 alert띄워서 저장이 불가하다가 하자
+    alert("docx, pdf, txt, xlsx, pptx 파일만 저장 가능합니다.");
+    return;
+  }
+
   try {
     switch (fileExtension) {
       case "pdf":
@@ -99,12 +117,6 @@ export async function handleFileUpload(event, sessionId, mystaff) {
             reject(new Error("Failed to read .docx file."));
         });
         break;
-
-      case "doc":
-        // .doc 파일은 브라우저에서 직접 파싱하기 매우 어렵습니다.
-        throw new Error(
-          ".doc files are not supported. Please convert to .docx or .pdf and try again."
-        );
 
       default:
         // 다른 모든 파일은 일반 텍스트로 처리합니다.

@@ -11,7 +11,12 @@ import { preprocess, postprocess } from "../process.js";
 import { getAgentById } from "../allAgentsCon.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"; // Import marked.js
 import { handleCommand } from "../commands.js";
-import { FindUrl, handleFileUpload, signOut } from "../utils.js";
+import {
+  FindUrl,
+  handleFileUpload,
+  signOut,
+  handleFileUploadToServer,
+} from "../utils.js";
 
 let sessionId = null;
 let mystaff = null;
@@ -75,7 +80,7 @@ $(document).ready(async function () {
           e.preventDefault(); // Prevent pasting into the textarea
           const fileName = prompt(
             "파일 이름을 입력하세요 (확장자 제외):",
-            "pasted-text"
+            "temp-" + new Date().getTime()
           );
           if (fileName) {
             const fullFileName = fileName + ".txt";
@@ -238,7 +243,11 @@ function bindUIEvents() {
   });
 
   $("#fileInput").on("change", (event) => {
-    handleFileUpload(event, sessionId, mystaff);
+    if (mystaff && mystaff.fileupload === true && mystaff.adapter?.uploadUrl) {
+      handleFileUploadToServer(event, sessionId, mystaff);
+    } else {
+      handleFileUpload(event, sessionId, mystaff);
+    }
   });
 
   $("#newChat").on("click", async () => {
@@ -345,9 +354,11 @@ function bindUIEvents() {
   });
 
   $("#messageInput").on("input", async function () {
-    const text = $(this).val().trim();
+    const text = $(this).val();
+    const match = text.match(/@(\S*)$/);
+    const emailRegex = /\S+@\S+\.\S+/;
 
-    if (text.includes("@")) {
+    if (match && !emailRegex.test(text)) {
       await showFileSearchDropdown();
     } else {
       hideFileSearchDropdown();
@@ -358,12 +369,14 @@ function bindUIEvents() {
     e.preventDefault();
     const fileId = $(this).data("file-id");
     const currentText = $("#messageInput").val();
-    const atIndex = currentText.lastIndexOf('@');
+    const atIndex = currentText.lastIndexOf("@");
     if (atIndex !== -1) {
       const newText = currentText.substring(0, atIndex) + `@${fileId} `;
       $("#messageInput").val(newText).focus();
     } else {
-      $("#messageInput").val(currentText + `@${fileId} `).focus();
+      $("#messageInput")
+        .val(currentText + `@${fileId} `)
+        .focus();
     }
     hideFileSearchDropdown();
   });
@@ -373,6 +386,24 @@ function bindUIEvents() {
       hideFileSearchDropdown();
     }
   });
+}
+
+async function triggerFileUploadToServer() {
+  const $fileInput = $('<input type="file" class="d-none">');
+  $("body").append($fileInput);
+  $fileInput.on("change", async (event) => {
+    if (mystaff && mystaff.fileupload === true && mystaff.adapter?.uploadUrl) {
+      await handleFileUploadToServer(event, sessionId, mystaff);
+    } else {
+      await handleFileUpload(event, sessionId, mystaff);
+      alert(
+        "No upload URL configured for this staff. File saved locally instead."
+      );
+    }
+    $fileInput.remove();
+  });
+
+  $fileInput.click();
 }
 
 async function sendMessage() {
@@ -386,7 +417,13 @@ async function sendMessage() {
     renderMessages(currentChat);
     $inputEl.val("");
 
-    const context = { sessionId, currentChat, renderMessages, postprocess };
+    const context = {
+      sessionId,
+      currentChat,
+      renderMessages,
+      postprocess,
+      triggerFileUploadToServer,
+    };
     const commandIsValid = await handleCommand(text, context, 4);
 
     if (!commandIsValid) {
