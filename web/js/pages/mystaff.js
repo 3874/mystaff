@@ -41,7 +41,12 @@ $(document).ready(function () {
 
     const agentId = $(this).data("id");
 
-    const mystaff = await getAgentById(agentId);
+    let mystaff;
+    if (agentId.startsWith('diystaff-')) {
+      mystaff = await getDataByKey('diystaff', agentId);
+    } else {
+      mystaff = await getAgentById(agentId);
+    }
     console.log(mystaff);
 
     const finalUrl = await FindUrl(mystaff);
@@ -106,7 +111,17 @@ $(document).ready(function () {
   $("#hired-member-list").on("click", ".chat-btn", async function (event) {
     event.preventDefault();
     const staffId = $(this).data("staff-id");
-    const mystaff = await getAgentById(staffId);
+    console.log('staffId:', staffId);
+
+    let mystaff;
+    if (staffId.startsWith('diystaff-')) {
+      mystaff = await getDataByKey('diystaff', staffId);
+      console.log('diystaff:', mystaff);
+    } else {
+      mystaff = await getAgentById(staffId);
+      console.log('staff:', mystaff);
+    }
+
     const finalUrl = await FindUrl(mystaff);
     setTimeout(() => {
       window.location.href = finalUrl;
@@ -161,9 +176,13 @@ async function loadStaffAgents() {
         userData.mystaff.length > 0
       ) {
         // Use Promise.all to fetch all agent details concurrently
-        const agentPromises = userData.mystaff.map((staffId) =>
-          getAgentById(staffId)
-        );
+        const agentPromises = userData.mystaff.map((staffId) => {
+          if (staffId.startsWith('diystaff-')) {
+            return getDataByKey('diystaff', staffId);
+          } else {
+            return getAgentById(staffId);
+          }
+        });
         const agents = await Promise.all(agentPromises);
 
         agents.forEach((agent) => {
@@ -183,13 +202,13 @@ async function loadStaffAgents() {
                     }</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
                       <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
-                        agent.staff_id
+                        agent.staff_id? agent.staff_id : agent.staffId
                       }">Detail</button>
                       <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${
-                        agent.staff_id
+                        agent.staff_id? agent.staff_id : agent.staffId
                       }">Chat</button>
                       <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${
-                        agent.staff_id
+                        agent.staff_id? agent.staff_id : agent.staffId
                       }">Fire</button>
                     </div>
                   </div>

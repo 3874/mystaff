@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIY Staff Management - MyStaff</title>
+  <title>My Interns - MyStaff</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body, html {
@@ -43,7 +45,13 @@
             <li class="nav-item">
               <a class="nav-link" href="./mystaff.html">
                 <i class="fas fa-users"></i>
-                MyStaff
+                My Staff
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./myinterns.html">
+                <i class="bi bi-android2"></i>
+                My Interns
               </a>
             </li>
             <li class="nav-item">
@@ -53,9 +61,9 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="./findstaff.html">
+              <a class="nav-link active" href="./findinterns.html">
                 <i class="fas fa-search"></i>
-                Find Your Staff
+                Find My Interns
               </a>
             </li>
             <li class="nav-item">
@@ -82,14 +90,32 @@
       <!-- Main content -->
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 class="h2">DIY Staff Management</h1>
-          <button type="button" class="btn btn-primary" id="buildBtn">Build</button>
+          <h1 class="h2">My Interns</h1>
         </div>
 
         <!-- DIY Staff -->
+        <div class="accordion mb-4" id="accordionHowTo">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHowTo" aria-expanded="false" aria-controls="collapseHowTo">
+                How to Use My Interns
+              </button>
+            </h2>
+            <div id="collapseHowTo" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionHowTo">
+              <div class="accordion-body">
+                <p>This page manages your "Interns," which are AI agents you have created or registered.</p>
+                <ul>
+                  <li><strong>My Interns:</strong> These are AI agents that are fully registered and ready to be used. You can chat with them or view their profiles.</li>
+                  <li><strong>DIY Staffs:</strong> These are configurations for AI agents that you have started creating but have not yet finalized. You can continue building them from here.</li>
+                  <li><strong>Build Button:</strong> Click the "Build" button to open a form where you can create a new AI staff from scratch. You can define its properties, adapter for connecting to an AI model (like OpenAI or Gemini), and test its responses before saving.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="card mb-4">
           <div class="card-header">
-            <h4>Registered Staffs</h4>
+            <h4>My Interns</h4>
           </div>
           <div class="card-body">
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="registered-staff-row">
@@ -99,8 +125,9 @@
         </div>
 
         <div class="card mb-4">
-          <div class="card-header">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h4>DIY Staffs</h4>
+            <button type="button" class="btn btn-danger" id="buildBtn">Build</button>
           </div>
           <div class="card-body">
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="diy-staff-row">
@@ -238,6 +265,6 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="../js/pages/registstaff.js"></script>
+  <script type="module" src="../js/pages/myinterns.js"></script>
 </body>
 </html>

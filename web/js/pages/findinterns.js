@@ -66,7 +66,7 @@ async function initializeFindStaffPage() {
               <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="card-img-top rounded-circle mx-auto mt-3" style="width: 100px; height: 100px; object-fit: cover;">
               <div class="card-body">
                 <h5 class="card-title">${agent.staff_name || 'Unnamed Agent'}</h5>
-                <a href="./staff-profile.html?staffId=${agent.staff_id}" class="btn btn-primary btn-sm mb-2">Detail</a>
+                <a href="./intern-profile.html?staffId=${agent.staff_id}" class="btn btn-primary btn-sm mb-2">Detail</a>
                 <br><br>
                 <h6 class="card-subtitle mb-2 text-muted">${agent.role || 'No role specified'}</h6>
                 <p class="card-text">${agent.summary || 'No summary.'}</p>

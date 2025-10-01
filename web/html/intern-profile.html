@@ -2,15 +2,12 @@
 <html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>ChatList &mdash; MyStaff</title>
-
-  <!-- General CSS Files -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - MyStaff</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <style>
     body, html {
       height: 100%;
@@ -32,35 +29,9 @@
         position: sticky;
         top: 0;
     }
-    .chat-container {
-      height: 100vh; /* Full viewport height */
-      display: flex;
-      flex-direction: column;
-    }
-    #chatMessages {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 1rem;
-    }
-    #sidebar {
-        height: 100vh;
-        overflow-y: auto;
-    }
-    .msg-user {
-      text-align: right;
-      margin: 0.5rem 0;
-      color: #bb86fc;
-    }
-    .msg-system {
-      text-align: left;
-      margin: 0.5rem 0;
-      color: #03dac6;
-    }
   </style>
 </head>
-
 <body>
-
   <div class="container-fluid h-100">
     <div class="row h-100">
       <!-- Sidebar -->
@@ -116,19 +87,54 @@
         </div>
       </nav>
 
-      <!-- Chat List Window -->
-      <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-0 main-content-container">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
-            <h1 class="h2" id="chatTitle">Working Chats</h1>
+      <!-- Main content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Intern Profile</h1>
         </div>
 
-        <div id="chatlist" class="flex-grow-1 overflow-y-auto p-3">
-            <ul class="list-group list-group-flush">
-                <!-- Chat List items will be populated here by JavaScript -->
-            </ul>
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12 col-sm-12 col-md-12 text-center">
+                <img alt="image" src="../img/avatar/avatar-1.png" class="img-fluid rounded-circle mb-3 author-box-picture" style="width: 150px;">
+                <h3 class="author-box-name"></h3> <!-- Keep name as h3 for prominence -->
+                <div class="author-box-details-table mt-3">
+                  <table class="table table-bordered table-striped text-start">
+                    <tbody>
+                      <tr>
+                        <th width="150px">Staff ID</th>
+                        <td class="author-box-staffId"></td>
+                      </tr>
+                      <tr>
+                        <th>Role</th>
+                        <td class="author-box-role"></td>
+                      </tr>
+                      <tr>
+                        <th>Summary</th>
+                        <td class="author-box-summary"></td>
+                      </tr>
+                      <tr>
+                        <th>Adapter</th>
+                        <td class="author-box-adapter"></td>
+                      </tr>
+                      <tr>
+                        <th>Output Format</th>
+                        <td class="author-box-output"></td>
+                      </tr>
+                      <tr>
+                        <th>Input Format</th>
+                        <td class="author-box-input"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <a href="#" class="btn btn-success btn-block mt-2 import-btn">IMPORT TO INTERN GROUP</a>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- No input area for chatlist.html -->
       </main>
     </div>
   </div>
@@ -136,6 +142,27 @@
   <!-- General JS Scripts -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/pages/chatlist.js" type="module"></script>
+  <script src="../js/pages/intern-profile.js" type="module"></script>
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jsonModalLabel">Staff Data JSON</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <pre id="json-data"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

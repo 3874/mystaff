@@ -36,7 +36,7 @@ export async function getAgentById(staffId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "read",
-      staff_id: staffId, // Lambda는 staff_id 키를 기대함
+      staff_id: staffId,
     }),
   });
 
@@ -106,12 +106,3 @@ export async function addAgent(agent) {
   console.log("agent:", agent);
 }
 
-// export async function getAllAgents() {
-//   const res = await fetch('../json/allAgents.json');
-//   return await res.json();
-// }
-
-// export async function getAgentById(staffId) {
-//   const agents = await getAllAgents();
-//   return agents.find(a => a.staffId === staffId);
-// }

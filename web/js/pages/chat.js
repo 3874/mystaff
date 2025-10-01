@@ -8,7 +8,7 @@ import {
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
-import { getAgentById } from "../allAgentsCon.js";
+import { getAnyAgentById } from "../utils.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"; // Import marked.js
 import { handleCommand } from "../commands.js";
 import {
@@ -108,8 +108,8 @@ async function initializeChat() {
     sessionId = null;
     const apikeys = localStorage.getItem("mystaff_credentials");
     const apikeysObj = JSON.parse(apikeys || "{}");
-    const agent = (await getAgentById(staffId)) || {};
-
+    let agent;
+    agent = (await getAnyAgentById(staffId)) || {};
     let apikey = "";
 
     if (!agent.adapter.name) {
@@ -136,7 +136,8 @@ async function initializeChat() {
 async function loadChatSession(sessionId) {
   const chatData = await getDataByKey("chat", sessionId);
   if (chatData && chatData.staffId) {
-    mystaff = await getAgentById(chatData.staffId);
+    mystaff = (await getAnyAgentById(chatData.staffId)) || {};
+
     console.log(mystaff);
     let staffName = mystaff.staff_name;
     $("#chatAgentName").text(staffName || "Chat");
@@ -162,7 +163,7 @@ async function loadSessionList() {
   $list.empty();
 
   const filteredSessions = allSessions.filter(
-    (session) => session.staffId === mystaff.staff_id
+    (session) => session.staffId === mystaff.staff_id? mystaff.staff_id : mystaff.staffId
   );
 
   filteredSessions.forEach((session) => {
@@ -209,7 +210,8 @@ async function renderMessages(msgs) {
         m.speaker || (mystaff ? mystaff.staff_name : "System");
       let bgColor = "#6c757d";
       if (m.speakerId) {
-        const agent = await getAgentById(m.speakerId);
+        const agent = (await getAnyAgentById(m.speakerId)) || {};
+
         if (agent && agent.color) {
           bgColor = agent.color;
         }

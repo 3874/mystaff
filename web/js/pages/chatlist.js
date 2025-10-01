@@ -1,5 +1,5 @@
 import { getAllData, deleteData, updateData } from '../database.js';
-import { getAgentById } from '../allAgentsCon.js'; // Assuming this is needed to get staff name
+import { getAnyAgentById } from '../utils.js'; // Assuming this is needed to get staff name
 import { deleteLTM } from '../memory.js'; // For deleting LTM associated with chat
 import { signOut } from '../utils.js';
 
@@ -32,7 +32,7 @@ async function loadChatList() {
         for (const session of allSessions) {
             let staffName = 'Unknown Staff';
             if (session.staffId) {
-                const agent = await getAgentById(session.staffId);
+                const agent = await getAnyAgentById(session.staffId);
                 if (agent) {
                     staffName = agent.staff_name || 'Unnamed Agent';
                 }

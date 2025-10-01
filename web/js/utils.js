@@ -1,5 +1,7 @@
 // utils.js
 import { getAllData, addData } from "./database.js";
+import { getAgentById } from "./allAgentsCon.js";
+import { getDataByKey } from "./database.js";
 
 export async function signOut() {
   localStorage.clear(); // Clears all items from localStorage
@@ -147,7 +149,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 }
 
 export async function FindUrl(mystaff, Fset = 0) {
-  const staffId = mystaff.staff_id;
+  const staffId = mystaff.staff_id? mystaff.staff_id : mystaff.staffId;
   let Furl = "";
   if (Fset === 1) {
     Furl = "./chat_moderator.html";
@@ -215,3 +217,13 @@ export async function historyToString(history) {
     })
     .join("\n");
 }
+
+export async function getAnyAgentById(staffId) {
+  let agent = null;
+  if (staffId.startsWith('diystaff-')) {
+    agent = (await getDataByKey('diystaff', staffId)) || {};
+  } else {
+    agent = (await getAgentById(staffId)) || {};
+  }
+  return agent;
+  }

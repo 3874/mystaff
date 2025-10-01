@@ -1,5 +1,5 @@
 import { getDataByKey, updateData } from "./database.js";
-import { getAgentById, getDefaultAgentById } from "./allAgentsCon.js";
+import { getAgentById } from "./allAgentsCon.js";
 import { preprocess, postprocess } from "./process.js";
 import { handleMsg } from "./agents.js";
 

@@ -132,7 +132,6 @@ $(function() { // Short for $(document).ready()
               </div>
               <div class="card-footer d-flex justify-content-end gap-2">
                 <button class="btn btn-sm btn-info detail-btn" data-staff-id="${staff.staffId}">Detail</button>
-                <button class="btn btn-sm btn-success chat-btn" data-staff-id="${staff.staffId}">Chat</button>
                 <button class="btn btn-sm btn-primary edit-btn" data-staff-id="${staff.staffId}">Edit</button>
               </div>
             </div>
@@ -145,11 +144,40 @@ $(function() { // Short for $(document).ready()
     }
   }
 
+  async function loadRegisteredStaff() {
+    const staffList = await getAllData('myinterns');
+    const $staffRow = $('#registered-staff-row');
+    $staffRow.empty();
+  
+    if (staffList && staffList.length > 0) {
+      staffList.forEach(staff => {
+        const card = `
+          <div class="col">
+            <div class="card h-100 position-relative">
+              <div class="card-body">
+                <button type="button" class="btn-close position-absolute top-0 end-0 p-3 delete-intern-btn" data-staff-id="${staff.staffId}" aria-label="Delete intern"></button>
+                <h5 class="card-title">${staff.staff_name}</h5>
+                <p class="card-text text-muted">${staff.role}</p>
+                <p class="card-text">${staff.summary}</p>
+              </div>
+              <div class="card-footer d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-info detail-intern-btn" data-staff-id="${staff.staffId}">Detail</button>
+              </div>
+            </div>
+          </div>
+        `;
+        $staffRow.append(card);
+      });
+    } else {
+      $staffRow.html('<div class="col"><p class="text-center">No registered interns found.</p></div>');
+    }
+  }
+
   $('#fileupload').on('change', toggleUploadUrl);
 
   $('#buildBtn').on('click', function () {
     populateForm(defaultJsonData);
-    toggleUploadUrl(); // Set initial state
+    toggleUploadUrl();
     registModal.show();
   });
 
@@ -181,7 +209,7 @@ $(function() { // Short for $(document).ready()
         console.log('Staff updated:', newJsonData.staffId);
       } else {
         // Add new staff
-        newJsonData.staffId = 'staff-' + Date.now(); // Generate a simple unique ID
+        newJsonData.staffId = 'diystaff-' + Date.now(); // Generate a simple unique ID
         await addData('diystaff', newJsonData);
         console.log('New staff added:', newJsonData.staffId);
       }
@@ -225,7 +253,7 @@ $(function() { // Short for $(document).ready()
     const staffId = $(this).data('staff-id');
     const staffData = await getDataByKey('diystaff', staffId);
     if (staffData) {
-      const tempStaff = { ...staffData, staff_id: staffData.staffId };
+      const tempStaff = { ...staffData};
       const finalUrl = await FindUrl(tempStaff);
       window.location.href = finalUrl;
     } else {
@@ -261,6 +289,41 @@ $(function() { // Short for $(document).ready()
     }
   });
 
+  // Event listener for detail buttons on registered interns
+  $('#registered-staff-row').on('click', '.detail-intern-btn', function() {
+    const staffId = $(this).data('staff-id');
+    window.location.href = `./staff-profile.html?staffId=${staffId}`;
+  });
+
+  // Event listener for chat buttons on registered interns
+  $('#registered-staff-row').on('click', '.chat-intern-btn', async function() {
+    const staffId = $(this).data('staff-id');
+    const staffData = await getDataByKey('myinterns', staffId);
+    if (staffData) {
+      const tempStaff = { ...staffData};
+      const finalUrl = await FindUrl(tempStaff);
+      window.location.href = finalUrl;
+    } else {
+      alert('Could not find intern data.');
+    }
+  });
+
+  // Event listener for delete buttons on registered interns
+  $('#registered-staff-row').on('click', '.delete-intern-btn', async function() {
+    const staffId = $(this).data('staff-id');
+    if (confirm(`Are you sure you want to delete intern ${staffId}?`)) {
+      try {
+        await deleteData('myinterns', staffId);
+        console.log('Intern deleted:', staffId);
+        loadRegisteredStaff(); // Refresh the list
+      } catch (error) {
+        console.error('Failed to delete intern data:', error);
+        alert('Failed to delete data. See console for details.');
+      }
+    }
+  });
+
   // Initial load
   loadDIYStaffs();
+  loadRegisteredStaff();
 });

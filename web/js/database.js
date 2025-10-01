@@ -2,7 +2,7 @@
 // IndexedDB 기본 CRUD
 
 const DB_NAME = 'mystaff';
-const DB_VERSION = 1; // DB 버전을 4로 올립니다.
+const DB_VERSION = 2; // DB 버전을 4로 올립니다.
 
 let db;
 
@@ -25,9 +25,6 @@ function openDB() {
         db.createObjectStore('LTM', { keyPath: 'sessionId' });
       }
       
-      // myfiles 저장소 스키마를 변경합니다.
-      // 기존 저장소가 있다면 삭제하고, keyPath: 'id'로 새로 만듭니다.
-      // 이 과정에서 myfiles에 있던 기존 데이터는 모두 삭제됩니다.
       if (db.objectStoreNames.contains('myfiles')) {
         db.deleteObjectStore('myfiles');
       }
@@ -36,6 +33,11 @@ function openDB() {
       if (!db.objectStoreNames.contains('diystaff')) {
         db.createObjectStore('diystaff', { keyPath: 'staffId' });
       }
+
+      if (!db.objectStoreNames.contains('myinterns')) {
+        db.createObjectStore('myinterns', { keyPath: 'staffId' });
+      }
+      
     };
     request.onsuccess = () => {
       db = request.result;

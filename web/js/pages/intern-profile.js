@@ -29,46 +29,34 @@ $(document).ready(async function() {
       return;
     }
 
-    $('.hire-btn').on('click', async function(e) {
+    const staffData = await getAgentById(staffId);
+    console.log(staffData);
+    loadStaffAgent(staffData);
+
+    $('.import-btn').on('click', async function(e) {
       e.preventDefault(); // Prevent default link behavior
 
-      const currentStaffId = staffId; // Get staffId again for clarity
+      const currentStaffId = staffId; 
 
       if (!currentStaffId) {
         alert('Error: Staff ID not found.');
         return;
       }
 
-      let userData = await getDataByKey('mydata', userId);
-      if (!userData) {
-        window.location.href = './signin.html';
-        return; // Initialize with myId if no user data exists
-      }
-      if (!userData.mystaff) {
-        userData.mystaff = []; // Initialize mystaff array if it doesn't exist
-      }
+      // Check if the staff data already exists in the 'myinterns' store
+      const existingStaff = await getDataByKey('myinterns', currentStaffId);
 
-      // Check if staffId already exists in mystaff
-      if (userData.mystaff.includes(currentStaffId)) {
-        alert('This staff member is already in your MyStaff list!');
+      if (existingStaff) {
+        alert('This staff member is already in your My Interns list!');
       } else {
-        userData.mystaff.push(currentStaffId); // Add staffId to mystaff
-        await updateData('mydata', userId, userData); // Save updated user data
-        alert('Staff member added to your MyStaff list!');
+        // Save the entire staffData object to the 'myinterns' store
+        await updateData('myinterns', currentStaffId, staffData);
+        alert('Staff member added to your My Interns list!');
       }
 
-      window.location.href = './mystaff.html'; // Redirect to mystaff.html
+      window.location.href = './myinterns.html'; // Redirect to myinterns.html
     });
-
-    let staffData;
-    if (staffId.startsWith('diystaff-')) {
-      staffData = await getDataByKey('diystaff', staffId);
-    } else {
-      staffData = await getAgentById(staffId);
-    }
-    console.log(staffData);
-    loadStaffAgent(staffData);
-    
+ 
   }
 
   $('#signOutBtn').on('click', function(e) {
