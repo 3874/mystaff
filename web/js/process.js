@@ -104,9 +104,9 @@ export async function postprocess(sessionId, currentChat) {
   try {
     newLTM = await generateLTM(
       chatTextForLTM,
-      ltmTextForLLM,
-      responder,
-      sessionId
+      ltmTextForLLM
+      //      responder,
+      //      sessionId
     );
   } catch (error) {
     console.error("Error during generateLTM call:", error);
@@ -131,19 +131,20 @@ export async function postprocess(sessionId, currentChat) {
   }
 }
 
-export async function generateLTM(currentChat, currentLTM, agent, sessionId) {
-  const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
-  const response = await genericHttpAdapter({ prompt, agent, sessionId });
-  console.log("LTM API response:", response);
-  return response;
-}
+// export async function generateLTM(currentChat, currentLTM, agent, sessionId) {
+//   const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
+//   const response = await genericHttpAdapter({ prompt, agent, sessionId });
+//   console.log("LTM API response:", response);
+//   return response;
+// }
 
-export async function generateLTM2(currentChat, currentLTM, timeout = 18000) {
+export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
   const url =
     "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-
+  console.log(currentChat);
+  console.log(currentLTM);
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -162,11 +163,16 @@ export async function generateLTM2(currentChat, currentLTM, timeout = 18000) {
       );
     }
 
-    const newLTMContent = await res.text();
+    const newLTM = await res.text();
+    console.log("New LTM content:", newLTM);
 
-    if (!newLTMContent || newLTMContent.trim() === "") {
+    if (!newLTM || newLTM.trim() === "") {
       return currentLTM;
     }
+
+    const parsedContent = JSON.parse(newLTM);
+    const newLTMContent = parsedContent.body || currentLTM;
+    console.log("Parsed LTM content:", newLTMContent);
 
     return newLTMContent;
   } catch (err) {

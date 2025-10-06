@@ -50,7 +50,7 @@ $(document).ready(async function () {
   $("#messageInput").on("paste", function (e) {
     const clipboardData = e.originalEvent.clipboardData;
     if (clipboardData.files && clipboardData.files.length > 0) {
-      e.preventDefault(); // 파일 붙여넣기 시 기본 동작 방지
+      e.preventDefault();
       if (clipboardData.files.length > 1) {
         alert("파일은 하나만 넣어주세요.");
       } else {
@@ -162,8 +162,8 @@ async function loadSessionList() {
   const $list = $("#sessionList");
   $list.empty();
 
-  const filteredSessions = allSessions.filter(
-    (session) => session.staffId === mystaff.staff_id? mystaff.staff_id : mystaff.staffId
+  const filteredSessions = allSessions.filter((session) =>
+    session.staffId === mystaff.staff_id ? mystaff.staff_id : mystaff.staffId
   );
 
   filteredSessions.forEach((session) => {
@@ -191,19 +191,22 @@ async function loadSessionList() {
 async function renderMessages(msgs) {
   const $container = $("#chatMessages");
   let messagesHtml = "";
+  const copyIcon = '<i class="fas fa-copy"></i>';
 
   for (const m of msgs) {
     if (m.user) {
+      const userTextForCopy = encodeURIComponent(m.user);
       messagesHtml += `
-                <div class="msg-container">
-                    <div class="msg-content msg-user">
-                        <p><b>User:</b></p>
-                        <p>${m.user}</p>
-                        <span class="msg-date text-muted small">${new Date(
-                          m.date
-                        ).toLocaleString()}</span>
-                    </div>
-                </div>`;
+        <div class="msg-container">
+            <div class="msg-content msg-user position-relative">
+                <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${userTextForCopy}" title="Copy">${copyIcon}</button>
+                <p><b>User:</b></p>
+                <div class="message-text">${m.user}</div>
+                <span class="msg-date text-muted small" hidden>${new Date(
+                  m.date
+                ).toLocaleString()}</span>
+            </div>
+        </div>`;
     }
     if (m.system) {
       const speakerName =
@@ -211,23 +214,24 @@ async function renderMessages(msgs) {
       let bgColor = "#6c757d";
       if (m.speakerId) {
         const agent = (await getAnyAgentById(m.speakerId)) || {};
-
         if (agent && agent.color) {
           bgColor = agent.color;
         }
       }
 
       const systemHtml = marked.parse(m.system);
+      const systemTextForCopy = encodeURIComponent(m.system);
       messagesHtml += `
-                <div class="msg-container">
-                    <div class="msg-content msg-system" style="background-color: ${bgColor};">
-                        <p><b>${speakerName}:</b></p>
-                        <div>${systemHtml}</div>
-                        <span class="msg-date text-muted small" style="color: #ccc;">${new Date(
-                          m.date
-                        ).toLocaleString()}</span>
-                    </div>
-                </div>`;
+        <div class="msg-container">
+            <div class="msg-content msg-system position-relative" style="background-color: ${bgColor};">
+                <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${systemTextForCopy}" title="Copy">${copyIcon}</button>
+                <p><b>${speakerName}:</b></p>
+                <div class="message-text">${systemHtml}</div>
+                <span class="msg-date text-muted small" style="color: #ccc;" hidden>${new Date(
+                  m.date
+                ).toLocaleString()}</span>
+            </div>
+        </div>`;
     }
   }
   $container.html(messagesHtml);
@@ -245,7 +249,8 @@ function bindUIEvents() {
   });
 
   $("#fileInput").on("change", (event) => {
-    if (mystaff && mystaff.fileupload === true && mystaff.adapter?.uploadUrl) {
+    console.log(mystaff);
+    if (mystaff && mystaff.adapter?.fileupload && mystaff.adapter?.uploadUrl) {
       handleFileUploadToServer(event, sessionId, mystaff);
     } else {
       handleFileUpload(event, sessionId, mystaff);
@@ -388,24 +393,26 @@ function bindUIEvents() {
       hideFileSearchDropdown();
     }
   });
-}
 
-async function triggerFileUploadToServer() {
-  const $fileInput = $('<input type="file" class="d-none">');
-  $("body").append($fileInput);
-  $fileInput.on("change", async (event) => {
-    if (mystaff && mystaff.fileupload === true && mystaff.adapter?.uploadUrl) {
-      await handleFileUploadToServer(event, sessionId, mystaff);
-    } else {
-      await handleFileUpload(event, sessionId, mystaff);
-      alert(
-        "No upload URL configured for this staff. File saved locally instead."
-      );
-    }
-    $fileInput.remove();
+  $("#chatMessages").on("click", ".copy-btn", function () {
+    const encodedText = $(this).data("copytext");
+    const textToCopy = decodeURIComponent(encodedText);
+
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        const originalIcon = "📋";
+        const $button = $(this);
+        $button.text("✅");
+        setTimeout(() => {
+          $button.text(originalIcon);
+        }, 1500);
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        alert("Failed to copy text.");
+      });
   });
-
-  $fileInput.click();
 }
 
 async function sendMessage() {
@@ -424,7 +431,6 @@ async function sendMessage() {
       currentChat,
       renderMessages,
       postprocess,
-      triggerFileUploadToServer,
     };
     const commandIsValid = await handleCommand(text, context, 4);
 

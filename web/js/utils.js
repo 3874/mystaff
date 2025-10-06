@@ -14,9 +14,12 @@ export async function handleFileUploadToServer(event, sessionId, mystaff) {
   if (!file) return;
   const fileName = file.name || "";
   const formData = new FormData();
-  const headers = {
-    Authorization: mystaff?.adapter?.headers.Authorization || "",
-  };
+
+  // Clone headers from mystaff config, but remove Content-Type
+  // The browser must set this for FormData to work correctly.
+  const fetchHeaders = { ...mystaff?.adapter?.headers };
+  delete fetchHeaders['Content-Type'];
+  delete fetchHeaders['content-type']; // Also check for lowercase version
 
   formData.append("file", file);
   formData.append("sessionId", sessionId);
@@ -26,7 +29,7 @@ export async function handleFileUploadToServer(event, sessionId, mystaff) {
     const response = await fetch(url, {
       method: "POST",
       body: formData,
-      headers: headers,
+      headers: fetchHeaders,
     });
 
     if (!response.ok) {
@@ -83,7 +86,11 @@ export async function handleFileUpload(event, sessionId, mystaff) {
         content = await new Promise((resolve, reject) => {
           pdfReader.onload = async (e) => {
             try {
-              const pdf = await pdfjsLib.getDocument(e.target.result).promise;
+              if (!window.pdfjsLib) {
+                throw new Error("PDF.js library is not loaded.");
+              }
+              const pdf = await window.pdfjsLib.getDocument(e.target.result)
+                .promise;
               let pdfText = "";
               for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
@@ -93,7 +100,8 @@ export async function handleFileUpload(event, sessionId, mystaff) {
               }
               resolve(pdfText);
             } catch (error) {
-              reject(new Error("Failed to parse PDF file."));
+              console.error("PDF parsing error:", error);
+              reject(new Error(`Failed to parse PDF file: ${error.message}`));
             }
           };
           pdfReader.onerror = () =>
@@ -149,7 +157,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 }
 
 export async function FindUrl(mystaff, Fset = 0) {
-  const staffId = mystaff.staff_id? mystaff.staff_id : mystaff.staffId;
+  const staffId = mystaff.staff_id ? mystaff.staff_id : mystaff.staffId;
   let Furl = "";
   if (Fset === 1) {
     Furl = "./chat_moderator.html";
@@ -220,10 +228,10 @@ export async function historyToString(history) {
 
 export async function getAnyAgentById(staffId) {
   let agent = null;
-  if (staffId.startsWith('diystaff-')) {
-    agent = (await getDataByKey('diystaff', staffId)) || {};
+  if (staffId.startsWith("diystaff-")) {
+    agent = (await getDataByKey("diystaff", staffId)) || {};
   } else {
     agent = (await getAgentById(staffId)) || {};
   }
   return agent;
-  }
+}

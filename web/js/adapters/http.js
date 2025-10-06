@@ -9,13 +9,13 @@ function assertOk(resp, data) {
 // adapters/moderator.js
 export async function genericHttpAdapter({ processedInput, agent, sessionId }) {
   const url = agent?.adapter?.apiUrl;
-  //const url = "http://172.30.1.84:5678/webhook-test/mystaff-llm";
+  //const url = "http://172.30.1.84:5678/webhook-test/fileflickerDB";
 
   const payload = {
     input: processedInput,
     sessionId: sessionId,
   };
-  console.log("HTTP Adapter - Payload:", payload);
+
   const api_headers = agent?.adapter?.headers;
   const api_method = agent?.adapter?.method || "POST";
 

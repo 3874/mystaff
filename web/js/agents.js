@@ -1,10 +1,9 @@
 import { getAdapter } from "./adapters/index.js";
 
 export async function handleMsg(processedInput, agent, sessionId) {
-
   try {
     const adapter = getAdapter(agent?.adapter?.name || "moderator");
-    const output = await adapter({processedInput, agent, sessionId});
+    const output = await adapter({ processedInput, agent, sessionId });
 
     return typeof output === "string" ? output : JSON.stringify(output);
   } catch (err) {
