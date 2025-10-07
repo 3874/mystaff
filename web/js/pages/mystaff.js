@@ -1,6 +1,8 @@
 import { getDataByKey, updateData } from "../../js/database.js"; // Import getAllData
-import { getAgentById, getDefaultAgents } from "../allAgentsCon.js"; // Import the function
+import { getAgentById } from "../allAgentsCon.js"; // Import the function
 import { signOut, FindUrl } from "../utils.js";
+import { moderatorAdapter } from "../adapters/moderator.js";
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 
 $(document).ready(function () {
   // Check for login status
@@ -11,29 +13,40 @@ $(document).ready(function () {
     alert("You must be logged in to view this page.");
     window.location.href = "./signin.html";
   } else {
-    loadDefaultAgents();
     loadStaffAgents();
   }
 
-    const qaBotButton = `
+  const qaBotButton = `
     <button id="qa-bot-fab" class="btn btn-primary rounded-circle shadow" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px; z-index: 1000; display: flex; align-items: center; justify-content: center;">
       <i class="fas fa-question"></i>
     </button>
   `;
 
-  $('body').append(qaBotButton);
+  $("body").append(qaBotButton);
+
+  $("#send-btn").on("click", async function (event) {
+    event.preventDefault();
+    const userInput = $("#user-input").val().trim();
+    if (!userInput) return;
+
+    renderMessages([{ user: userInput, date: new Date() }]);
+    $("#user-input").val("");
+
+    const response = await moderatorAdapter({
+      prompt: userInput,
+      history: [],
+      sessionId: "test-session",
+    });
+
+    if (response) {
+      renderMessages([{ system: response, date: new Date() }]);
+    }
+  });
 
   // Click event for the QA bot button
-  $('#qa-bot-fab').on('click', async function(event) {
+  $("#qa-bot-fab").on("click", function (event) {
     event.preventDefault();
-    let agentDataJson = localStorage.getItem("mystaff_default_agent");
-    let agentData = JSON.parse(agentDataJson);
-    const mystaff = agentData.find((agent) => agent.staff_id === "default_20220111_00001");
-    console.log(mystaff);
-    const finalUrl = await FindUrl(mystaff, 1);
-    setTimeout(() => {
-      $("#chatModal").modal('show');
-    }, 100);
+    $("#chatModal").modal("show");
   });
 
   $("#hired-member-list").on("click", "a[data-id]", async function (event) {
@@ -42,8 +55,8 @@ $(document).ready(function () {
     const agentId = $(this).data("id");
 
     let mystaff;
-    if (agentId.startsWith('diystaff-')) {
-      mystaff = await getDataByKey('diystaff', agentId);
+    if (agentId.startsWith("diystaff-")) {
+      mystaff = await getDataByKey("diystaff", agentId);
     } else {
       mystaff = await getAgentById(agentId);
     }
@@ -111,37 +124,18 @@ $(document).ready(function () {
   $("#hired-member-list").on("click", ".chat-btn", async function (event) {
     event.preventDefault();
     const staffId = $(this).data("staff-id");
-    console.log('staffId:', staffId);
+    console.log("staffId:", staffId);
 
     let mystaff;
-    if (staffId.startsWith('diystaff-')) {
-      mystaff = await getDataByKey('diystaff', staffId);
-      console.log('diystaff:', mystaff);
+    if (staffId.startsWith("diystaff-")) {
+      mystaff = await getDataByKey("diystaff", staffId);
+      console.log("diystaff:", mystaff);
     } else {
       mystaff = await getAgentById(staffId);
-      console.log('staff:', mystaff);
+      console.log("staff:", mystaff);
     }
 
     const finalUrl = await FindUrl(mystaff);
-    setTimeout(() => {
-      window.location.href = finalUrl;
-    }, 100);
-  });
-
-  $("#default-member-list").on("click", ".detail-btn", function (event) {
-    event.preventDefault();
-    const staffId = $(this).data("staff-id");
-    alert(`Staff ID: ${staffId}`);
-  });
-
-  $("#default-member-list").on("click", ".chat-btn", async function (event) {
-    event.preventDefault();
-    const staffId = $(this).data("staff-id");
-    let agentDataJson = localStorage.getItem("mystaff_default_agent");
-    let agentData = JSON.parse(agentDataJson);
-    const mystaff = agentData.find((agent) => agent.staff_id === staffId);
-    console.log(mystaff);
-    const finalUrl = await FindUrl(mystaff, 1);
     setTimeout(() => {
       window.location.href = finalUrl;
     }, 100);
@@ -177,8 +171,8 @@ async function loadStaffAgents() {
       ) {
         // Use Promise.all to fetch all agent details concurrently
         const agentPromises = userData.mystaff.map((staffId) => {
-          if (staffId.startsWith('diystaff-')) {
-            return getDataByKey('diystaff', staffId);
+          if (staffId.startsWith("diystaff-")) {
+            return getDataByKey("diystaff", staffId);
           } else {
             return getAgentById(staffId);
           }
@@ -202,13 +196,13 @@ async function loadStaffAgents() {
                     }</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
                       <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
-                        agent.staff_id? agent.staff_id : agent.staffId
+                        agent.staff_id ? agent.staff_id : agent.staffId
                       }">Detail</button>
                       <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${
-                        agent.staff_id? agent.staff_id : agent.staffId
+                        agent.staff_id ? agent.staff_id : agent.staffId
                       }">Chat</button>
                       <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${
-                        agent.staff_id? agent.staff_id : agent.staffId
+                        agent.staff_id ? agent.staff_id : agent.staffId
                       }">Fire</button>
                     </div>
                   </div>
@@ -233,59 +227,50 @@ async function loadStaffAgents() {
   }
 }
 
-async function loadDefaultAgents() {
-  try {
-    let agentDataJson = localStorage.getItem("mystaff_default_agent");
-    let agentData = JSON.parse(agentDataJson);
+function renderMessages(msgs) {
+  const $container = $("#chatMessages");
+  if (!$container.length) return;
 
-    if (!agentDataJson) {
-      console.log("Fetching default agents from network...");
-      agentData = await getDefaultAgents();
-      localStorage.setItem("mystaff_default_agent", JSON.stringify(agentData));
-    }
+  let messagesHtml = "";
+  const copyIcon = '<i class="fas fa-copy"></i>';
 
-    console.log(agentData);
-
-    if (agentData) {
-      // Populate staff lists
-      const $defaultList = $("#default-member-list");
-
-      $defaultList.empty();
-
-      agentData.forEach((agent) => {
-        if (agent) {
-          const listItem = `
-            <div class="col-12 col-md-6 mb-4">
-              <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title">${
-                    agent.staff_name || "Unnamed Agent"
-                  }</h5>
-                  <p class="card-text text-muted">${
-                    agent.role || "No role specified"
-                  }</p>
-                  <p class="card-text flex-grow-1">${
-                    agent.summary || "No description."
-                  }</p>
-                  <div class="d-flex flex-row gap-2 mt-auto">
-                    <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
-                      agent.staff_id
-                    }">Detail</button>
-                    <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staff_id}">Chat</button>
-                  </div>
-                </div>
-              </div>
+  for (const m of msgs) {
+    if (m.user) {
+      const userTextForCopy = encodeURIComponent(m.user);
+      messagesHtml += `
+        <div class="msg-container">
+            <div class="msg-content msg-user position-relative">
+                <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${userTextForCopy}" title="Copy">${copyIcon}</button>
+                <p><b>User:</b></p>
+                <div class="message-text">${m.user}</div>
+                <span class="msg-date text-muted small" hidden>${new Date(
+                  m.date
+                ).toLocaleString()}</span>
             </div>
-          `;
-          $defaultList.append(listItem);
-        }
-      });
-    } else {
-      console.error("Could not find user data for ID:", userId);
-      alert("Could not load your profile. Please sign in again.");
+        </div>`;
     }
-  } catch (error) {
-    console.error("Failed to load staff agents:", error);
-    alert("An error occurred while loading your staff agents.");
+    if (m.system) {
+      const speakerName = m.speaker || "Moderator";
+      let bgColor = "#6c757d";
+      if (m.speakerId) {
+        bgColor = "#007bff";
+      }
+
+      const systemHtml = marked.parse(m.system);
+      const systemTextForCopy = encodeURIComponent(m.system);
+      messagesHtml += `
+        <div class="msg-container">
+            <div class="msg-content msg-system position-relative" style="background-color: ${bgColor};">
+                <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${systemTextForCopy}" title="Copy">${copyIcon}</button>
+                <p><b>${speakerName}:</b></p>
+                <div class="message-text">${systemHtml}</div>
+                <span class="msg-date text-muted small" style="color: #ccc;" hidden>${new Date(
+                  m.date
+                ).toLocaleString()}</span>
+            </div>
+        </div>`;
+    }
   }
+  $container.append(messagesHtml);
+  $container.prop("scrollTop", $container.prop("scrollHeight"));
 }

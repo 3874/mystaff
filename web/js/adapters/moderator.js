@@ -1,31 +1,44 @@
-function assertOk(resp, data) {
-  if (!resp.ok) {
-    throw new Error(
-      `HTTP error! status: ${resp.status}, data: ${JSON.stringify(data)}`
-    );
-  }
-}
-
-// adapters/http.js
-// 임의의 HTTP JSON API (Bearer/커스텀 헤더 지원)
-export async function moderatorAdapter({ processedInput, agent, sessionId }) {
-  const url = agent.adapter.apiUrl;
+// moderator adapter
+export async function moderatorAdapter({ prompt, history, sessionId }) {
+  const url =
+    "https://1nzyp04c0l.execute-api.ap-northeast-2.amazonaws.com/default/ask";
 
   const payload = {
-    input: processedInput,
-    sessionId: sessionId,
+    prompt: prompt,
+    //  sessionId: sessionId,
   };
 
-  const api_headers = agent.adapter.headers;
+  console.log("Moderator Adapter Payload:", payload);
 
   const resp = await fetch(url, {
-    method: api_method,
-    headers: api_headers,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
-  const data = await resp.json().catch(() => ({}));
-  assertOk(resp, data);
+  console.log(
+    "Moderator Adapter Response Status:",
+    resp.status,
+    resp.statusText
+  );
 
-  return data[0]?.output || "No response from server";
+  let data;
+  try {
+    data = await resp.json();
+
+    if (typeof data.body === "string") {
+      data = JSON.parse(data.body);
+    }
+  } catch (err) {
+    console.error("Failed to parse JSON:", err);
+    data = {};
+  }
+
+  if (!resp.ok) {
+    console.error("Server error:", data);
+    throw new Error(`HTTP ${resp.status}: ${data.message || "Server Error"}`);
+  }
+
+  console.log("Moderator Adapter Response Data:", data);
+  return data.output || "No response from server";
 }
