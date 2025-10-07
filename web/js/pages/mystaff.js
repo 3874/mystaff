@@ -238,7 +238,7 @@ function renderMessages(msgs) {
     if (m.user) {
       const userTextForCopy = encodeURIComponent(m.user);
       messagesHtml += `
-        <div class="msg-container">
+        <div class="msg-container mb-3">
             <div class="msg-content msg-user position-relative">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${userTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>User:</b></p>
@@ -252,14 +252,10 @@ function renderMessages(msgs) {
     if (m.system) {
       const speakerName = m.speaker || "Moderator";
       let bgColor = "#6c757d";
-      if (m.speakerId) {
-        bgColor = "#007bff";
-      }
-
       const systemHtml = marked.parse(m.system);
       const systemTextForCopy = encodeURIComponent(m.system);
       messagesHtml += `
-        <div class="msg-container">
+        <div class="msg-container mb-3">
             <div class="msg-content msg-system position-relative" style="background-color: ${bgColor};">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${systemTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>${speakerName}:</b></p>
