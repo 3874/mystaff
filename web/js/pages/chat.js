@@ -197,8 +197,8 @@ async function renderMessages(msgs) {
     if (m.user) {
       const userTextForCopy = encodeURIComponent(m.user);
       messagesHtml += `
-        <div class="msg-container">
-            <div class="msg-content msg-user position-relative">
+        <div class="msg-container mb-3">
+            <div class="msg-content msg-user position-relative" style="width: 100%;">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${userTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>User:</b></p>
                 <div class="message-text">${m.user}</div>
@@ -222,8 +222,8 @@ async function renderMessages(msgs) {
       const systemHtml = marked.parse(m.system);
       const systemTextForCopy = encodeURIComponent(m.system);
       messagesHtml += `
-        <div class="msg-container">
-            <div class="msg-content msg-system position-relative" style="background-color: ${bgColor};">
+        <div class="msg-container mb-3">
+            <div class="msg-content msg-system position-relative" style="background-color: ${bgColor}; width: 100%;">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${systemTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>${speakerName}:</b></p>
                 <div class="message-text">${systemHtml}</div>

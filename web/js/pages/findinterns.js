@@ -1,4 +1,4 @@
-import { getAllAgents } from '../allAgentsCon.js';
+import { getAllAgentsWithStatus } from '../allAgentsCon.js';
 import { signOut, FindUrl } from '../utils.js';
 
 $(document).ready(function() {
@@ -53,7 +53,7 @@ async function initializeFindStaffPage() {
 
     $allStaffList.empty();
 
-    const agents = await getAllAgents();
+    const agents = await getAllAgentsWithStatus();
     console.log(agents);
 
     agents.forEach((agent, index) => {

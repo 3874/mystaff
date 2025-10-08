@@ -1,12 +1,7 @@
 import { handleMsg } from "../agents.js";
-import {
-  addData,
-  updateData,
-  getAllData,
-  getDataByKey,
-  deleteData,
-} from "../database.js";
+import { addData, updateData, getAllData, getDataByKey, deleteData} from "../database.js";
 import { FindUrl } from "../utils.js";
+import { addAgent } from "../allAgentsCon.js"; 
 
 $(function () {
   // Short for $(document).ready()
@@ -172,6 +167,7 @@ $(function () {
                 <p class="card-text">${staff.summary}</p>
               </div>
               <div class="card-footer d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-success regist-btn" data-staff-id="${staff.staffId}">Regist</button>
                 <button class="btn btn-sm btn-info detail-btn" data-staff-id="${staff.staffId}">Detail</button>
                 <button class="btn btn-sm btn-primary edit-btn" data-staff-id="${staff.staffId}">Edit</button>
               </div>
@@ -369,6 +365,29 @@ $(function () {
       populateForm(staffData);
       toggleUploadUrl();
       registModal.show();
+    } else {
+      alert("Could not find staff data.");
+    }
+  });
+
+  $("#diy-staff-row").on("click", ".regist-btn", async function () {
+    const staffId = $(this).data("staff-id");
+    const staffData = await getDataByKey("diystaff", staffId);
+
+    if (staffData) {
+      try {
+        staffData.staff_id= "mystaff-" + Date.now();
+        delete staffData.staffId;
+        if (!staffData.input_format) staffData.input_format = "";
+        if (!staffData.output_format) staffData.output_format = "";
+        staffData.output_format = "";
+        console.log(staffData); 
+        await addAgent(staffData);
+        alert(`Registered successfully.`);
+      } catch (error) {
+        console.error("Failed to register intern:", error);
+        alert("Failed to register intern. See console for details.");
+      }
     } else {
       alert("Could not find staff data.");
     }

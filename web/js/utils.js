@@ -158,6 +158,8 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
 export async function FindUrl(mystaff, Fset = 0) {
   const staffId = mystaff.staff_id ? mystaff.staff_id : mystaff.staffId;
+
+
   let Furl = "";
   if (Fset === 1) {
     Furl = "./chat_moderator.html";

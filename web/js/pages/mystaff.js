@@ -1,4 +1,4 @@
-import { getDataByKey, updateData } from "../../js/database.js"; // Import getAllData
+import { getDataByKey, updateData, addData, deleteData } from "../../js/database.js"; // Import getAllData
 import { getAgentById } from "../allAgentsCon.js"; // Import the function
 import { signOut, FindUrl } from "../utils.js";
 import { moderatorAdapter } from "../adapters/moderator.js";
@@ -40,13 +40,39 @@ $(document).ready(function () {
 
     if (response) {
       renderMessages([{ system: response, date: new Date() }]);
+      await saveChatMessage({
+        sessionId: "moderator",
+        user: userInput,
+        system: response,
+      });
+    }
+  });
+
+  $("#user-input").on("keypress", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      $("#send-btn").click();
     }
   });
 
   // Click event for the QA bot button
-  $("#qa-bot-fab").on("click", function (event) {
+  $("#qa-bot-fab").on("click", async function (event) {
     event.preventDefault();
     $("#chatModal").modal("show");
+
+    // "moderator" 세션의 채팅 데이터 불러와서 메시지 렌더링
+    const chatData = await getDataByKey("chat", "moderator");
+    if (chatData && chatData.msg) {
+      // chatData.msg가 배열이면 각 메시지에 대해 renderMessages 실행
+      // msg 구조에 따라 적절히 변환 필요
+      const msgs = chatData.msg.flatMap((m) => (m.msg ? m.msg : []));
+      renderMessages(msgs);
+    }
+  });
+
+  $("#resetChatBtn").on("click", async function () {
+    await deleteData("chat", "moderator"); // 또는 removeData("chat", "moderator") 사용
+    $("#chatMessages").empty();
   });
 
   $("#hired-member-list").on("click", "a[data-id]", async function (event) {
@@ -136,6 +162,7 @@ $(document).ready(function () {
     }
 
     const finalUrl = await FindUrl(mystaff);
+    
     setTimeout(() => {
       window.location.href = finalUrl;
     }, 100);
@@ -239,7 +266,7 @@ function renderMessages(msgs) {
       const userTextForCopy = encodeURIComponent(m.user);
       messagesHtml += `
         <div class="msg-container mb-3">
-            <div class="msg-content msg-user position-relative">
+            <div class="msg-content msg-user position-relative p-3">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${userTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>User:</b></p>
                 <div class="message-text">${m.user}</div>
@@ -256,7 +283,7 @@ function renderMessages(msgs) {
       const systemTextForCopy = encodeURIComponent(m.system);
       messagesHtml += `
         <div class="msg-container mb-3">
-            <div class="msg-content msg-system position-relative" style="background-color: ${bgColor};">
+            <div class="msg-content msg-system position-relative p-3" style="background-color: ${bgColor};">
                 <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 mt-1 me-1" data-copytext="${systemTextForCopy}" title="Copy">${copyIcon}</button>
                 <p><b>${speakerName}:</b></p>
                 <div class="message-text">${systemHtml}</div>
@@ -269,4 +296,46 @@ function renderMessages(msgs) {
   }
   $container.append(messagesHtml);
   $container.prop("scrollTop", $container.prop("scrollHeight"));
+}
+
+async function saveChatMessage({ sessionId, user, system }) {
+  // chatStaff 정보는 필수
+  if (!user || !system) return;
+  const chatData = {
+    sessionId,
+    msg: [
+      {
+        date: new Date().toISOString(),
+        speaker: "moderator",
+        speakerId: "",
+        system: system,
+        user: user,
+      },
+    ],
+    title: "moderator chat",
+    staffId: "moderator",
+  };
+  getDataByKey("chat", sessionId)
+    .then((existing) => {
+      if (existing) {
+        if (!existing.msg) {
+          existing.msg = [];
+        }
+        existing.msg.push(chatData);
+        updateData("chat", sessionId, existing).catch((err) => {
+          console.error("Failed to save chat message:", err);
+        });
+      } else {
+        const newChat = {
+          sessionId,
+          msg: [chatData],
+        };
+        addData("chat", newChat).catch((err) => {
+          console.error("Failed to save new chat session:", err);
+        });
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to retrieve chat session:", err);
+    });
 }
