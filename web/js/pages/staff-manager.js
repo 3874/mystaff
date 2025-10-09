@@ -265,7 +265,7 @@ $(document).ready(function () {
       adapter: {
         fileupload: $("#fileupload").is(":checked"),
         name: $("#adapter_name").val(),
-        apiUrl: $("#adapter_apiUrl").val(),
+        host: $("#adapter_apiUrl").val(),
         uploadUrl: $("#adapter_uploadUrl").val(),
         method: $("#adapter_method").val(),
         language: $("#adapter_language").val(),
@@ -278,18 +278,13 @@ $(document).ready(function () {
   }
 
   const adapterConfigs = {
-    http: {
-      apiUrl: "http://ai.yleminvest.com:5678/webhook/mystaff-llm",
-      authorization: "mystaff",
-      contentType: "application/json",
-    },
     openai: {
-      apiUrl: "https://api.openai.com/v1/chat/completions",
+      host: "https://api.openai.com/v1/chat/completions",
       authorization: "Bearer ",
       contentType: "application/json",
     },
     gemini: {
-      apiUrl:
+      host:
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
       authorization: "Bearer ",
       contentType: "application/json",
@@ -315,7 +310,7 @@ $(document).ready(function () {
     }
 
     if (config) {
-      $("#adapter_apiUrl").val(config.apiUrl);
+      $("#adapter_apiUrl").val(config.host);
       $("#adapter_headers_Authorization").val(config.authorization);
       $("#adapter_headers_Content-Type").val(config.contentType);
       if (selectedAdapter === "openai") {
@@ -365,7 +360,7 @@ $(document).ready(function () {
       alert("Adapter Name is required.");
       return;
     }
-    if (!newJsonData.adapter.apiUrl) {
+    if (!newJsonData.adapter.host) {
       alert("Adapter API URL is required.");
       return;
     }

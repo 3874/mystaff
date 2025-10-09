@@ -13,7 +13,7 @@ export async function openAIChatAdapter({ processedInput, agent, sessionId }) {
   const apiKey = OPENAI_API_KEY;
   const llm_model = agent?.adapter.model || "gpt-4o-mini";
   const url =
-    agent?.adapter.apiUrl || "https://api.openai.com/v1/chat/completions";
+    agent?.adapter.host || "https://api.openai.com/v1/chat/completions";
   const client = new OpenAI({ apiKey: apiKey, dangerouslyAllowBrowser: true });
 
   if (!apiKey) {

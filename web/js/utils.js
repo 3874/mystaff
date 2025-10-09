@@ -158,9 +158,9 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
 export async function FindUrl(mystaff, Fset = 0) {
   const staffId = mystaff.staff_id ? mystaff.staff_id : mystaff.staffId;
-  const inputFormat = mystaff.input_format ? mystaff.input_format : "chat";
+  const resource = mystaff.resource ? mystaff.resource : "chat";
 
-  if (inputFormat === "database") {
+  if (resource === "database") {
     const Finalurl = `./sheet.html?staffId=${staffId}`;
     return Finalurl;
   } 

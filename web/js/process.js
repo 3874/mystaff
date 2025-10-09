@@ -1,5 +1,4 @@
 import { getDataByKey, updateData } from "./database.js";
-import { genericHttpAdapter } from "./adapters/http.js";
 import { getDefaultAgentById } from "./allAgentsCon.js";
 
 async function getFileContentById(fileId) {
@@ -130,13 +129,6 @@ export async function postprocess(sessionId, currentChat) {
     );
   }
 }
-
-// export async function generateLTM(currentChat, currentLTM, agent, sessionId) {
-//   const prompt = `[currentChat]: ${currentChat}\n\n>>>>><<<<<\n\n[currentLTM]: ${currentLTM}\n\n`;
-//   const response = await genericHttpAdapter({ prompt, agent, sessionId });
-//   console.log("LTM API response:", response);
-//   return response;
-// }
 
 export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
   const url =

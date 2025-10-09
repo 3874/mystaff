@@ -1,24 +1,7 @@
 import { getAgentById } from "../allAgentsCon.js";
 /* dynamic ESM import helper for ag-grid */
-async function dynamicImportAgGridModule() {
-  const candidates = [
-    "https://unpkg.com/ag-grid-community@latest/dist/ag-grid-community.min.mjs",
-    "https://cdn.jsdelivr.net/npm/ag-grid-community@latest/dist/ag-grid-community.min.mjs",
-  ];
-  for (const url of candidates) {
-    try {
-      console.log("Attempting dynamic import ag-grid from", url);
-      const mod = await import(url);
-      console.log("Dynamic import succeeded:", url, Object.keys(mod));
-      return mod;
-    } catch (e) {
-      console.warn("Dynamic import failed for", url, e);
-    }
-  }
-  throw new Error("Unable to dynamically import ag-grid ESM module from known CDNs.");
-}
 
-let apiUrl = "";
+let host = "";
 let currentSearchTerm = "";
 
 $(document).ready(function () {
@@ -42,9 +25,9 @@ $(document).ready(function () {
       }
       $("#title").text(mystaff.name);
       $("#description").text(mystaff.summary || "");
-      apiUrl = mystaff?.adapter?.apiUrl || "";
-      console.log("sheet:init - staffId, apiUrl", staffId, apiUrl);
-      if (!apiUrl) {
+      host = mystaff?.adapter?.host || "";
+      console.log("sheet:init - staffId, host", staffId, host);
+      if (!host) {
         alert("API URL not found for this staff member.");
         return;
       }
@@ -65,9 +48,9 @@ $(document).ready(function () {
  * Throws on network or HTTP errors with helpful message.
  */
 async function apiPost(body) {
-  if (!apiUrl) throw new Error("API URL not configured");
-  console.log("apiPost =>", apiUrl, body);
-  const res = await fetch(apiUrl, {
+  if (!host) throw new Error("API URL not configured");
+  console.log("apiPost =>", host, body);
+  const res = await fetch(host, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

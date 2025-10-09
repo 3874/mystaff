@@ -8,7 +8,7 @@ function assertOk(resp, data) {
 
 // adapters/moderator.js
 export async function genericHttpAdapter({ processedInput, agent, sessionId }) {
-  const url = agent?.adapter?.apiUrl;
+  const host = agent?.adapter?.host;
   //const url = "http://172.30.1.84:5678/webhook-test/fileflickerDB";
 
   const payload = {
@@ -19,7 +19,7 @@ export async function genericHttpAdapter({ processedInput, agent, sessionId }) {
   const api_headers = agent?.adapter?.headers;
   const api_method = agent?.adapter?.method || "POST";
 
-  const resp = await fetch(url, {
+  const resp = await fetch(host, {
     method: api_method,
     headers: api_headers,
     body: JSON.stringify(payload),
