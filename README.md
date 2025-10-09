@@ -46,6 +46,15 @@ gemini or openai
 
 
 
+  const prompt = {
+    prompt: modifiedInput,
+    history: convertHistoryToText(last20), // string
+    ltm: ltmText, // string
+    file: allFilesText || "", // string
+    token_limit: agent?.adapter?.token_limit || 128000, // number (safe optional chaining)
+  };
+
+
 
 mystaff -> 서버 (Input)
 

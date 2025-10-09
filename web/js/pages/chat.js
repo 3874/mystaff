@@ -1,22 +1,11 @@
-import {
-  getDataByKey,
-  getAllData,
-  updateData,
-  deleteData,
-  addData,
-} from "../database.js";
+import { getDataByKey, getAllData, updateData, deleteData, addData } from "../database.js";
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
 import { getAnyAgentById } from "../utils.js";
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"; // Import marked.js
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { handleCommand } from "../commands.js";
-import {
-  FindUrl,
-  handleFileUpload,
-  signOut,
-  handleFileUploadToServer,
-} from "../utils.js";
+import { FindUrl, handleFileUpload, signOut, handleFileUploadToServer } from "../utils.js";
 
 let sessionId = null;
 let mystaff = null;
@@ -250,7 +239,7 @@ function bindUIEvents() {
 
   $("#fileInput").on("change", (event) => {
     console.log(mystaff);
-    if (mystaff && mystaff.adapter?.fileupload && mystaff.adapter?.uploadUrl) {
+    if (mystaff && mystaff.adapter?.host) {
       handleFileUploadToServer(event, sessionId, mystaff);
     } else {
       handleFileUpload(event, sessionId, mystaff);

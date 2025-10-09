@@ -10,20 +10,22 @@ export async function signOut() {
 
 export async function handleFileUploadToServer(event, sessionId, mystaff) {
   const file = event.target.files[0];
-  const url = mystaff?.adapter?.uploadUrl;
+  const url = mystaff?.adapter?.host;
   if (!file) return;
   const fileName = file.name || "";
   const formData = new FormData();
 
-  // Clone headers from mystaff config, but remove Content-Type
-  // The browser must set this for FormData to work correctly.
-  const fetchHeaders = { ...mystaff?.adapter?.headers };
-  delete fetchHeaders['Content-Type'];
-  delete fetchHeaders['content-type']; // Also check for lowercase version
+  // 안전하게 헤더 복사 (존재하지 않으면 빈 객체)
+  const fetchHeaders = mystaff?.adapter?.headers ? { ...mystaff.adapter.headers } : {};
+  // 브라우저가 boundary를 붙이도록 Content-Type 제거
+  Object.keys(fetchHeaders).forEach((k) => {
+    if (k.toLowerCase() === "content-type") delete fetchHeaders[k];
+  });
 
   formData.append("file", file);
   formData.append("sessionId", sessionId);
   formData.append("fileName", fileName);
+  formData.append("action", "upload");
 
   try {
     const response = await fetch(url, {
@@ -33,17 +35,30 @@ export async function handleFileUploadToServer(event, sessionId, mystaff) {
     });
 
     if (!response.ok) {
-      // Throw an error with the response status text
       const errorText = await response.text();
       throw new Error(
         `Upload failed: ${response.status} ${response.statusText} - ${errorText}`
       );
     }
 
-    const responseData = await response.json();
-    console.log("File uploaded successfully:", responseData);
-    alert("File uploaded successfully!");
-    return responseData; // Return the server response
+    // 안전한 응답 파싱: 빈본문 / 비-JSON도 처리
+    const text = await response.text();
+    if (!text) {
+      console.log("File uploaded successfully (empty response body).");
+      alert("File uploaded successfully!");
+      return {};
+    }
+    try {
+      const responseData = JSON.parse(text);
+      console.log("File uploaded successfully:", responseData);
+      alert("File uploaded successfully!");
+      return responseData;
+    } catch (parseErr) {
+      console.warn("Upload response is not valid JSON, returning raw text.", parseErr);
+      console.log("Response text:", text);
+      alert("File uploaded successfully!");
+      return text;
+    }
   } catch (error) {
     console.error("Error uploading file:", error);
     alert(`File upload failed: ${error.message}`);

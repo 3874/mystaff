@@ -1,30 +1,30 @@
 import { addData, getAllData } from '../../js/database.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const signupForm = document.getElementById('signupForm');
-  const generateKeyBtn = document.getElementById('generate-secret-key');
+$(document).ready(function() {
+  const $signupForm = $('#signupForm');
+  const $generateKeyBtn = $('#generate-secret-key');
 
-  if (generateKeyBtn) {
-    generateKeyBtn.addEventListener('click', () => {
+  if ($generateKeyBtn.length) {
+    $generateKeyBtn.on('click', function() {
       const randomString = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
         return ('0' + byte.toString(16)).slice(-2);
       }).join('');
-      document.getElementById('secret_key').value = randomString;
+      $('#secret_key').val(randomString);
     });
   }
 
-  if (signupForm) {
-    signupForm.addEventListener('submit', async (e) => {
+  if ($signupForm.length) {
+    $signupForm.on('submit', async function(e) {
       e.preventDefault();
 
-      // Get form values
-      const nick = document.getElementById('nick').value.trim();
-      const company = document.getElementById('company').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const secretKey = document.getElementById('secret_key').value.trim();
-      const password = document.getElementById('password').value;
-      const password2 = document.getElementById('password2').value;
-      const agree = document.getElementById('agree').checked;
+      // Get form values (using jQuery)
+      const nick = $.trim($('#nick').val() || '');
+      const company = $.trim($('#company').val() || '');
+      const email = $.trim($('#email').val() || '');
+      const secretKey = $.trim($('#secret_key').val() || '');
+      const password = $('#password').val() || '';
+      const password2 = $('#password2').val() || '';
+      const agree = $('#agree').prop('checked');
 
       // Validation
       if (!nick || !company || !email || !secretKey || !password || !password2) {
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const existingUsers = await getAllData('mydata');
-        if (existingUsers.some(user => user.myId === email)) {
+        if (existingUsers.some(function(user) { return user.myId === email; })) {
           alert('An account with this email already exists.');
           return;
         }
@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         await addData('mydata', newUser);
-        
+
         alert('Registration successful!');
-        window.location.href = './signin.html'; // Redirect to chat page
+        window.location.href = './signin.html'; // Redirect to sign-in page
 
       } catch (error) {
         console.error('Registration failed:', error);

@@ -1,5 +1,4 @@
 import { getDataByKey, updateData } from "./database.js";
-import { getDefaultAgentById } from "./allAgentsCon.js";
 
 async function getFileContentById(fileId) {
   if (!fileId) return null;
@@ -20,6 +19,31 @@ export async function preprocess(sessionId, input, agent, history = null) {
     : (await getDataByKey("chat", sessionId))?.msg || [];
   const last20 = chatHistory.slice(-20);
   const ltm = (await getDataByKey("LTM", sessionId)) || "";
+
+  // Helper: convert history array -> single string
+  function convertHistoryToText(historyArr) {
+    if (!Array.isArray(historyArr) || historyArr.length === 0) return "";
+    return historyArr
+      .map((msg) => {
+        // common shapes: { user, system } or { role, content } or plain strings
+        if (typeof msg === "string") return msg;
+        if (msg.user && msg.system) {
+          return `User: ${msg.user}\nAI: ${msg.system}`;
+        }
+        if (msg.role && msg.content) {
+          return `${msg.role === "user" ? "User" : msg.role === "assistant" ? "AI" : msg.role}: ${msg.content}`;
+        }
+        if (msg.user) return `User: ${msg.user}`;
+        if (msg.system) return `AI: ${msg.system}`;
+        // fallback: JSON
+        try {
+          return JSON.stringify(msg);
+        } catch (e) {
+          return String(msg);
+        }
+      })
+      .join("\n\n---\n\n");
+  }
 
   let allFilesInfo = [];
   let modifiedInput = input;
@@ -44,18 +68,24 @@ export async function preprocess(sessionId, input, agent, history = null) {
       if (fileData && fileData.contents) {
         const { contents, fileName } = fileData;
         allFilesInfo.push(`[File: ${fileName}]\n\n${contents}`);
+        // removed unused join() inside loop
       }
     }
   }
 
+  const allFilesText = allFilesInfo.length
+    ? allFilesInfo.join("\n\n---------------------------------------\n\n")
+    : "";
+
+  const ltmText = (ltm && (ltm.contents || (typeof ltm === "string" ? ltm : ""))) || "";
+
   const prompt = {
+    action: 'chat',
     prompt: modifiedInput,
-    history: last20,
-    ltm: ltm.contents || "",
-    file:
-      allFilesInfo.join("\n\n---------------------------------------\n\n") ||
-      "",
-    token_limit: agent.adapter.token_limit || 128000,
+    history: convertHistoryToText(last20), 
+    ltm: ltmText, 
+    file: allFilesText || "", 
+    token_limit: agent?.adapter?.token_limit || 128000,
   };
   return prompt;
 }
@@ -83,11 +113,6 @@ export async function postprocess(sessionId, currentChat) {
 
   let newLTM = null;
   const storedLTM = await getDataByKey("LTM", sessionId);
-  const responder = await getDefaultAgentById("default_20250922_00001");
-  if (!responder) {
-    console.error("Responder not found. Aborting LTM generation.");
-    return;
-  }
 
   let ltmTextForLLM =
     storedLTM && typeof storedLTM.contents === "string"
@@ -104,8 +129,7 @@ export async function postprocess(sessionId, currentChat) {
     newLTM = await generateLTM(
       chatTextForLTM,
       ltmTextForLLM
-      //      responder,
-      //      sessionId
+
     );
   } catch (error) {
     console.error("Error during generateLTM call:", error);
@@ -131,8 +155,7 @@ export async function postprocess(sessionId, currentChat) {
 }
 
 export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
-  const url =
-    "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
+  const url = "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
   console.log(currentChat);

@@ -7,32 +7,6 @@ $(function () {
   // Short for $(document).ready()
   const registModal = new bootstrap.Modal($("#registModal")[0]);
 
-  const defaultJsonData = {
-    staffId: "",
-    adapter: {
-      fileupload: false,
-      host: "http://ai.yleminvest.com:5678/webhook/mystaff-llm",
-      headers: {
-        Authorization: "mystaff",
-        "Content-Type": "application/json",
-      },
-      language: "ko",
-      method: "POST",
-      name: "http",
-      token_limit: 1000000,
-      uploadUrl: "",
-    },
-    role: "test",
-    staff_name: "test",
-    summary: "test",
-  };
-
-  function toggleUploadUrl() {
-    const isChecked = $("#fileupload").is(":checked");
-    $("#adapter_uploadUrl").prop("disabled", !isChecked);
-    $("#input_file").prop("disabled", !isChecked);
-  }
-
   function populateForm(data) {
     // Handle staffId visibility and state
     if (data && data.staffId) {
@@ -65,17 +39,16 @@ $(function () {
     // Populate common and adapter-specific fields
     $("#adapter_apiUrl").val(adapter.host || "");
     $("#adapter_token_limit").val(adapter.token_limit || 0);
+    $("#adapter_language").val(adapter.language || "");
+    $("#adapter_resource").val(adapter.resource || "");
 
     const headers = adapter.headers || {};
     $("#adapter_headers_Authorization").val(headers.Authorization || "");
     $("#adapter_headers_Content-Type").val(headers["Content-Type"] || "");
 
     if (adapterName === "http") {
-      $("#fileupload").prop("checked", adapter.fileupload || false);
-      $("#adapter_uploadUrl").val(adapter.uploadUrl || "");
       $("#adapter_method").val(adapter.method || "");
-      $("#adapter_language").val(adapter.language || "");
-      toggleUploadUrl(); // Ensure upload URL field state is correct
+      
     } else if (adapterName === "openai" || adapterName === "gemini") {
       $("#adapter_model").val(adapter.model || "");
       $("#adapter_system_prompt").val(adapter.system_prompt || "");
@@ -91,13 +64,12 @@ $(function () {
       staff_name: $("#staff_name").val(),
       role: $("#role").val(),
       summary: $("#summary").val(),
+      language: $("#adapter_language").val(),
+      resource: $("#adapter_resource").val(),
       adapter: {
-        fileupload: $("#fileupload").is(":checked"),
         name: $("#adapter_name").val(),
         host: $("#adapter_apiUrl").val(),
-        uploadUrl: $("#adapter_uploadUrl").val(),
         method: $("#adapter_method").val(),
-        language: $("#adapter_language").val(),
         token_limit: parseInt($("#adapter_token_limit").val(), 10),
         headers: {
           Authorization: $("#adapter_headers_Authorization").val(),
@@ -108,6 +80,11 @@ $(function () {
   }
 
   const adapterConfigs = {
+    http: {
+      host: "https://",
+      authorization: "Bearer ",
+      contentType: "application/json",
+    },
     openai: {
       host: "https://api.openai.com/v1/chat/completions",
       authorization: "Bearer ",
@@ -138,9 +115,9 @@ $(function () {
       $("#adapter_headers_Authorization").val(config.authorization);
       $("#adapter_headers_Content-Type").val(config.contentType);
       if (selectedAdapter === "openai") {
-        $("#adapter_model").val("gpt-4-turbo-preview");
+        $("#adapter_model").val("gpt-4o-mini");
       } else if (selectedAdapter === "gemini") {
-        $("#adapter_model").val("gemini-pro");
+        $("#adapter_model").val("gemini-2.5-fresh");
       }
     }
   });
@@ -209,15 +186,16 @@ $(function () {
     }
   }
 
-  $("#fileupload").on("change", toggleUploadUrl);
 
   $("#buildBtn").on("click", function () {
-    populateForm(defaultJsonData);
-    toggleUploadUrl();
+    // 초기화하여 등록 모드로 만들고 staffId 필드 숨김
+    populateForm({});
+    // adapter 기본값을 http로 설정
+    $("#adapter_name").val('http').trigger('change');
     registModal.show();
   });
 
-  $("#saveJson").on("click", async function () {
+  $("#saveBtn").on("click", async function () {
     const newJsonData = getJsonFromForm();
 
     // Validation
@@ -257,19 +235,21 @@ $(function () {
     }
   });
 
-  $("#testJson").on("click", async function () {
+  $("#testBtn").on("click", async function () {
     if (!$("#input_prompt").val()) {
       alert("Please enter a test prompt.");
       return;
     }
     const responder = getJsonFromForm();
     const processedInput = {
+      action: 'chat',
       prompt: $("#input_prompt").val(),
       history: $("#input_history").val() || "",
       ltm: $("#input_ltm").val() || "",
       file: $("#input_file").val() || "",
     };
     const sessionId = $("#input_sessionId").val();
+    console.log("Testing with input:", processedInput, "and responder:", responder);
 
     try {
       $("#output").val("Testing...");
@@ -280,57 +260,6 @@ $(function () {
       $("#output").val(`Error: ${error.message}`);
       alert("Test failed. See console for details.");
     }
-  });
-
-  $("#input_file").on("change", function (e) {
-    const uploadUrl = $("#adapter_uploadUrl").val();
-    if (!uploadUrl) {
-      alert("Please enter an Upload URL first.");
-      $(this).val(''); // Clear the file input
-      return;
-    }
-
-    const file = e.target.files[0];
-    if (!file) {
-      return; // No file selected
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    // Get headers from the form
-    const headers = new Headers();
-    const authorization = $("#adapter_headers_Authorization").val();
-    if (authorization) {
-      headers.append("Authorization", authorization);
-    }
-    // Do NOT set Content-Type for FormData, the browser does it.
-
-    console.log(`Uploading ${file.name} to ${uploadUrl}...`);
-    $(this).prop('disabled', true);
-
-    fetch(uploadUrl, {
-      method: "POST",
-      body: formData,
-      headers: headers, // Add headers to the request
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Upload successful", data);
-        alert("File uploaded successfully!");
-      })
-      .catch((error) => {
-        console.error("Error uploading file:", error);
-        alert(`File upload failed: ${error.message}`);
-      })
-      .finally(() => {
-        $(this).prop('disabled', false);
-      });
   });
 
   // Event listener for detail buttons
@@ -358,7 +287,6 @@ $(function () {
     const staffData = await getDataByKey("diystaff", staffId);
     if (staffData) {
       populateForm(staffData);
-      toggleUploadUrl();
       registModal.show();
     } else {
       alert("Could not find staff data.");
@@ -373,9 +301,6 @@ $(function () {
       try {
         staffData.staff_id= "mystaff-" + Date.now();
         delete staffData.staffId;
-        if (!staffData.input_format) staffData.input_format = "";
-        if (!staffData.output_format) staffData.output_format = "";
-        staffData.output_format = "";
         console.log(staffData); 
         await addAgent(staffData);
         alert(`Registered successfully.`);
@@ -423,10 +348,7 @@ $(function () {
   });
 
   // Event listener for delete buttons on registered interns
-  $("#registered-staff-row").on(
-    "click",
-    ".delete-intern-btn",
-    async function () {
+  $("#registered-staff-row").on("click", ".delete-intern-btn", async function () {
       const staffId = $(this).data("staff-id");
       if (confirm(`Are you sure you want to delete intern ${staffId}?`)) {
         try {

@@ -1,15 +1,14 @@
-import { getDataByKey } from '../../js/database.js';
-import { getDefaultAgents } from '../allAgentsCon.js';
+import { getDataByKey, getAllData } from '../../js/database.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
+$(function() {
+  const $loginForm = $('#loginForm');
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+  if ($loginForm.length) {
+    $loginForm.on('submit', async function(e) {
       e.preventDefault();
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+      const email = $.trim($('#email').val() || '');
+      const password = $('#password').val() || '';
 
       if (!email || !password) {
         alert('Please enter both email and password.');
@@ -17,22 +16,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const user = await getDataByKey('mydata', email);
-        const credentials = (user && user.credentials) ||{};
+        // 먼저 키로 직접 조회
+        let user = await getDataByKey('mydata', email);
+
+        // 폴백: 키로 못찾으면 전체를 가져와 이메일(대소문자 구분 없이)으로 검색
+        if (!user) {
+          const allUsers = await getAllData('mydata');
+          user = (allUsers || []).find(u => {
+            return u && u.myId && u.myId.toLowerCase() === email.toLowerCase();
+          });
+        }
+
+        const credentials = (user && user.credentials) || {};
 
         if (user && user.password === password) {
-          // Note: Storing passwords in plain text is not secure.
-          // This is for demonstration purposes only.
           alert('Login successful!');
-          
-          localStorage.setItem("mystaff_loggedin", "true");
-          localStorage.setItem("mystaff_user", user.myId); 
+
+          localStorage.setItem('mystaff_loggedin', 'true');
+          localStorage.setItem('mystaff_user', user.myId);
           localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
 
-          const defaultAgents = await getDefaultAgents();
-          localStorage.setItem('mystaff_default_agent', JSON.stringify(defaultAgents));
-          
-          window.location.href = './mystaff.html'; 
+          window.location.href = './mystaff.html';
         } else {
           alert('Invalid email or password.');
         }
