@@ -71,7 +71,7 @@ $(document).ready(function () {
   });
 
   $("#resetChatBtn").on("click", async function () {
-    await deleteData("chat", "moderator"); // 또는 removeData("chat", "moderator") 사용
+    await deleteData("chat", "moderator");
     $("#chatMessages").empty();
   });
 
@@ -146,7 +146,7 @@ $(document).ready(function () {
     }, 100);
   });
 
-  // Event listener for the "Chat" button
+
   $("#hired-member-list").on("click", ".chat-btn", async function (event) {
     event.preventDefault();
     const staffId = $(this).data("staff-id");

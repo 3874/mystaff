@@ -158,7 +158,12 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
 export async function FindUrl(mystaff, Fset = 0) {
   const staffId = mystaff.staff_id ? mystaff.staff_id : mystaff.staffId;
+  const inputFormat = mystaff.input_format ? mystaff.input_format : "chat";
 
+  if (inputFormat === "database") {
+    const Finalurl = `./sheet.html?staffId=${staffId}`;
+    return Finalurl;
+  } 
 
   let Furl = "";
   if (Fset === 1) {

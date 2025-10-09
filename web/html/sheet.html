@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <!-- Added data-bs-theme="dark" -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"
+      name="viewport"
+    />
+    <title>Main &mdash; MyStaff</title>
+    <!-- General CSS Files -->
+    <!-- Replaced local Bootstrap 4 with Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <!-- ADD ag-grid styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+
+    <style>
+      /* 대부분 Bootstrap 유틸리티로 처리.
+         남겨둔 커스텀 스타일: DataTables 경계/헤더 정렬, 드롭다운 내부 패딩, 폰트 축소 */
+      
+      /* 레이아웃: Bootstrap 유틸리티(d-flex, vh-100 등)를 사용하므로 최소화 */
+      #sidebarMenu {
+        height: 100vh;
+        overflow-y: auto;
+        position: sticky;
+        top: 0;
+      }
+
+      /* Columns dropdown 내부 항목 패딩 (폼 체크 정렬 보정) */
+      #columnsDropdownWrapper .dropdown-menu .form-check {
+        padding-left: 0.75rem;
+      }
+      #columnsDropdownWrapper .dropdown-menu .form-check-input {
+        margin-left: 0;
+      }
+      #columnsDropdownWrapper .dropdown-menu .form-check-label {
+        margin-left: 0.5rem;
+      }
+
+      /* DataTables: 테두리/헤더-바디 일치, 폰트/패딩 축소 */
+      #staffTable,
+      #staffTable_wrapper .dataTables_scrollHead table,
+      #staffTable_wrapper .dataTables_scrollBody table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.2;
+        background-clip: padding-box;
+      }
+
+      /* 전체 테이블 외곽 테두리 통일 */
+      #staffTable, 
+      #staffTable_wrapper .dataTables_scrollHead table,
+      #staffTable_wrapper .dataTables_scrollBody table {
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+
+      /* 셀/헤더 경계 및 패딩 통일 */
+      #staffTable thead th,
+      #staffTable tbody td,
+      #staffTable_wrapper .dataTables_scrollHead table th,
+      #staffTable_wrapper .dataTables_scrollBody table td {
+        border: 1px solid rgba(255,255,255,0.04);
+        padding: 0.28rem 0.45rem;
+        vertical-align: middle;
+      }
+
+      /* 헤더 상단 경계 강제 적용 (헤더가 희미해 보이는 문제 대응) */
+      #staffTable thead th,
+      #staffTable_wrapper .dataTables_scrollHead table thead th {
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+      }
+
+      /* 스크롤 헤더와 본문 너비 정렬 보정 */
+      #staffTable_wrapper .dataTables_scrollHeadInner {
+        min-width: 100%;
+      }
+
+      /* 카드 테두리(선명성 보정) */
+      .card {
+        border: 1px solid rgba(255,255,255,0.06);
+        background-clip: padding-box;
+      }
+
+      /* 버튼 그룹 full-width(이미 클래스 있음) 안전 보정 */
+      .btn-group.w-100 > .btn {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-body">
+    <!-- Changed bg-light to bg-body for dark theme compatibility -->
+    <nav class="navbar navbar-dark bg-dark d-md-none">
+      <a class="navbar-brand" href="#">MyStaff</a>
+      <!-- Updated data-toggle and data-target to data-bs-toggle and data-bs-target for Bootstrap 5 -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#sidebarMenu"
+        aria-controls="sidebarMenu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+    <div class="container-fluid h-100">
+      <div class="row h-100">
+        <!-- Sidebar -->
+        <!-- Updated classes for Bootstrap 5 theming and layout alignment with chat.html -->
+        <nav
+          id="sidebarMenu"
+          class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse"
+        >
+          <div class="position-sticky pt-3">
+            <div class="sidebar-brand text-center my-3">
+              <!-- Added text-decoration-none for dark theme visibility -->
+              <a href="./mystaff.html" class="h4 text-decoration-none"
+                >MyStaff</a
+              >
+            </div>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="./mystaff.html">
+                  <i class="fas fa-users"></i>
+                  My Staff
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./myinterns.html">
+                  <i class="bi bi-android2"></i>
+                  My Interns
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./chatlist.html">
+                  <i class="fa fa-list"></i>
+                  Chat List
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./findinterns.html">
+                  <i class="fas fa-search"></i>
+                  Find My Interns
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./credentials.html">
+                  <i class="fa fa-lock"></i>
+                  Credentials
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./settings.html">
+                  <i class="fa fa-sliders"></i>
+                  Settings
+                </a>
+              </li>
+            </ul>
+            <div class="mt-4 p-3">
+              <button type="button" id="addBtn" class="btn btn-info w-100 mb-2" hidden>
+                Add
+              </button>
+              <div class="btn-group w-100 mb-2" id="columnsDropdownWrapper">
+                <button type="button" id="columnsBtn" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Columns
+                </button>
+                <ul class="dropdown-menu p-2 w-100" style="min-width:unset; max-height:300px; overflow:auto;"></ul>
+              </div>
+              <button id="signOutBtn" class="btn btn-danger btn-block w-100">
+                <i class="fas fa-sign-out-alt"></i> Sign-Out
+              </button>
+            </div>
+          </div>
+        </nav>
+        <!-- Removed sidebar-overlay as it's not needed with standard Bootstrap collapse -->
+
+        <!-- Main Content -->
+        <!-- Added main-content-container for flex layout, and px-0 to match chat.html -->
+        <main
+          role="main"
+          class="col-md-9 ms-sm-auto col-lg-10 px-0 main-content-container"
+        >
+          <!-- Header section, similar to chat.html's chat title area -->
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4"
+          >
+            <h1 class="h2" id="title">Database</h1>
+          </div>
+          <!-- Scrollable content area, similar to chatMessages -->
+          <div class="main-scroll-area">
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <p class="card-text" id="description">
+                      여기에 직원 목록이나 관리 기능이 표시됩니다.
+                    </p>
+                    <input id="quickFilter" class="form-control form-control-sm mb-2" placeholder="Search..." />
+                    <div class="table-responsive">
+                      <!-- ag-grid requires a DIV container, not a TABLE -->
+                      <div id="staffTable" style="width:100%; height:600px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Row details modal: DataTable 행 클릭 시 전체 내용을 label + input/textarea로 표시 -->
+    <div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="rowModalLabel">Row Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Form will be populated dynamically -->
+            <form id="rowDetailForm" class="row g-2"></form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- 추가: Bootstrap JS (Popper 포함) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Use a specific UMD build (unpkg) that normally exposes a Grid constructor on window.agGrid -->
+    <script src="https://unpkg.com/ag-grid-community@29.3.2/dist/ag-grid-community.min.js"></script>
+
+    <!-- your page scripts (ensure sheet.js is loaded after ag-grid) -->
+    <script type="module" src="../js/pages/sheet.js"></script>
+  </body>
+</html>
