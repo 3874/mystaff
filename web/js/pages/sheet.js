@@ -24,7 +24,7 @@ $(document).ready(function () {
         return;
       }
       $("#title").text(mystaff.name);
-      $("#description").text(mystaff.summary || "");
+      $("#summary").text(mystaff.summary || "");
       host = mystaff?.adapter?.host || "";
       console.log("sheet:init - staffId, host", staffId, host);
       if (!host) {
@@ -41,12 +41,7 @@ $(document).ready(function () {
     });
 });
 
-/* ---------- Helper utilities (unified) ---------- */
 
-/**
- * POST to apiUrl with given body and return parsed JSON.
- * Throws on network or HTTP errors with helpful message.
- */
 async function apiPost(body) {
   if (!host) throw new Error("API URL not configured");
   console.log("apiPost =>", host, body);
