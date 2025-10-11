@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <!-- Added data-bs-theme="dark" -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"
+      name="viewport"
+    />
+    <title>Main &mdash; MyStaff</title>
+    <!-- General CSS Files -->
+    <!-- Replaced local Bootstrap 4 with Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      /* Custom styles from chat.html, adapted for mystaff.html */
+      body,
+      html {
+        height: 100%;
+      }
+      .main-content-container {
+        /* New class for the main area to enable flex layout */
+        height: 100vh; /* Full viewport height */
+        display: flex;
+        flex-direction: column;
+      }
+      .main-scroll-area {
+        /* New class for the scrollable content within main */
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem; /* Added padding to match chatMessages */
+      }
+      #sidebarMenu {
+        /* Targetting the sidebar directly */
+        height: 100vh; /* Full viewport height */
+        overflow-y: auto;
+        /* Ensure it's sticky at the top, like chat.html's sidebar */
+        position: sticky;
+        top: 0;
+      }
+
+      /* Removed custom mobile sidebar CSS from original mystaff.html */
+      /* Bootstrap's default collapse and d-md-block will handle mobile responsiveness */
+      /* The d-md-block on #sidebarMenu combined with the navbar toggler
+       will make it collapse on small screens and appear as a block on md and up. */
+    </style>
+  </head>
+  <body class="bg-body">
+    <!-- Changed bg-light to bg-body for dark theme compatibility -->
+    <nav class="navbar navbar-dark bg-dark d-md-none">
+      <a class="navbar-brand" href="#">MyStaff</a>
+      <!-- Updated data-toggle and data-target to data-bs-toggle and data-bs-target for Bootstrap 5 -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#sidebarMenu"
+        aria-controls="sidebarMenu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+    <div class="container-fluid h-100">
+      <div class="row h-100">
+        <!-- Sidebar -->
+        <!-- Updated classes for Bootstrap 5 theming and layout alignment with chat.html -->
+        <nav
+          id="sidebarMenu"
+          class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse"
+        >
+          <div class="position-sticky pt-3">
+            <div class="sidebar-brand text-center my-3">
+              <!-- Added text-decoration-none for dark theme visibility -->
+              <a href="./mystaff.html" class="h4 text-decoration-none"
+                >MyStaff</a
+              >
+            </div>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="./mystaff.html">
+                  <i class="fas fa-users"></i>
+                  My Staff
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./myinterns.html">
+                  <i class="bi bi-android2"></i>
+                  My Interns
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./chatlist.html">
+                  <i class="fa fa-list"></i>
+                  Chat List
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./findinterns.html">
+                  <i class="fas fa-search"></i>
+                  Find My Interns
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./credentials.html">
+                  <i class="fa fa-lock"></i>
+                  Credentials
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="./settings.html">
+                  <i class="fa fa-sliders"></i>
+                  Settings
+                </a>
+              </li>
+            </ul>
+            <div class="mt-4 p-3">
+              <button
+                id="signOutBtn"
+                class="btn btn-danger btn-block mt-2 w-100"
+              >
+                <i class="fas fa-sign-out-alt"></i> Sign-Out
+              </button>
+            </div>
+          </div>
+        </nav>
+        <!-- Removed sidebar-overlay as it's not needed with standard Bootstrap collapse -->
+
+        <!-- Main Content: Landing / Hero page -->
+        <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-0 main-content-container">
+          <div class="container-fluid main-scroll-area d-flex flex-column justify-content-center align-items-center">
+            <div class="text-center py-5 w-100">
+              <img src="../img/mystaff.png" alt="MyStaff" style="width:120px; height:auto;" class="mb-3">
+              <h1 class="display-5 fw-bold">MyStaff</h1>
+              <p class="lead text-muted mx-auto" style="max-width:720px;">
+                MyStaff helps you create, manage and deploy AI-powered staff and assistants for your team or project.
+                Build custom assistants, connect external APIs, save session files, and chat naturally — all from a simple web UI.
+              </p>
+
+              <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="./signin.html" class="btn btn-primary btn-lg px-4">Sign In</a>
+                <a href="./signup.html" class="btn btn-outline-secondary btn-lg px-4">Sign Up</a>
+              </div>
+            </div>
+
+            <div class="row g-4 mt-5 w-100">
+              <div class="col-md-4">
+                <div class="card h-100 text-center">
+                  <div class="card-body">
+                    <i class="fa fa-robot fa-2x mb-3"></i>
+                    <h5 class="card-title">Create Assistants</h5>
+                    <p class="card-text text-muted">Design AI staff using templates or your own prompts and adapters.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100 text-center">
+                  <div class="card-body">
+                    <i class="fa fa-cloud-arrow-up fa-2x mb-3"></i>
+                    <h5 class="card-title">Connect APIs</h5>
+                    <p class="card-text text-muted">Integrate external APIs and upload files to enrich assistant context.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100 text-center">
+                  <div class="card-body">
+                    <i class="fa fa-comments fa-2x mb-3"></i>
+                    <h5 class="card-title">Chat & Save</h5>
+                    <p class="card-text text-muted">Start conversations, keep session history, and manage files for each chat.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center mt-5 w-100">
+              <small class="text-muted">Already using MyStaff? <a href="./mystaff.html">Go to your dashboard</a></small>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
