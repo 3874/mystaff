@@ -67,14 +67,13 @@ async function apiPost(body) {
 }
 
 /**
- * Normalize various API response shapes into:
- * { draw?, recordsTotal?, recordsFiltered?, data: [...] }
+ * Normalize various API response shapes into a consistent object:
+ * { recordsTotal?, recordsFiltered?, data: [...] }
  */
-function normalizeForDataTable(raw, requestData) {
-  // If server already returns DataTables format
+function normalizeApiResponse(raw, requestData) {
+  // If server already returns a tabular format with totals
   if (
     raw &&
-    typeof raw.draw !== "undefined" &&
     typeof raw.recordsTotal !== "undefined" &&
     typeof raw.recordsFiltered !== "undefined" &&
     Array.isArray(raw.data)
@@ -125,14 +124,13 @@ function normalizeForDataTable(raw, requestData) {
       : requestData?.start + returned || returned;
 
   return {
-    draw: requestData?.draw || 0,
     recordsTotal: estimatedTotal,
     recordsFiltered: estimatedTotal,
     data: rows,
   };
 }
 
-/* ---------- DataTable initialization (converted to ag-grid) ---------- */
+/* ---------- Grid initialization (ag-grid) ---------- */
 
 async function initTableForStaff(staffId) {
   try {
@@ -159,25 +157,26 @@ async function initTableForStaff(staffId) {
     }
 
     // Ensure ag-grid styles/class injection for small text
-    if (!document.getElementById("dt-small-style")) {
-      const s = document.createElement("style");
-      s.id = "dt-small-style";
-      s.textContent = ".dt-small { font-size: 12px !important; line-height: 1.2 !important; }";
-      document.head.appendChild(s);
+    if (!$("#dt-small-style").length) {
+      $("<style>")
+        .attr("id", "dt-small-style")
+        .text(".dt-small { font-size: 12px !important; line-height: 1.2 !important; }")
+        .appendTo($(document.head));
     }
 
-    // Prepare grid container: reuse #staffTable element
-    const container = document.getElementById("staffTable");
-    if (!container) {
+    // Prepare grid container: reuse #staffTable element (use jQuery but keep raw DOM for ag-grid)
+    const $container = $("#staffTable");
+    if (!$container.length) {
       throw new Error("#staffTable element not found");
     }
+    const container = $container[0]; // raw DOM for ag-grid
     // Clear previous content and ensure it's a div for ag-grid
-    container.innerHTML = "";
-    container.classList.add("ag-theme-alpine");
-    container.style.width = container.style.width || "100%";
+    $container.empty();
+    $container.addClass("ag-theme-alpine");
+    if (!$container.css("width")) $container.css("width", "100%");
     // 하단 여백(padding)을 추가해 마지막 로우가 바닥에 붙지 않게 함
-    container.style.boxSizing = "border-box";
-    container.style.paddingBottom = container.style.paddingBottom || "24px";
+    $container.css("box-sizing", "border-box");
+    if (!$container.css("padding-bottom")) $container.css("padding-bottom", "24px");
 
     // 화면 하단까지 그리드가 채워지도록 높이 자동 조정
     function setGridHeightToViewport() {
@@ -187,17 +186,16 @@ async function initTableForStaff(staffId) {
         const bottomMargin = 16; // 하단 여유(필요시 조정)
         const minHeight = 200; // 최소 높이
         const height = Math.max(minHeight, window.innerHeight - top - bottomMargin);
-        container.style.height = height + "px";
+        $container.css("height", height + "px");
       } catch (e) {
         // 실패 시 기본 높이 유지
-        container.style.height = container.style.height || "600px";
+        if (!$container.css("height")) $container.css("height", "600px");
       }
     }
 
     // 초기 설정 및 반응형 처리
     setGridHeightToViewport();
-    window.addEventListener("resize", setGridHeightToViewport);
-    window.addEventListener("orientationchange", setGridHeightToViewport);
+    $(window).on("resize orientationchange", setGridHeightToViewport);
     // 레이아웃 변동을 대비한 지연 재계산
     setTimeout(setGridHeightToViewport, 120);
 
@@ -221,9 +219,9 @@ async function initTableForStaff(staffId) {
         const $form = $("#rowDetailForm");
         renderRowFormForAgGrid($form, data, columns);
         $("#rowModalLabel").text("Row Details");
-        const modalEl = document.getElementById("rowModal");
-        if (modalEl) {
-          const bsModal = new bootstrap.Modal(modalEl);
+        const $modalEl = $("#rowModal");
+        if ($modalEl.length) {
+          const bsModal = new bootstrap.Modal($modalEl[0]);
           bsModal.show();
         }
       },
@@ -251,9 +249,9 @@ async function initTableForStaff(staffId) {
             orderDir = s.sort;
           }
 
+          // requests can process pagination/search state even though client uses ag-Grid
           const apiRequestBody = {
             action: "query",
-            draw: 0,
             start,
             length,
             search: currentSearchTerm || "",
@@ -265,7 +263,7 @@ async function initTableForStaff(staffId) {
           console.log("ag-grid:raw response", raw);
 
           // normalize only to extract rows array
-          const finalResponse = normalizeForDataTable(raw, { start, length, draw: 0 });
+          const finalResponse = normalizeApiResponse(raw, { start, length });
           const rows = Array.isArray(finalResponse.data) ? finalResponse.data : [];
 
           // IMPORTANT:
@@ -308,19 +306,21 @@ async function initTableForStaff(staffId) {
     };
 
     // create the grid using UMD build exposed on window.agGrid.Grid (sheet.html must include UMD script)
-    if (!window || !window.agGrid || typeof window.agGrid.Grid !== "function") {
-      console.error("ag-grid UMD not found. Include the ag-grid UMD script (e.g. ag-grid-community.min.js) before sheet.js.");
-      throw new Error("ag-grid Grid constructor not available.");
-    }
-    new window.agGrid.Grid(container, gridOptions);
+      // create the grid using constructor resolved by helper (tries globals then dynamic ESM)
+      const GridConstructor = await resolveAgGridConstructor();
+      if (!GridConstructor || typeof GridConstructor !== "function") {
+        console.error("ag-grid Grid constructor not available. Include ag-grid script or allow dynamic import.");
+        throw new Error("ag-grid Grid constructor not available.");
+      }
+      new GridConstructor(container, gridOptions);
     // datasource is attached in onGridReady
 
     // quick search handler: update currentSearchTerm and trigger client quickFilter + server re-fetch
     (function attachQuickFilter() {
-      const input = document.getElementById("quickFilter");
-      if (!input) return;
+      const $input = $("#quickFilter");
+      if (!$input.length) return;
       const applySearch = () => {
-        currentSearchTerm = input.value || "";
+        currentSearchTerm = $input.val() || "";
         // client-side quick filter (applies to loaded rows)
         try {
           if (gridOptions.api && typeof gridOptions.api.setQuickFilter === "function") {
@@ -342,14 +342,68 @@ async function initTableForStaff(staffId) {
         }
       };
 
+      // ensure CSS for inside-button layout exists
+      if (!$("#quick-filter-styles").length) {
+        $("<style>")
+          .attr("id", "quick-filter-styles")
+          .text(`
+          .quick-filter-wrap{ position:relative; display:inline-block; }
+          .quick-filter-wrap #quickFilter{ padding-right:32px; }
+          #quickFilterClearBtn{ position:absolute; right:6px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:0 6px; line-height:1; font-size:16px; color:#fff; cursor:pointer; }
+          #quickFilterClearBtn:focus{ outline:none; box-shadow:none; }
+        `)
+          .appendTo($(document.head));
+      }
+
+      // wrap the input so we can absolutely position the clear button inside
+      let $wrap = $input.parent();
+      if (!$wrap.length || !$wrap.hasClass('quick-filter-wrap')) {
+        $wrap = $("<span>").addClass('quick-filter-wrap');
+        try { $wrap.css('display', getComputedStyle($input[0]).display === 'block' ? 'block' : 'inline-block'); } catch (e) {}
+        $input.before($wrap);
+        $wrap.append($input);
+      }
+
+      // create or reuse clear button inside the wrapper
+      let $clearBtn = $("#quickFilterClearBtn");
+      if (!$clearBtn.length || $clearBtn.parent()[0] !== $wrap[0]) {
+        if ($clearBtn.length && $clearBtn.parent().length) $clearBtn.remove();
+        $clearBtn = $("<button>")
+          .attr({ type: 'button', id: 'quickFilterClearBtn', title: 'Clear search', 'aria-label': 'Clear search' })
+          .text('×');
+        $wrap.append($clearBtn);
+      }
+
+      const toggleClearBtn = () => {
+        try {
+          $clearBtn.css('display', ($input.val() && String($input.val()).length > 0) ? 'inline-block' : 'none');
+        } catch (e) {
+          // ignore
+        }
+      };
+
+      $clearBtn.off('click').on('click', (ev) => {
+        ev.preventDefault();
+        $input.val('');
+        toggleClearBtn();
+        applySearch();
+        try { $input.focus(); } catch (e) {}
+      });
+
       // input events: instant on input, also apply on Enter (keypress)
-      input.addEventListener("input", () => applySearch());
-      input.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") {
+      $input.off('input').on('input', () => {
+        toggleClearBtn();
+        applySearch();
+      });
+      $input.off('keydown').on('keydown', (ev) => {
+        if (ev.key === 'Enter') {
           ev.preventDefault();
           applySearch();
         }
       });
+
+      // initial visibility
+      toggleClearBtn();
     })();
 
     // columns persistence wiring
@@ -416,27 +470,34 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
     }
   }
 
+  function findGridColumnById(colApi, colId) {
+    if (!colApi) return null;
+    const all = colApi.getAllGridColumns() || [];
+    return all.find((c) => {
+      try {
+        const def = c.getColDef && c.getColDef();
+        return (
+          (def && def.field === colId) ||
+          (def && def.headerName === colId) ||
+          c.getColId && c.getColId() === colId
+        );
+      } catch (e) {
+        return false;
+      }
+    });
+  }
+
   function saveState() {
     try {
-      const colState = [];
-      const columnApi = gridOptionsOrApi.columnApi || (gridOptionsOrApi.api && gridOptionsOrApi.api.getColumnApi && gridOptionsOrApi.api);
-      if (!columnApi && containerEl && containerEl.__agGridInstance) {
-        // fallback not likely needed
-      }
-      // try to use gridOptions.api.columnController / columnApi
-      if (gridOptionsOrApi.api && gridOptionsOrApi.columnApi) {
-        const all = gridOptionsOrApi.columnApi.getAllGridColumns() || [];
-        for (let i = 0; i < columns.length; i++) {
-          try {
-            const colId = columns[i].field || columns[i].headerName || `col${i}`;
-            const col = all.find((c) => c.getColDef().field === colId || c.getColId() === colId || c.getColDef().headerName === colId);
-            colState.push(!!(col && col.isVisible && col.isVisible()));
-          } catch {
-            colState.push(true);
-          }
-        }
-        localStorage.setItem(storageKey, JSON.stringify(colState));
-      }
+      const columnApi = gridOptionsOrApi.columnApi;
+      if (!columnApi) return;
+      const all = columnApi.getAllGridColumns() || [];
+      const colState = columns.map((c, idx) => {
+        const colId = c.field || c.headerName || `col${idx}`;
+        const found = findGridColumnById(columnApi, colId);
+        return !!(found && found.isVisible && found.isVisible());
+      });
+      localStorage.setItem(storageKey, JSON.stringify(colState));
     } catch (e) {
       console.warn("Failed to save column state", e);
     }
@@ -446,27 +507,26 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
 
   function buildMenu() {
     menu.empty();
+    const colApi = gridOptionsOrApi.columnApi;
     columns.forEach((col, idx) => {
       const title = col.headerName || col.field || `Col ${idx}`;
       const chkId = `colchk_ag_${idx}`;
-      const li = $(`
-        <li>
-          <div class="form-check px-2 py-1">
-            <input class="form-check-input col-toggle" type="checkbox" id="${chkId}" data-idx="${idx}">
-            <label class="form-check-label" for="${chkId}" style="margin-left:6px;">${title}</label>
-          </div>
-        </li>
-      `);
+      const li = $(
+        '<li>' +
+          '<div class="form-check px-2 py-1">' +
+            `<input class="form-check-input col-toggle" type="checkbox" id="${chkId}" data-idx="${idx}">` +
+            `<label class="form-check-label" for="${chkId}" style="margin-left:6px;">${title}</label>` +
+          '</div>' +
+        '</li>'
+      );
       menu.append(li);
       // set checked state: prefer saved, else use grid's current visibility
       try {
         if (saved && typeof saved[idx] !== "undefined") {
           li.find("input.col-toggle").prop("checked", !!saved[idx]);
-        } else if (gridOptionsOrApi.columnApi) {
-          const colApi = gridOptionsOrApi.columnApi;
+        } else if (colApi) {
           const colId = col.field || col.headerName || `col${idx}`;
-          const all = colApi.getAllGridColumns() || [];
-          const found = all.find((c) => c.getColDef().field === colId || c.getColId() === colId || c.getColDef().headerName === colId);
+          const found = findGridColumnById(colApi, colId);
           li.find("input.col-toggle").prop("checked", !!(found && found.isVisible && found.isVisible()));
         } else {
           li.find("input.col-toggle").prop("checked", true);
@@ -486,16 +546,14 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
       const colApi = gridOptionsOrApi.columnApi;
       if (colApi) {
         const colId = columns[idx].field || columns[idx].headerName || `col${idx}`;
-        // find real column id from grid
-        const all = colApi.getAllGridColumns() || [];
-        const found = all.find((c) => c.getColDef().field === colId || c.getColId() === colId || c.getColDef().headerName === colId);
+        const found = findGridColumnById(colApi, colId);
         if (found) {
           colApi.setColumnVisible(found.getColId(), visible);
         } else {
           // fallback try by index
           const defs = gridOptionsOrApi.columnDefs || [];
-          if (defs[idx]) {
-            colApi.setColumnVisible(defs[idx].field || defs[idx].colId || idx, visible);
+          if (defs[idx] && defs[idx].field) {
+            colApi.setColumnVisible(defs[idx].field, visible);
           }
         }
       }
@@ -511,11 +569,10 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
   if (saved && gridOptionsOrApi.columnApi) {
     try {
       const colApi = gridOptionsOrApi.columnApi;
-      const all = colApi.getAllGridColumns() || [];
       for (let i = 0; i < Math.min(saved.length, columns.length); i++) {
         const shouldShow = !!saved[i];
         const colId = columns[i].field || columns[i].headerName || `col${i}`;
-        const found = all.find((c) => c.getColDef().field === colId || c.getColId() === colId || c.getColDef().headerName === colId);
+        const found = findGridColumnById(colApi, colId);
         if (found) {
           colApi.setColumnVisible(found.getColId(), shouldShow);
         }
@@ -530,10 +587,10 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
 
 export async function getFirstPageDataForColumns() {
   try {
-    const raw = await apiPost({ action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
+  const raw = await apiPost({ action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
     // try normalize to plain rows array
     if (raw && Array.isArray(raw.data)) return raw.data;
-    const normalized = normalizeForDataTable(raw, { start: 0, length: 1, draw: 0 });
+  const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
     return Array.isArray(normalized.data) ? normalized.data : [];
   } catch (err) {
     console.error("getFirstPageDataForColumns failed:", err);

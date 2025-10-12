@@ -86,11 +86,10 @@ payload = {
 }
 
 
-2. staff의 resource가 database 인 경우
+2. staff의 resource가 database 인 경우 (ag-Grid 사용중)
 
 {
   "action": "query",        // read, create, update, delete, query, upload
-  "draw": 0,                // 
   "start": 0,               // 페이지의 스타트
   "length": 50,             // 한페이지에서 데이터의 길이    
   "search": "검색어",        // 검색어
@@ -100,8 +99,6 @@ payload = {
   },
   "orderDir": "asc"         // 정렬 방향
 }
-
-
 
 
 

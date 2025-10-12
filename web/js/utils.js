@@ -257,3 +257,31 @@ export async function getAnyAgentById(staffId) {
   }
   return agent;
 }
+
+export function estimateTokens(text) {
+  if (!text) return 0;
+  // 평균 4 chars per token (조정 가능)
+  return Math.ceil(text.length / 4);
+}
+
+export function checkLanguage(text) {
+  let lang;
+  switch (text) {
+    case "ko":
+      lang = "Korean";
+      break;
+    case "en":
+      lang = "English";
+      break;
+    case "ch":
+      lang = "Chinese";
+      break;
+    case "jp":
+      lang = "Japanese";
+      break;
+    default:
+      lang = "English";
+  }
+
+  return lang;
+}

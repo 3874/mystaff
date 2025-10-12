@@ -87,15 +87,9 @@ function loadStaffAgent(staffData) {
   );
   $(".author-box-name").text(staffData.staff_name || "Unnamed Agent");
   $(".author-box-role").text(staffData.role || "No role specified");
-  $(".author-box-summary").text(
-    staffData.summary || "No description available."
-  );
-  $(".author-box-input").text(
-    JSON.stringify(staffData.input_format) || "No input type specified"
-  );
-  $(".author-box-output").text(
-    JSON.stringify(staffData.output_format) || "No output type specified"
-  );
+  $(".author-box-summary").text( staffData.summary || "No description available.");
+  $(".author-box-resource").text(staffData.resource || "No resource specified");
+  $(".author-box-language").text(staffData.language || "No language specified");
 
   // staffData.adapter는 object type 이다. 만약 값이 있다면 $('.author-box-adapter')아래 테이블로 넣자
   const adapterData = staffData.adapter;

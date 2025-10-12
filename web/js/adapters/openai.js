@@ -2,7 +2,7 @@
 // OpenAI Chat Completions
 // Docs: https://platform.openai.com/docs/api-reference/chat
 import OpenAI from "https://cdn.jsdelivr.net/npm/openai@latest/+esm";
-import { historyToString } from "../utils.js";
+import { historyToString, estimateTokens, checkLanguage } from "../utils.js";
 
 //import OpenAI from 'https://esm.sh/openai@4.57.0';
 
@@ -21,17 +21,62 @@ export async function openAIChatAdapter({ processedInput, agent, sessionId }) {
     window.location.href = "./credentials.html";
     return;
   }
-  console.log(processedInput.history);
-  let finalPrompt = processedInput.prompt.trim() + "\n\n";
-  finalPrompt += "Answer concisely and professionally in Korean.\n";
-  finalPrompt += 'If you do not know the answer, say "I do not know".\n';
-  finalPrompt += "Do not make up answers.\n";
-  finalPrompt += "based on below history:\n";
-  finalPrompt += "[history]\n";
-  finalPrompt += historyToString(processedInput.history) + "\n";
-  finalPrompt += "\n\nbased on below ltm:\n";
-  finalPrompt += "[ltm]\n";
-  finalPrompt += processedInput.ltm + "\n";
+  // Use agent-level language if provided (match gemini adapter behavior)
+  const language = checkLanguage(agent?.language) || "Korean";
+  const MaxToken = agent?.adapter?.token_limit || 128000;
+  const LimitToken = MaxToken - 100;
+
+  // Safely coerce processedInput fields to strings so missing values don't throw
+  const promptText = String((processedInput && processedInput.prompt) || "");
+  const ltmText = String((processedInput && processedInput.ltm) || "");
+  const historyText = String(processedInput && processedInput.history ? historyToString(processedInput.history) : "");
+  const fileText = String((processedInput && processedInput.file) || "");
+
+  // estimateTokens may return a string; convert to number and fallback to 0
+  let PromptLength = Number(String(estimateTokens(promptText)).trim()) || 0;
+  let LtmLength = Number(String(estimateTokens(ltmText)).trim()) || 0;
+  let HistoryLength = Number(String(estimateTokens(historyText)).trim()) || 0;
+  let FileLength = Number(String(estimateTokens(fileText)).trim()) || 0;
+  let finalPrompt = "";
+
+  let Prompt1 = promptText.trim() + "\n\n";
+  Prompt1 += `Answer concisely and professionally in ${language}.\n`;
+  Prompt1 += 'If you do not know the answer, say "I do not know".\n';
+  Prompt1 += "Do not make up answers.\n";
+
+  let Prompt2 = "";
+  if (ltmText && ltmText.trim()) {
+    Prompt2 += "\n\nbased on below ltm:\n";
+    Prompt2 += "[ltm]\n";
+    Prompt2 += ltmText + "\n";
+  }
+
+  let Prompt3 = "";
+  if (historyText && historyText.trim()) {
+    Prompt3 += "based on below history:\n";
+    Prompt3 += "[history]\n";
+    Prompt3 += historyText + "\n";
+  }
+
+  let Prompt4 = "";
+  if (fileText && fileText.trim()) {
+    Prompt4 += "\n\nbased on below file:\n";
+    Prompt4 += "[file]\n";
+    Prompt4 += fileText + "\n";
+  }
+
+  if (PromptLength > LimitToken) {
+    alert("Prompt가 너무 깁니다. 더 짧게 해주세요.");
+    return;
+  } else if (LtmLength + PromptLength > LimitToken) {
+    finalPrompt = Prompt1;
+  } else if (HistoryLength + LtmLength + PromptLength > LimitToken) {
+    finalPrompt = Prompt1 + Prompt2;
+  } else if (FileLength + HistoryLength + LtmLength + PromptLength > LimitToken) {
+    finalPrompt = Prompt1 + Prompt2 + Prompt3;
+  } else {
+    finalPrompt = Prompt1 + Prompt2 + Prompt3 + Prompt4;
+  }
 
   const response = await client.chat.completions.create({
     model: llm_model,
