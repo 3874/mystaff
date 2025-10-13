@@ -332,6 +332,35 @@ async function initTableForStaff(staffId) {
       } else if (Array.isArray(window._sheetEditableKey)) {
         editableKey = window._sheetEditableKey;
       }
+      // Use static Save button in modal-footer
+      const $modal = $form.closest('.modal');
+      const $saveBtn = $modal.find('#rowModalSaveBtn');
+      $saveBtn.off('click').on('click', async function () {
+        // Collect editable fields
+        const payload = { action: 'update' };
+        // Use _id if present
+        if (rowData && rowData._id) payload.id = rowData._id;
+        $form.find('input, textarea').each(function (i, el) {
+          const $el = $(el);
+          // Always use columnsDef[i].field as the key for update
+          const key = columnsDef[i] && columnsDef[i].field ? columnsDef[i].field : $el.attr('name');
+          if (editableKey.includes(key)) {
+            payload[key] = $el.val();
+          }
+        });
+        try {
+          const result = await apiPost(host, payload);
+          // Optionally show success/fail message
+          if (result && result.success) {
+            alert('Saved successfully');
+            $modal.modal('hide');
+          } else {
+            alert('Save failed');
+          }
+        } catch (err) {
+          alert('Save error: ' + err);
+        }
+      });
       columnsDef.forEach((col, idx) => {
         const key = col.field || col.headerName || `col${idx}`;
         let value = rowData && Object.prototype.hasOwnProperty.call(rowData, key) ? rowData[key] : "";
