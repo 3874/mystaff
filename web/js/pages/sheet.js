@@ -1,4 +1,5 @@
 import { getAgentById } from "../allAgentsCon.js";
+import { normalizeApiResponse, apiPost } from "../utils.js";
 /* dynamic ESM import helper for ag-grid */
 
 let host = "";
@@ -41,94 +42,6 @@ $(document).ready(function () {
     });
 });
 
-
-async function apiPost(body) {
-  if (!host) throw new Error("API URL not configured");
-  console.log("apiPost =>", host, body);
-  const res = await fetch(host, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    // try parse error body, else use status text
-    let errBody;
-    try {
-      errBody = await res.json();
-    } catch {
-      errBody = res.statusText;
-    }
-    console.error("apiPost error response:", res.status, errBody);
-    throw new Error(`API error: ${res.status} - ${JSON.stringify(errBody)}`);
-  }
-  const parsed = await res.json();
-  console.log("apiPost <-", parsed);
-  return parsed;
-}
-
-/**
- * Normalize various API response shapes into a consistent object:
- * { recordsTotal?, recordsFiltered?, data: [...] }
- */
-function normalizeApiResponse(raw, requestData) {
-  // If server already returns a tabular format with totals
-  if (
-    raw &&
-    typeof raw.recordsTotal !== "undefined" &&
-    typeof raw.recordsFiltered !== "undefined" &&
-    Array.isArray(raw.data)
-  ) {
-    return raw;
-  }
-
-  // If raw is an array of rows or wrapped forms
-  let rows = [];
-  if (Array.isArray(raw)) {
-    const first = raw[0];
-    if (first) {
-      if (Array.isArray(first.output)) rows = first.output;
-      else if (first.output && Array.isArray(first.output.data)) rows = first.output.data;
-      else if (first.body) {
-        try {
-          const parsed = typeof first.body === "string" ? JSON.parse(first.body) : first.body;
-          if (Array.isArray(parsed.data)) rows = parsed.data;
-          else if (Array.isArray(parsed)) rows = parsed;
-        } catch (e) {
-          // ignore
-        }
-      } else if (raw.every((r) => r && typeof r === "object" && !Array.isArray(r))) {
-        rows = raw;
-      }
-    }
-  } else if (raw && typeof raw === "object") {
-    // raw might have body or data directly
-    if (Array.isArray(raw.data)) rows = raw.data;
-    else if (raw.body) {
-      try {
-        const parsed = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
-        if (Array.isArray(parsed.data)) rows = parsed.data;
-        else if (Array.isArray(parsed)) rows = parsed;
-      } catch (e) {
-        // ignore
-      }
-    }
-  }
-
-  rows = Array.isArray(rows) ? rows : [];
-
-  // Estimate totals conservatively
-  const returned = rows.length;
-  const estimatedTotal =
-    typeof requestData?.length === "number" && returned === requestData.length
-      ? requestData.start + returned
-      : requestData?.start + returned || returned;
-
-  return {
-    recordsTotal: estimatedTotal,
-    recordsFiltered: estimatedTotal,
-    data: rows,
-  };
-}
 
 /* ---------- Grid initialization (ag-grid) ---------- */
 
@@ -259,7 +172,7 @@ async function initTableForStaff(staffId) {
             orderDir,
           };
 
-          const raw = await apiPost(apiRequestBody);
+          const raw = await apiPost(host, apiRequestBody);
           console.log("ag-grid:raw response", raw);
 
           // normalize only to extract rows array
@@ -587,7 +500,7 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
 
 export async function getFirstPageDataForColumns() {
   try {
-  const raw = await apiPost({ action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
+  const raw = await apiPost(host, { action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
     // try normalize to plain rows array
     if (raw && Array.isArray(raw.data)) return raw.data;
   const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
@@ -599,21 +512,12 @@ export async function getFirstPageDataForColumns() {
 }
 
 async function fetchAndExtract(actionBody) {
-  const raw = await apiPost(actionBody);
+  const raw = await apiPost(host, actionBody);
   // try common shapes
   if (Array.isArray(raw) && raw.length > 0 && raw[0].output) return raw[0].output;
   if (raw && typeof raw.body !== "undefined") return typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
   if (raw && Array.isArray(raw)) return raw;
   return raw;
-}
-
-export async function getDataById(id) {
-  try {
-    return await fetchAndExtract({ action: "read", id });
-  } catch (err) {
-    console.error("getDataById failed:", err);
-    throw err;
-  }
 }
 
 export async function createData(addData) {

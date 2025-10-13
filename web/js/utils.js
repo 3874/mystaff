@@ -3,6 +3,29 @@ import { getAllData, addData } from "./database.js";
 import { getAgentById } from "./allAgentsCon.js";
 import { getDataByKey } from "./database.js";
 
+// Generic JSON POST helper for server APIs
+export async function apiPost(host, body) {
+  if (!host) throw new Error("API URL not configured");
+  const res = await fetch(host, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    // try parse error body, else use status text
+    let errBody;
+    try {
+      errBody = await res.json();
+    } catch {
+      errBody = res.statusText;
+    }
+    console.error("apiPost error response:", res.status, errBody);
+    throw new Error(`API error: ${res.status} - ${JSON.stringify(errBody)}`);
+  }
+  const parsed = await res.json();
+  return parsed;
+}
+
 export async function signOut() {
   localStorage.clear(); // Clears all items from localStorage
   window.location.href = "./signin.html"; // Redirects to the sign-in page
@@ -284,4 +307,64 @@ export function checkLanguage(text) {
   }
 
   return lang;
+}
+
+export function normalizeApiResponse(raw, requestData) {
+  // If server already returns a tabular format with totals
+  if (
+    raw &&
+    typeof raw.recordsTotal !== "undefined" &&
+    typeof raw.recordsFiltered !== "undefined" &&
+    Array.isArray(raw.data)
+  ) {
+    return raw;
+  }
+
+  // If raw is an array of rows or wrapped forms
+  let rows = [];
+  if (Array.isArray(raw)) {
+    const first = raw[0];
+    if (first) {
+      if (Array.isArray(first.output)) rows = first.output;
+      else if (first.output && Array.isArray(first.output.data)) rows = first.output.data;
+      else if (first.body) {
+        try {
+          const parsed = typeof first.body === "string" ? JSON.parse(first.body) : first.body;
+          if (Array.isArray(parsed.data)) rows = parsed.data;
+          else if (Array.isArray(parsed)) rows = parsed;
+        } catch (e) {
+          // ignore
+        }
+      } else if (raw.every((r) => r && typeof r === "object" && !Array.isArray(r))) {
+        rows = raw;
+      }
+    }
+  } else if (raw && typeof raw === "object") {
+    // raw might have body or data directly
+    if (Array.isArray(raw.data)) rows = raw.data;
+    else if (raw.body) {
+      try {
+        const parsed = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
+        if (Array.isArray(parsed.data)) rows = parsed.data;
+        else if (Array.isArray(parsed)) rows = parsed;
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  rows = Array.isArray(rows) ? rows : [];
+
+  // Estimate totals conservatively
+  const returned = rows.length;
+  const estimatedTotal =
+    typeof requestData?.length === "number" && returned === requestData.length
+      ? requestData.start + returned
+      : requestData?.start + returned || returned;
+
+  return {
+    recordsTotal: estimatedTotal,
+    recordsFiltered: estimatedTotal,
+    data: rows,
+  };
 }
