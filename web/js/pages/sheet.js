@@ -325,6 +325,13 @@ async function initTableForStaff(staffId) {
     // helper to render row form moved here so it is available to onRowClicked
     function renderRowFormForAgGrid($form, rowData, columnsDef) {
       $form.empty();
+      // get editableKey from rowData.editableKey or global
+      let editableKey = [];
+      if (rowData && Array.isArray(rowData.editableKey)) {
+        editableKey = rowData.editableKey;
+      } else if (Array.isArray(window._sheetEditableKey)) {
+        editableKey = window._sheetEditableKey;
+      }
       columnsDef.forEach((col, idx) => {
         const key = col.field || col.headerName || `col${idx}`;
         let value = rowData && Object.prototype.hasOwnProperty.call(rowData, key) ? rowData[key] : "";
@@ -345,15 +352,23 @@ async function initTableForStaff(staffId) {
         const $label = $(`<label class="form-label fw-bold mb-1">${labelText}</label>`);
         const useTextarea = asString.length > 120 || asString.includes("\n");
         let $control;
+        // editable if key is in editableKey
+        const isEditable = editableKey.includes(key);
         if (useTextarea) {
-          $control = $(`<textarea class="form-control" rows="5" readonly></textarea>`).val(asString);
+          $control = $(`<textarea class="form-control" rows="5" ${isEditable ? "" : "readonly"}></textarea>`).val(asString);
         } else {
-          $control = $(`<input class="form-control form-control-sm" readonly />`).val(asString);
+          $control = $(`<input class="form-control form-control-sm" ${isEditable ? "" : "readonly"} />`).val(asString);
+        }
+        if (!isEditable) {
+          $control.attr("readonly", "readonly");
+          $control.addClass("readonly");
+        } else {
+          $control.removeAttr("readonly");
+          $control.removeClass("readonly");
         }
         $wrap.append($label).append($control);
         $form.append($wrap);
       });
-      $form.find("input, textarea").attr("readonly", "readonly");
       $form.find("select, input[type=checkbox], input[type=radio], button").attr("disabled", "disabled");
     }
   } catch (err) {
@@ -500,11 +515,34 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
 
 export async function getFirstPageDataForColumns() {
   try {
-  const raw = await apiPost(host, { action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
-    // try normalize to plain rows array
-    if (raw && Array.isArray(raw.data)) return raw.data;
-  const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
-    return Array.isArray(normalized.data) ? normalized.data : [];
+    const raw = await apiPost(host, { action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
+    // expected raw: [{meta:{}, output:{}}]
+    let editableKey = [];
+    let outputData = [];
+    if (Array.isArray(raw) && raw.length > 0) {
+      const item = raw[0];
+      if (item.meta && item.meta.resource === "database") {
+        // collect keys except 'resource' where value is true
+        editableKey = Object.keys(item.meta)
+          .filter(k => k !== "resource" && item.meta[k] === true);
+      }
+      if (item.output && Array.isArray(item.output)) {
+        outputData = item.output;
+      }
+    }
+    // fallback for other shapes
+    if (outputData.length === 0 && raw && Array.isArray(raw.data)) {
+      outputData = raw.data;
+    }
+    if (outputData.length === 0) {
+      const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
+      outputData = Array.isArray(normalized.data) ? normalized.data : [];
+    }
+    // attach editableKey to output for later use
+    outputData.editableKey = editableKey;
+    // store globally for later use in form rendering
+    window._sheetEditableKey = editableKey;
+    return outputData;
   } catch (err) {
     console.error("getFirstPageDataForColumns failed:", err);
     return [];
