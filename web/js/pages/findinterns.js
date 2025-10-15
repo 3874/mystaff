@@ -61,7 +61,7 @@ async function initializeFindStaffPage() {
         const avatarNumber = (index % 5) + 1;
         const avatarUrl = `../img/avatar/avatar-${avatarNumber}.png`;
         const listItem = `
-          <div class="col-12 col-md-6 col-lg-4 mb-4">
+          <div class="col-12 col-md-6 col-lg-3 mb-4">
             <div class="card h-100 text-center">
               <img src="${avatarUrl}" alt="${agent.staff_name || 'Agent'}'s avatar" class="card-img-top rounded-circle mx-auto mt-3" style="width: 100px; height: 100px; object-fit: cover;">
               <div class="card-body">

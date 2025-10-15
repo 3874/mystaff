@@ -47,11 +47,11 @@ $(document).ready(async function() {
       const existingStaff = await getDataByKey('myinterns', currentStaffId);
 
       if (existingStaff) {
-        alert('This staff member is already in your My Interns list!');
+        alert('This staff member is already in your My Interests list!');
       } else {
         // Save the entire staffData object to the 'myinterns' store
         await updateData('myinterns', currentStaffId, staffData);
-        alert('Staff member added to your My Interns list!');
+        alert('Staff member added to your My Interests list!');
       }
 
       window.location.href = './myinterns.html'; // Redirect to myinterns.html

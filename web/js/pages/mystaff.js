@@ -209,7 +209,7 @@ async function loadStaffAgents() {
         agents.forEach((agent) => {
           if (agent) {
             const listItem = `
-              <div class="col-12 col-md-6 mb-4">
+              <div class="col-12 col-md-3 mb-4">
                 <div class="card h-100">
                   <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${

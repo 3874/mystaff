@@ -130,7 +130,7 @@ $(function () {
     if (staffList && staffList.length > 0) {
       staffList.forEach((staff) => {
         const card = `
-          <div class="col">
+          <div class="col-12 col-sm-6 col-md-3">
             <div class="card h-100 position-relative">
               <div class="card-body">
                 <button type="button" class="btn-close position-absolute top-0 end-0 p-3 delete-btn" data-staff-id="${staff.staffId}" aria-label="Delete staff"></button>
@@ -163,7 +163,7 @@ $(function () {
     if (staffList && staffList.length > 0) {
       staffList.forEach((staff) => {
         const card = `
-          <div class="col">
+          <div class="col-12 col-sm-6 col-md-3">
             <div class="card h-100 position-relative">
               <div class="card-body">
                 <button type="button" class="btn-close position-absolute top-0 end-0 p-3 delete-intern-btn" data-staff-id="${staff.staffId}" aria-label="Delete intern"></button>
