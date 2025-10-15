@@ -104,15 +104,13 @@ payload = {
 
 서버 -> mystaff (Response)
 
-
+1. 기본형
 {
-	method: 'POST',
-	headers:  { "Content-Type": "application/json" },
-	body: JSON.stringify({
-		action: 'read',
-		staffId: '
-	})
+    meta: {},
+    output: {}
 }
+
+
 
 
 보안 방식: JWT 토큰 - 기본 api URL + /api/signin로 ID, PASSWORD 인증을 통해 토큰 제공

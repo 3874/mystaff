@@ -1,4 +1,5 @@
 import { getAgentById } from "../allAgentsCon.js";
+import { normalizeApiResponse, apiPost } from "../utils.js";
 /* dynamic ESM import helper for ag-grid */
 
 let host = "";
@@ -41,94 +42,6 @@ $(document).ready(function () {
     });
 });
 
-
-async function apiPost(body) {
-  if (!host) throw new Error("API URL not configured");
-  console.log("apiPost =>", host, body);
-  const res = await fetch(host, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    // try parse error body, else use status text
-    let errBody;
-    try {
-      errBody = await res.json();
-    } catch {
-      errBody = res.statusText;
-    }
-    console.error("apiPost error response:", res.status, errBody);
-    throw new Error(`API error: ${res.status} - ${JSON.stringify(errBody)}`);
-  }
-  const parsed = await res.json();
-  console.log("apiPost <-", parsed);
-  return parsed;
-}
-
-/**
- * Normalize various API response shapes into a consistent object:
- * { recordsTotal?, recordsFiltered?, data: [...] }
- */
-function normalizeApiResponse(raw, requestData) {
-  // If server already returns a tabular format with totals
-  if (
-    raw &&
-    typeof raw.recordsTotal !== "undefined" &&
-    typeof raw.recordsFiltered !== "undefined" &&
-    Array.isArray(raw.data)
-  ) {
-    return raw;
-  }
-
-  // If raw is an array of rows or wrapped forms
-  let rows = [];
-  if (Array.isArray(raw)) {
-    const first = raw[0];
-    if (first) {
-      if (Array.isArray(first.output)) rows = first.output;
-      else if (first.output && Array.isArray(first.output.data)) rows = first.output.data;
-      else if (first.body) {
-        try {
-          const parsed = typeof first.body === "string" ? JSON.parse(first.body) : first.body;
-          if (Array.isArray(parsed.data)) rows = parsed.data;
-          else if (Array.isArray(parsed)) rows = parsed;
-        } catch (e) {
-          // ignore
-        }
-      } else if (raw.every((r) => r && typeof r === "object" && !Array.isArray(r))) {
-        rows = raw;
-      }
-    }
-  } else if (raw && typeof raw === "object") {
-    // raw might have body or data directly
-    if (Array.isArray(raw.data)) rows = raw.data;
-    else if (raw.body) {
-      try {
-        const parsed = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
-        if (Array.isArray(parsed.data)) rows = parsed.data;
-        else if (Array.isArray(parsed)) rows = parsed;
-      } catch (e) {
-        // ignore
-      }
-    }
-  }
-
-  rows = Array.isArray(rows) ? rows : [];
-
-  // Estimate totals conservatively
-  const returned = rows.length;
-  const estimatedTotal =
-    typeof requestData?.length === "number" && returned === requestData.length
-      ? requestData.start + returned
-      : requestData?.start + returned || returned;
-
-  return {
-    recordsTotal: estimatedTotal,
-    recordsFiltered: estimatedTotal,
-    data: rows,
-  };
-}
 
 /* ---------- Grid initialization (ag-grid) ---------- */
 
@@ -259,7 +172,7 @@ async function initTableForStaff(staffId) {
             orderDir,
           };
 
-          const raw = await apiPost(apiRequestBody);
+          const raw = await apiPost(host, apiRequestBody);
           console.log("ag-grid:raw response", raw);
 
           // normalize only to extract rows array
@@ -412,6 +325,42 @@ async function initTableForStaff(staffId) {
     // helper to render row form moved here so it is available to onRowClicked
     function renderRowFormForAgGrid($form, rowData, columnsDef) {
       $form.empty();
+      // get editableKey from rowData.editableKey or global
+      let editableKey = [];
+      if (rowData && Array.isArray(rowData.editableKey)) {
+        editableKey = rowData.editableKey;
+      } else if (Array.isArray(window._sheetEditableKey)) {
+        editableKey = window._sheetEditableKey;
+      }
+      // Use static Save button in modal-footer
+      const $modal = $form.closest('.modal');
+      const $saveBtn = $modal.find('#rowModalSaveBtn');
+      $saveBtn.off('click').on('click', async function () {
+        // Collect editable fields
+        const payload = { action: 'update' };
+        // Use _id if present
+        if (rowData && rowData._id) payload.id = rowData._id;
+        $form.find('input, textarea').each(function (i, el) {
+          const $el = $(el);
+          // Always use columnsDef[i].field as the key for update
+          const key = columnsDef[i] && columnsDef[i].field ? columnsDef[i].field : $el.attr('name');
+          if (editableKey.includes(key)) {
+            payload[key] = $el.val();
+          }
+        });
+        try {
+          const result = await apiPost(host, payload);
+          // Optionally show success/fail message
+          if (result && result.success) {
+            alert('Saved successfully');
+            $modal.modal('hide');
+          } else {
+            alert('Save failed');
+          }
+        } catch (err) {
+          alert('Save error: ' + err);
+        }
+      });
       columnsDef.forEach((col, idx) => {
         const key = col.field || col.headerName || `col${idx}`;
         let value = rowData && Object.prototype.hasOwnProperty.call(rowData, key) ? rowData[key] : "";
@@ -432,15 +381,23 @@ async function initTableForStaff(staffId) {
         const $label = $(`<label class="form-label fw-bold mb-1">${labelText}</label>`);
         const useTextarea = asString.length > 120 || asString.includes("\n");
         let $control;
+        // editable if key is in editableKey
+        const isEditable = editableKey.includes(key);
         if (useTextarea) {
-          $control = $(`<textarea class="form-control" rows="5" readonly></textarea>`).val(asString);
+          $control = $(`<textarea class="form-control" rows="5" ${isEditable ? "" : "readonly"}></textarea>`).val(asString);
         } else {
-          $control = $(`<input class="form-control form-control-sm" readonly />`).val(asString);
+          $control = $(`<input class="form-control form-control-sm" ${isEditable ? "" : "readonly"} />`).val(asString);
+        }
+        if (!isEditable) {
+          $control.attr("readonly", "readonly");
+          $control.addClass("readonly");
+        } else {
+          $control.removeAttr("readonly");
+          $control.removeClass("readonly");
         }
         $wrap.append($label).append($control);
         $form.append($wrap);
       });
-      $form.find("input, textarea").attr("readonly", "readonly");
       $form.find("select, input[type=checkbox], input[type=radio], button").attr("disabled", "disabled");
     }
   } catch (err) {
@@ -587,11 +544,34 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
 
 export async function getFirstPageDataForColumns() {
   try {
-  const raw = await apiPost({ action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
-    // try normalize to plain rows array
-    if (raw && Array.isArray(raw.data)) return raw.data;
-  const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
-    return Array.isArray(normalized.data) ? normalized.data : [];
+    const raw = await apiPost(host, { action: "query", start: 0, length: 1, search: "", orderColumn: "", orderDir: "" });
+    // expected raw: [{meta:{}, output:{}}]
+    let editableKey = [];
+    let outputData = [];
+    if (Array.isArray(raw) && raw.length > 0) {
+      const item = raw[0];
+      if (item.meta && item.meta.resource === "database") {
+        // collect keys except 'resource' where value is true
+        editableKey = Object.keys(item.meta)
+          .filter(k => k !== "resource" && item.meta[k] === true);
+      }
+      if (item.output && Array.isArray(item.output)) {
+        outputData = item.output;
+      }
+    }
+    // fallback for other shapes
+    if (outputData.length === 0 && raw && Array.isArray(raw.data)) {
+      outputData = raw.data;
+    }
+    if (outputData.length === 0) {
+      const normalized = normalizeApiResponse(raw, { start: 0, length: 1 });
+      outputData = Array.isArray(normalized.data) ? normalized.data : [];
+    }
+    // attach editableKey to output for later use
+    outputData.editableKey = editableKey;
+    // store globally for later use in form rendering
+    window._sheetEditableKey = editableKey;
+    return outputData;
   } catch (err) {
     console.error("getFirstPageDataForColumns failed:", err);
     return [];
@@ -599,21 +579,12 @@ export async function getFirstPageDataForColumns() {
 }
 
 async function fetchAndExtract(actionBody) {
-  const raw = await apiPost(actionBody);
+  const raw = await apiPost(host, actionBody);
   // try common shapes
   if (Array.isArray(raw) && raw.length > 0 && raw[0].output) return raw[0].output;
   if (raw && typeof raw.body !== "undefined") return typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
   if (raw && Array.isArray(raw)) return raw;
   return raw;
-}
-
-export async function getDataById(id) {
-  try {
-    return await fetchAndExtract({ action: "read", id });
-  } catch (err) {
-    console.error("getDataById failed:", err);
-    throw err;
-  }
 }
 
 export async function createData(addData) {
