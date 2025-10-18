@@ -136,10 +136,23 @@
           <!-- Staff Information Card -->
           <div class="card mb-4">
             <div class="card-header">
-              <h5 class="mb-0">Staff Information</h5>
+              <h5 class="mb-0">
+                <button 
+                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#staffInfoCollapse" 
+                  aria-expanded="true" 
+                  aria-controls="staffInfoCollapse"
+                >
+                  <i class="bi bi-chevron-down me-2" id="staffInfoCollapseIcon"></i>
+                  Staff Information
+                </button>
+              </h5>
             </div>
-            <div class="card-body">
-              <form id="registForm">
+            <div class="collapse show" id="staffInfoCollapse">
+              <div class="card-body">
+                <form id="registForm">
                 <div class="mb-3">
                   <label for="staffId" class="form-label">Staff ID</label>
                   <input type="text" class="form-control" id="staffId" />
@@ -175,15 +188,29 @@
                   </div>
                 </div>
               </form>
+              </div>
             </div>
           </div>
 
           <!-- Adapter Configuration Card -->
           <div class="card mb-4">
             <div class="card-header">
-              <h5 class="mb-0">Adapter Configuration</h5>
+              <h5 class="mb-0">
+                <button 
+                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#adapterConfigCollapse" 
+                  aria-expanded="true" 
+                  aria-controls="adapterConfigCollapse"
+                >
+                  <i class="bi bi-chevron-down me-2" id="adapterCollapseIcon"></i>
+                  Adapter Configuration
+                </button>
+              </h5>
             </div>
-            <div class="card-body">
+            <div class="collapse show" id="adapterConfigCollapse">
+              <div class="card-body">
               <div class="mb-3">
                 <label for="adapter_name" class="form-label">Adapter Type</label>
                 <select class="form-select" id="adapter_name">
@@ -237,18 +264,35 @@
                 <label for="adapter_token_limit" class="form-label">Token Limit</label>
                 <input type="number" class="form-control" id="adapter_token_limit" placeholder="4096"/>
               </div>
+              </div>
             </div>
           </div>
 
           <!-- Test Section Card -->
           <div class="card mb-4">
             <div class="card-header">
-              <h5 class="mb-0">Test Configuration</h5>
+              <h5 class="mb-0">
+                <button 
+                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#testConfigCollapse" 
+                  aria-expanded="true" 
+                  aria-controls="testConfigCollapse"
+                >
+                  <i class="bi bi-chevron-down me-2" id="testConfigCollapseIcon"></i>
+                  Test Configuration
+                </button>
+              </h5>
             </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6">
+            <div class="collapse show" id="testConfigCollapse">
+              <div class="card-body">
+              <!-- Input Section -->
+              <div class="row mb-4">
+                <div class="col-12">
                   <h6 class="mb-3">Input</h6>
+                </div>
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label for="input_prompt" class="form-label">Prompt</label>
                     <input type="text" class="form-control" id="input_prompt" placeholder="Enter test prompt"/>
@@ -257,6 +301,8 @@
                     <label for="input_history" class="form-label">History</label>
                     <input type="text" class="form-control" id="input_history" placeholder="Optional conversation history"/>
                   </div>
+                </div>
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label for="input_ltm" class="form-label">LTM</label>
                     <input type="text" class="form-control" id="input_ltm" placeholder="Optional long-term memory"/>
@@ -266,18 +312,32 @@
                     <input type="text" class="form-control" id="input_sessionId" placeholder="Optional session identifier"/>
                   </div>
                 </div>
-                <div class="col-md-6">
+              </div>
+
+              <!-- Response Section -->
+              <div class="row">
+                <div class="col-12">
                   <h6 class="mb-3">Response</h6>
-                  <div class="mb-3">
+                  <!-- Text Response Area (for non-database resources) -->
+                  <div class="mb-3" id="textResponseArea">
                     <textarea
                       class="form-control"
                       id="output"
-                      rows="12"
+                      rows="18"
                       readonly
                       placeholder="Test response will appear here..."
                     ></textarea>
                   </div>
+                  <!-- Database Resource Area (iframe for test-sheet.html) -->
+                  <div class="mb-3" id="databaseResponseArea" style="display: none;">
+                    <iframe 
+                      id="databaseFrame" 
+                      style="width: 100%; height: 600px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;"
+                      src=""
+                    ></iframe>
+                  </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>

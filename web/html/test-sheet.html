@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"
+      name="viewport"
+    />
+    <title>Test Database View &mdash; My AI crew</title>
+    <!-- General CSS Files -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <!-- ADD ag-grid styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+
+    <style>
+      body, html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container-fluid {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-content {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+      }
+
+      /* DataTables/ag-grid: 테두리, 폰트 축소 */
+      #staffTable,
+      #staffTable_wrapper .dataTables_scrollHead table,
+      #staffTable_wrapper .dataTables_scrollBody table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.2;
+        background-clip: padding-box;
+      }
+
+      #staffTable, 
+      #staffTable_wrapper .dataTables_scrollHead table,
+      #staffTable_wrapper .dataTables_scrollBody table {
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+
+      #staffTable thead th,
+      #staffTable tbody td,
+      #staffTable_wrapper .dataTables_scrollHead table th,
+      #staffTable_wrapper .dataTables_scrollBody table td {
+        border: 1px solid rgba(255,255,255,0.04);
+        padding: 0.28rem 0.45rem;
+        vertical-align: middle;
+      }
+
+      #staffTable thead th,
+      #staffTable_wrapper .dataTables_scrollHead table thead th {
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+      }
+
+      .dt-small {
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+      }
+
+      /* Test mode badge */
+      .test-badge {
+        background-color: #ffc107;
+        color: #000;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <!-- Header section -->
+      <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4"
+      >
+        <div class="d-flex align-items-center gap-2">
+          <h1 class="h2 mb-0" id="title">Test Database View</h1>
+          <span class="test-badge">TEST MODE</span>
+        </div>
+      </div>
+
+      <!-- Scrollable content area -->
+      <div class="main-scroll-area">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <p class="card-text mb-3" id="summary">
+                  Testing database resource configuration
+                </p>
+                <input id="quickFilter" class="form-control form-control-sm mb-2" placeholder="Search..." />
+                <div class="table-responsive">
+                  <!-- ag-grid container -->
+                  <div id="staffTable" style="width:100%; height:500px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row details modal -->
+    <div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="rowModalLabel">Row Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="rowDetailForm" class="row g-2"></form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/ag-grid-community@29.3.2/dist/ag-grid-community.min.js"></script>
+    <script type="module" src="../js/pages/test-sheet.js"></script>
+  </body>
+</html>

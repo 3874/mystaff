@@ -6,6 +6,28 @@ $(function () {
   const urlParams = new URLSearchParams(window.location.search);
   const staffId = urlParams.get('staffId');
 
+  // Collapse icon rotation handlers
+  $('#staffInfoCollapse').on('show.bs.collapse', function () {
+    $('#staffInfoCollapseIcon').removeClass('bi-chevron-right').addClass('bi-chevron-down');
+  });
+  $('#staffInfoCollapse').on('hide.bs.collapse', function () {
+    $('#staffInfoCollapseIcon').removeClass('bi-chevron-down').addClass('bi-chevron-right');
+  });
+  
+  $('#adapterConfigCollapse').on('show.bs.collapse', function () {
+    $('#adapterCollapseIcon').removeClass('bi-chevron-right').addClass('bi-chevron-down');
+  });
+  $('#adapterConfigCollapse').on('hide.bs.collapse', function () {
+    $('#adapterCollapseIcon').removeClass('bi-chevron-down').addClass('bi-chevron-right');
+  });
+  
+  $('#testConfigCollapse').on('show.bs.collapse', function () {
+    $('#testConfigCollapseIcon').removeClass('bi-chevron-right').addClass('bi-chevron-down');
+  });
+  $('#testConfigCollapse').on('hide.bs.collapse', function () {
+    $('#testConfigCollapseIcon').removeClass('bi-chevron-down').addClass('bi-chevron-right');
+  });
+
   // Adapter configurations
   const adapterConfigs = {
     http: {
@@ -98,6 +120,77 @@ $(function () {
     };
   }
 
+  // Resource change handler - toggle response area based on resource type
+  function updateResponseArea() {
+    const resource = $("#adapter_resource").val();
+    if (resource === "database") {
+      $("#textResponseArea").hide();
+      $("#databaseResponseArea").show();
+      
+      // Disable test button for database (auto-loads)
+      $("#testBtn").prop("disabled", true).attr("title", "Database resource auto-loads on configuration change");
+      
+      // Disable all input fields (not needed for database)
+      $("#input_prompt, #input_history, #input_ltm, #input_sessionId")
+        .prop("disabled", true)
+        .addClass("text-muted");
+      
+      // Automatically load test-sheet.html when database is selected
+      loadDatabaseTestView();
+    } else {
+      $("#textResponseArea").show();
+      $("#databaseResponseArea").hide();
+      
+      // Enable test button for non-database resources
+      $("#testBtn").prop("disabled", false).attr("title", "Test the configuration");
+      
+      // Enable all input fields
+      $("#input_prompt, #input_history, #input_ltm, #input_sessionId")
+        .prop("disabled", false)
+        .removeClass("text-muted");
+      
+      // Clear iframe when switching away from database
+      $("#databaseFrame").attr("src", "");
+    }
+  }
+
+  // Function to load database test view
+  function loadDatabaseTestView() {
+    const responder = getJsonFromForm();
+    const staffData = {
+      staffId: responder.staffId || `test-${Date.now()}`,
+      staff_name: responder.staff_name || "Test Staff",
+      adapter: responder.adapter,
+      resource: responder.resource,
+      language: responder.language
+    };
+    
+    // Store test configuration in sessionStorage
+    sessionStorage.setItem("testStaffConfig", JSON.stringify(staffData));
+    
+    // Load test-sheet.html in iframe
+    const iframeUrl = `./test-sheet.html`;
+    $("#databaseFrame").attr("src", iframeUrl);
+    
+    console.log("Loading test database view:", staffData);
+  }
+
+  $("#adapter_resource").on("change", updateResponseArea);
+
+  // Update test view when key fields change (only if resource is database)
+  function updateTestViewIfDatabase() {
+    if ($("#adapter_resource").val() === "database") {
+      // Add a small debounce to avoid too many reloads
+      clearTimeout(window._testViewUpdateTimer);
+      window._testViewUpdateTimer = setTimeout(() => {
+        loadDatabaseTestView();
+      }, 500);
+    }
+  }
+
+  // Watch for changes in important fields
+  $("#adapter_apiUrl, #adapter_headers_Authorization, #adapter_headers_Content-Type").on("blur", updateTestViewIfDatabase);
+
   // Adapter change handler
   $("#adapter_name").on("change", function () {
     const selectedAdapter = $(this).val();
@@ -168,13 +261,21 @@ $(function () {
     }
   });
 
-  // Test button handler
+  // Test button handler (only for non-database resources)
   $("#testBtn").on("click", async function () {
+    // Database resources are auto-loaded, so test button is disabled
+    if ($(this).prop("disabled")) {
+      return;
+    }
+
+    const responder = getJsonFromForm();
+    
+    // For non-database resources, use the text response area
     if (!$("#input_prompt").val()) {
       alert("Please enter a test prompt.");
       return;
     }
-    const responder = getJsonFromForm();
+    
     const processedInput = {
       action: 'chat',
       prompt: $("#input_prompt").val(),
@@ -202,6 +303,7 @@ $(function () {
     getDataByKey("diystaff", staffId).then(staffData => {
       if (staffData) {
         populateForm(staffData);
+        updateResponseArea(); // Update response area based on loaded resource
       } else {
         alert("Could not find staff data.");
         window.location.href = "./myinterns.html";
@@ -215,5 +317,6 @@ $(function () {
     // New staff - initialize with defaults
     populateForm({});
     $("#adapter_name").val('http').trigger('change');
+    updateResponseArea(); // Initialize response area
   }
 });
