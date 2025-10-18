@@ -57,8 +57,8 @@ $(function () {
     // Populate common and adapter-specific fields
     $("#adapter_apiUrl").val(adapter.host || "");
     $("#adapter_token_limit").val(adapter.token_limit || 0);
-    $("#adapter_language").val(adapter.language || "");
-    $("#adapter_resource").val(adapter.resource || "");
+    $("#adapter_language").val(data.language || "");
+    $("#adapter_resource").val(data.resource || "");
 
     const headers = adapter.headers || {};
     $("#adapter_headers_Authorization").val(headers.Authorization || "");
