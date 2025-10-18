@@ -1,10 +1,10 @@
-# mystaff
+# My AI crew
 My AI staff
 
 
-# mystaff 만들기
+# My AI crew 만들기
 
-mystaff을 만드는 방법은 크게 두가지가 있다. 하나는 기성 LLM을 사용하는 방법과 자체 서버로 구현하는 방법이다.
+My AI crew을 만드는 방법은 크게 두가지가 있다. 하나는 기성 LLM을 사용하는 방법과 자체 서버로 구현하는 방법이다.
 
 1. 기성 LLM을 사용하는 경우의 staff의 형식
 
@@ -68,7 +68,7 @@ payload = {
     action: 'chat',
     prompt: '',
     history: '',        // 최근 대화 20개까지 string으로 만들어서 보냄
-    ltm: '',            // mystaff에서 만든 long term memory를 string으로 만들어서 보냄
+    ltm: '',            // My AI crew에서 만든 long term memory를 string으로 만들어서 보냄
     file: '',           // 참조하고자하는 파일이 로컬에 저장되어 있는 경우 string으로 만들어서 보냄
     language: '',       // staff의 기본 언어
     sessionId: '',      // 대화의 session id
@@ -102,7 +102,7 @@ payload = {
 
 
 
-서버 -> mystaff (Response)
+서버 -> My AI crew (Response)
 
 1. 기본형
 {

@@ -181,10 +181,6 @@ async function loadStaffAgents() {
     const userData = await getDataByKey("mydata", userId);
 
     if (userData) {
-      // Populate company name
-      if (userData.company) {
-        $("#company-name").text(userData.company);
-      }
 
       // Populate staff lists
       const $defaultList = $("#hired-member-list");

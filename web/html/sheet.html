@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"
       name="viewport"
     />
-    <title>Main &mdash; MyStaff</title>
+    <title>Main &mdash; My AI crew</title>
     <!-- General CSS Files -->
     <!-- Replaced local Bootstrap 4 with Bootstrap 5 CDN -->
     <link
@@ -32,10 +32,26 @@
       
       /* 레이아웃: Bootstrap 유틸리티(d-flex, vh-100 등)를 사용하므로 최소화 */
       #sidebarMenu {
+        position: fixed;
+        top: 0;
+        left: 0;
         height: 100vh;
         overflow-y: auto;
-        position: sticky;
-        top: 0;
+        z-index: 1000;
+      }
+      /* Adjust main content to account for fixed sidebar */
+      main.main-content {
+        margin-left: 0;
+      }
+      @media (min-width: 768px) {
+        main.main-content {
+          margin-left: 25%; /* Match col-md-3 width */
+        }
+      }
+      @media (min-width: 992px) {
+        main.main-content {
+          margin-left: 16.666667%; /* Match col-lg-2 width */
+        }
       }
 
       /* Columns dropdown 내부 항목 패딩 (폼 체크 정렬 보정) */
@@ -106,7 +122,7 @@
   <body class="bg-body">
     <!-- Changed bg-light to bg-body for dark theme compatibility -->
     <nav class="navbar navbar-dark bg-dark d-md-none">
-      <a class="navbar-brand" href="#">MyStaff</a>
+      <a class="navbar-brand" href="#">My AI crew</a>
       <!-- Updated data-toggle and data-target to data-bs-toggle and data-bs-target for Bootstrap 5 -->
       <button
         class="navbar-toggler"
@@ -131,15 +147,13 @@
           <div class="position-sticky pt-3">
             <div class="sidebar-brand text-center my-3">
               <!-- Added text-decoration-none for dark theme visibility -->
-              <a href="./mystaff.html" class="h4 text-decoration-none"
-                >MyStaff</a
-              >
+              <img src="../img/aicrew4.png" alt="AI Crew Logo" style="max-width: 100px;" />
             </div>
             <ul class="nav flex-column">
               <li class="nav-item">
                 <a class="nav-link" href="./mystaff.html">
                   <i class="fas fa-users"></i>
-                  My Staff
+                  My Crew
                 </a>
               </li>
               <li class="nav-item">
@@ -157,7 +171,7 @@
               <li class="nav-item">
                 <a class="nav-link active" href="./findinterns.html">
                   <i class="fas fa-search"></i>
-                  Staff Marketplace
+                  Marketplace
                 </a>
               </li>
               <li class="nav-item">

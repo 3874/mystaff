@@ -1,126 +1,9 @@
-import { handleMsg } from "../agents.js";
-import { addData, updateData, getAllData, getDataByKey, deleteData} from "../database.js";
+import { getAllData, getDataByKey, deleteData} from "../database.js";
 import { FindUrl } from "../utils.js";
 import { addAgent } from "../allAgentsCon.js"; 
 
 $(function () {
   // Short for $(document).ready()
-  const registModal = new bootstrap.Modal($("#registModal")[0]);
-
-  function populateForm(data) {
-    // Handle staffId visibility and state
-    if (data && data.staffId) {
-      // Modify Mode
-      $("#staffId").val(data.staffId).prop("disabled", true);
-      $("#staffId").closest(".mb-3").show();
-    } else {
-      // Regist Mode
-      $("#staffId").val("").prop("disabled", false);
-      $("#staffId").closest(".mb-3").hide();
-    }
-
-    $("#staff_name").val(data.staff_name || "");
-    $("#role").val(data.role || "");
-    $("#summary").val(data.summary || "");
-
-    const adapter = data.adapter || {};
-    const adapterName = adapter.name || "http";
-    $("#adapter_name").val(adapterName);
-
-    // Show/hide fields based on adapter type
-    if (adapterName === "openai" || adapterName === "gemini") {
-      $(".http-fields").hide();
-      $(".llm-fields").show();
-    } else {
-      $(".http-fields").show();
-      $(".llm-fields").hide();
-    }
-
-    // Populate common and adapter-specific fields
-    $("#adapter_apiUrl").val(adapter.host || "");
-    $("#adapter_token_limit").val(adapter.token_limit || 0);
-    $("#adapter_language").val(adapter.language || "");
-    $("#adapter_resource").val(adapter.resource || "");
-
-    const headers = adapter.headers || {};
-    $("#adapter_headers_Authorization").val(headers.Authorization || "");
-    $("#adapter_headers_Content-Type").val(headers["Content-Type"] || "");
-
-    if (adapterName === "http") {
-      $("#adapter_method").val(adapter.method || "");
-      
-    } else if (adapterName === "openai" || adapterName === "gemini") {
-      $("#adapter_model").val(adapter.model || "");
-      $("#adapter_system_prompt").val(adapter.system_prompt || "");
-    }
-  }
-
-  function getJsonFromForm() {
-    const staffIdField = $("#staffId");
-    const staffId = staffIdField.is(":disabled") ? staffIdField.val() : ""; // Only include staffId if in modify mode
-
-    return {
-      staffId: staffId,
-      staff_name: $("#staff_name").val(),
-      role: $("#role").val(),
-      summary: $("#summary").val(),
-      language: $("#adapter_language").val(),
-      resource: $("#adapter_resource").val(),
-      adapter: {
-        name: $("#adapter_name").val(),
-        host: $("#adapter_apiUrl").val(),
-        method: $("#adapter_method").val(),
-        token_limit: parseInt($("#adapter_token_limit").val(), 10),
-        headers: {
-          Authorization: $("#adapter_headers_Authorization").val(),
-          "Content-Type": $("#adapter_headers_Content-Type").val(),
-        },
-      },
-    };
-  }
-
-  const adapterConfigs = {
-    http: {
-      host: "https://",
-      authorization: "Bearer ",
-      contentType: "application/json",
-    },
-    openai: {
-      host: "https://api.openai.com/v1/chat/completions",
-      authorization: "Bearer ",
-      contentType: "application/json",
-    },
-    gemini: {
-      host:
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-      authorization: "Bearer ",
-      contentType: "application/json",
-    },
-  };
-
-  $("#adapter_name").on("change", function () {
-    const selectedAdapter = $(this).val();
-    const config = adapterConfigs[selectedAdapter];
-
-    if (selectedAdapter === "openai" || selectedAdapter === "gemini") {
-      $(".http-fields").hide();
-      $(".llm-fields").show();
-    } else {
-      $(".http-fields").show();
-      $(".llm-fields").hide();
-    }
-
-    if (config) {
-      $("#adapter_apiUrl").val(config.host);
-      $("#adapter_headers_Authorization").val(config.authorization);
-      $("#adapter_headers_Content-Type").val(config.contentType);
-      if (selectedAdapter === "openai") {
-        $("#adapter_model").val("gpt-4o-mini");
-      } else if (selectedAdapter === "gemini") {
-        $("#adapter_model").val("gemini-2.5-fresh");
-      }
-    }
-  });
 
   async function loadDIYStaffs() {
     const staffList = await getAllData("diystaff");
@@ -188,79 +71,10 @@ $(function () {
 
 
   $("#buildBtn").on("click", function () {
-    // 초기화하여 등록 모드로 만들고 staffId 필드 숨김
-    populateForm({});
-    // adapter 기본값을 http로 설정
-    $("#adapter_name").val('http').trigger('change');
-    registModal.show();
+    // Navigate to the staff build page
+    window.location.href = "./staff-build.html";
   });
 
-  $("#saveBtn").on("click", async function () {
-    const newJsonData = getJsonFromForm();
-
-    // Validation
-    if (!newJsonData.staff_name) {
-      alert("Staff Name is required.");
-      return;
-    }
-    if (!newJsonData.adapter.name) {
-      alert("Adapter Name is required.");
-      return;
-    }
-    if (!newJsonData.adapter.host) {
-      alert("Adapter API URL is required.");
-      return;
-    }
-    if (!newJsonData.adapter.method) {
-      alert("Adapter Method is required.");
-      return;
-    }
-
-    try {
-      if (newJsonData.staffId) {
-        // Update existing staff
-        await updateData("diystaff", newJsonData.staffId, newJsonData);
-        console.log("Staff updated:", newJsonData.staffId);
-      } else {
-        // Add new staff
-        newJsonData.staffId = "diystaff-" + Date.now(); // Generate a simple unique ID
-        await addData("diystaff", newJsonData);
-        console.log("New staff added:", newJsonData.staffId);
-      }
-      registModal.hide();
-      loadDIYStaffs(); // Refresh the list
-    } catch (error) {
-      console.error("Failed to save staff data:", error);
-      alert("Failed to save data. See console for details.");
-    }
-  });
-
-  $("#testBtn").on("click", async function () {
-    if (!$("#input_prompt").val()) {
-      alert("Please enter a test prompt.");
-      return;
-    }
-    const responder = getJsonFromForm();
-    const processedInput = {
-      action: 'chat',
-      prompt: $("#input_prompt").val(),
-      history: $("#input_history").val() || "",
-      ltm: $("#input_ltm").val() || "",
-      file: $("#input_file").val() || "",
-    };
-    const sessionId = $("#input_sessionId").val();
-    console.log("Testing with input:", processedInput, "and responder:", responder);
-
-    try {
-      $("#output").val("Testing...");
-      const response = await handleMsg(processedInput, responder, sessionId);
-      $("#output").val(JSON.stringify(response, null, 2));
-    } catch (error) {
-      console.error("Test failed:", error);
-      $("#output").val(`Error: ${error.message}`);
-      alert("Test failed. See console for details.");
-    }
-  });
 
   // Event listener for detail buttons
   $("#diy-staff-row").on("click", ".detail-btn", function () {
@@ -284,13 +98,8 @@ $(function () {
   // Event listener for edit buttons
   $("#diy-staff-row").on("click", ".edit-btn", async function () {
     const staffId = $(this).data("staff-id");
-    const staffData = await getDataByKey("diystaff", staffId);
-    if (staffData) {
-      populateForm(staffData);
-      registModal.show();
-    } else {
-      alert("Could not find staff data.");
-    }
+    // Navigate to staff-build page with staffId for editing
+    window.location.href = `./staff-build.html?staffId=${staffId}`;
   });
 
   $("#diy-staff-row").on("click", ".regist-btn", async function () {
