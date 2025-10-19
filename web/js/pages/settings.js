@@ -1,7 +1,11 @@
 import { getDataByKey, updateData } from '../../js/database.js';
 import { signOut } from '../utils.js';
+import { initModeratorChat } from '../moderator-chat.js';
 
 $(document).ready(function() {
+    // Initialize moderator chat functionality
+    initModeratorChat();
+    
     // Check for login status
     const isLoggedIn = localStorage.getItem('mystaff_loggedin');
     if (isLoggedIn !== 'true') {

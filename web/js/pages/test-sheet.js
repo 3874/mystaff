@@ -8,7 +8,7 @@ $(document).ready(function () {
   // Load test configuration from sessionStorage
   const testConfigStr = sessionStorage.getItem("testStaffConfig");
   if (!testConfigStr) {
-    alert("No test configuration found. Please initiate test from staff-build page.");
+    alert("No test configuration found. Please initiate test from crew-build page.");
     return;
   }
 

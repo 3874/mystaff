@@ -1,11 +1,13 @@
 // moderator adapter
-export async function moderatorAdapter({ prompt, history, sessionId }) {
+export async function moderatorAdapter({ prompt, language, history, ltm}) {
   const url =
     "https://1nzyp04c0l.execute-api.ap-northeast-2.amazonaws.com/default/ask";
 
   const payload = {
     prompt: prompt,
-    //  sessionId: sessionId,
+    language: language,
+    history: history,
+    ltm: ltm,
   };
 
   console.log("Moderator Adapter Payload:", payload);

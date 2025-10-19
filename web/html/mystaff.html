@@ -128,6 +128,12 @@
                   Settings
                 </a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./support.html">
+                  <i class="bi bi-headset"></i>
+                  Support
+                </a>
+              </li>
             </ul>
             <div class="mt-4 p-3">
               <button
@@ -190,55 +196,5 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="../js/pages/mystaff.js"></script>
-
-    <!-- Chat Modal -->
-    <div
-      class="modal fade"
-      id="chatModal"
-      tabindex="-1"
-      aria-labelledby="chatModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="chatModalLabel">Chat</h5>
-            <button
-              type="button"
-              class="btn btn-outline-danger btn-sm ms-2"
-              id="resetChatBtn"
-            >
-              <i class="fa fa-rotate-left"></i> Reset
-            </button>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body" style="height: 70vh; overflow-y: auto">
-            <div id="chatMessages" class="p-3">
-              <!-- Chat messages will be appended here -->
-            </div>
-          </div>
-          <div class="modal-footer">
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="메시지를 입력하세요..."
-                aria-label="Recipient's username"
-                aria-describedby="send-btn"
-                id="user-input"
-              />
-              <button class="btn btn-primary" type="button" id="send-btn">
-                전송
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </body>
 </html>

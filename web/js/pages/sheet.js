@@ -1,11 +1,14 @@
 import { getAgentById } from "../allAgentsCon.js";
 import { normalizeApiResponse, apiPost } from "../utils.js";
+import { initModeratorChat } from "../moderator-chat.js";
 /* dynamic ESM import helper for ag-grid */
 
 let host = "";
 let currentSearchTerm = "";
 
 $(document).ready(function () {
+  // Initialize moderator chat functionality
+  initModeratorChat();
   const urlParams = new URLSearchParams(window.location.search);
   const staffId = urlParams.get("staffId");
   let mystaff;

@@ -1,5 +1,5 @@
 # My AI crew
-My AI staff
+AIcrew.info
 
 
 # My AI crew 만들기

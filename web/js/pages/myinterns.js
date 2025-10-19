@@ -1,9 +1,13 @@
 import { getAllData, getDataByKey, deleteData} from "../database.js";
 import { FindUrl } from "../utils.js";
-import { addAgent } from "../allAgentsCon.js"; 
+import { addAgent } from "../allAgentsCon.js";
+import { initModeratorChat } from "../moderator-chat.js";
 
 $(function () {
   // Short for $(document).ready()
+  
+  // Initialize moderator chat functionality
+  initModeratorChat();
 
   async function loadDIYStaffs() {
     const staffList = await getAllData("diystaff");
@@ -72,7 +76,7 @@ $(function () {
 
   $("#buildBtn").on("click", function () {
     // Navigate to the staff build page
-    window.location.href = "./staff-build.html";
+    window.location.href = "./crew-build.html";
   });
 
 
@@ -98,8 +102,8 @@ $(function () {
   // Event listener for edit buttons
   $("#diy-staff-row").on("click", ".edit-btn", async function () {
     const staffId = $(this).data("staff-id");
-    // Navigate to staff-build page with staffId for editing
-    window.location.href = `./staff-build.html?staffId=${staffId}`;
+    // Navigate to crew-build page with staffId for editing
+    window.location.href = `./crew-build.html?staffId=${staffId}`;
   });
 
   $("#diy-staff-row").on("click", ".regist-btn", async function () {
