@@ -1,7 +1,6 @@
 // moderator adapter
 export async function moderatorAdapter({ prompt, language, history, ltm}) {
-  const url =
-    "https://1nzyp04c0l.execute-api.ap-northeast-2.amazonaws.com/default/ask";
+  const url = "https://ai.yleminvest.com/webhook/moderator";
 
   const payload = {
     prompt: prompt,
