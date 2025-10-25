@@ -1,20 +1,21 @@
 import { getDataByKey, updateData } from '../database.js';
+import { initAuthGuard } from '../auth-guard.js';
+import { getCurrentUser } from '../utils.js';
 
-$(document).ready(function() {
-    // Basic login check: Redirect to signin if no token is found
-    const isLoggedIn = localStorage.getItem('mystaff_loggedin'); // Assuming 'mystaff_loggedin' is stored upon successful login
-    if (!isLoggedIn) {
-        window.location.href = './signin.html';
-        return; // Stop execution if not authenticated
+$(document).ready(async function() {
+    // 인증 체크
+    if (!initAuthGuard()) {
+        return;
     }
 
-    const userId = localStorage.getItem('mystaff_user');
-    if (!userId) {
-      console.error('User ID not found in localStorage.');
+    const user = await getCurrentUser();
+    if (!user) {
+      console.error('User not found.');
       window.location.href = './signin.html';
       return;
     }
 
+    const userId = user.email;
     const form = $('#credentials-form');
     let mydata;
     // Function to load credentials from IndexedDB

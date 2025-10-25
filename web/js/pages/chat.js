@@ -2,10 +2,11 @@ import { getDataByKey, getAllData, updateData, deleteData, addData } from "../da
 import { deleteLTM } from "../memory.js";
 import { handleMsg } from "../agents.js";
 import { preprocess, postprocess } from "../process.js";
-import { getAnyAgentById } from "../utils.js";
+import { getAnyAgentById, getCurrentUser } from "../utils.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { handleCommand } from "../commands.js";
-import { FindUrl, handleFileUpload, signOut, handleFileUploadToServer } from "../utils.js";
+import { FindUrl, handleFileUpload, signOut } from "../utils.js";
+import { initAuthGuard } from "../auth-guard.js";
 
 let sessionId = null;
 let mystaff = null;
@@ -14,18 +15,19 @@ let staffId = null;
 let mydata = null;
 
 $(document).ready(async function () {
-  const isLoggedIn = localStorage.getItem("mystaff_loggedin");
-
-  if (isLoggedIn !== "true") {
-    alert("You must be logged in to view this page.");
-    window.location.href = "./signin.html";
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
   }
-  const userId = localStorage.getItem("mystaff_user");
-  if (!userId) {
-    console.error("User ID not found in localStorage.");
+
+  const user = await getCurrentUser();
+  if (!user) {
+    console.error("User not found.");
     alert("An error occurred. Please sign in again.");
     return;
   }
+  
+  const userId = user.email;
   mydata = await getDataByKey("mydata", userId);
 
   await initializeChat();
@@ -234,16 +236,12 @@ function bindUIEvents() {
   });
 
   $("#fileUploadBtn").on("click", () => {
+    // 파일 선택 다이얼로그 바로 열기
     $("#fileInput").click();
   });
 
   $("#fileInput").on("change", (event) => {
-    console.log(mystaff);
-    if (mystaff && mystaff.adapter?.host) {
-      handleFileUploadToServer(event, sessionId, mystaff);
-    } else {
-      handleFileUpload(event, sessionId, mystaff);
-    }
+    handleFileUpload(event, sessionId, mystaff);
   });
 
   $("#newChat").on("click", async () => {

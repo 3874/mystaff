@@ -2,10 +2,14 @@ import { getAllData, getDataByKey, deleteData} from "../database.js";
 import { FindUrl } from "../utils.js";
 import { addAgent } from "../allAgentsCon.js";
 import { initModeratorChat } from "../moderator-chat.js";
+import { initAuthGuard } from "../auth-guard.js";
 
-$(function () {
-  // Short for $(document).ready()
-  
+$(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
+  }
+
   // Initialize moderator chat functionality
   initModeratorChat();
 

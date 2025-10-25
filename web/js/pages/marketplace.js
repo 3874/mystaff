@@ -1,17 +1,15 @@
 import { getAllAgentsWithStatus } from '../allAgentsCon.js';
-import { signOut, FindUrl } from '../utils.js';
+import { signOut, getCurrentUser } from '../utils.js';
 import { initModeratorChat } from '../moderator-chat.js';
+import { initAuthGuard } from '../auth-guard.js';
 
-$(document).ready(function() {
-  // Check for login status
-  const isLoggedIn = localStorage.getItem('mystaff_loggedin');
-
-  if (isLoggedIn !== 'true') {
-    alert('You must be logged in to view this page.');
-    window.location.href = './signin.html';
-  } else {
-    initializeFindStaffPage();
+$(document).ready(async function() {
+  // 인증 체크
+  if (!initAuthGuard()) {
+    return;
   }
+
+  await initializeFindStaffPage();
   
   // Initialize moderator chat functionality
   initModeratorChat();
@@ -26,12 +24,14 @@ $(document).ready(function() {
 
 async function initializeFindStaffPage() {
   try {
-    const userId = localStorage.getItem('mystaff_user');
-    if (!userId) {
-      console.error('User ID not found in localStorage.');
+    const user = await getCurrentUser();
+    if (!user) {
+      console.error('User not found.');
       window.location.href = './signin.html';
       return;
     }
+
+    const userId = user.email;
 
     const $allStaffList = $('#ex-staff-row');
 

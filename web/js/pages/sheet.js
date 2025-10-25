@@ -1,12 +1,18 @@
 import { getAgentById } from "../allAgentsCon.js";
 import { normalizeApiResponse, apiPost } from "../utils.js";
 import { initModeratorChat } from "../moderator-chat.js";
+import { initAuthGuard } from "../auth-guard.js";
 /* dynamic ESM import helper for ag-grid */
 
 let host = "";
 let currentSearchTerm = "";
 
-$(document).ready(function () {
+$(document).ready(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
+  }
+
   // Initialize moderator chat functionality
   initModeratorChat();
   const urlParams = new URLSearchParams(window.location.search);

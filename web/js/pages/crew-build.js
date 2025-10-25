@@ -1,8 +1,14 @@
 import { handleMsg } from "../agents.js";
 import { addData, updateData, getDataByKey } from "../database.js";
 import { initModeratorChat } from "../moderator-chat.js";
+import { initAuthGuard } from "../auth-guard.js";
 
-$(function () {
+$(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
+  }
+
   // Initialize moderator chat functionality
   initModeratorChat();
   

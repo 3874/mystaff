@@ -1,30 +1,30 @@
-import { getDataByKey, updateData } from '../database.js'; // Import updateData
-import { getAgentById } from '../allAgentsCon.js'; // Import the function
-import { signOut } from '../utils.js';
+import { getDataByKey, updateData } from '../database.js';
+import { getAgentById } from '../allAgentsCon.js';
+import { signOut, getCurrentUser } from '../utils.js';
+import { initAuthGuard } from '../auth-guard.js';
 
 $(document).ready(async function() {
-  // Check for login status
-  const isLoggedIn = localStorage.getItem('mystaff_loggedin');
+  // 인증 체크
+  if (!initAuthGuard()) {
+    return;
+  }
 
-  if (isLoggedIn !== 'true') {
-    // If not logged in, redirect to the sign-in page
-    alert('You must be logged in to view this page.');
-    window.location.href = 'signin.html';
-  } else {
-    const userId = localStorage.getItem('mystaff_user');
-    if (!userId) {
-      console.error('User ID not found in localStorage.');
-      alert('An error occurred. Please sign in again.');
-      window.location.href = './signin.html';
-      return;
-    }
+  const user = await getCurrentUser();
+  if (!user) {
+    console.error('User not found.');
+    alert('An error occurred. Please sign in again.');
+    window.location.href = './signin.html';
+    return;
+  }
 
-    // extract the staffId from url and getAgentById
-    const urlParams = new URLSearchParams(window.location.search);
-    const staffId = urlParams.get('staffId');
+  const userId = user.email;
 
-    if (!staffId) {
-      alert('No staffId');
+  // extract the staffId from url and getAgentById
+  const urlParams = new URLSearchParams(window.location.search);
+  const staffId = urlParams.get('staffId');
+
+  if (!staffId) {
+    alert('No staffId');
       window.location.href = 'mystaff.html';
       return;
     }
@@ -56,8 +56,6 @@ $(document).ready(async function() {
 
       window.location.href = './myinterns.html'; // Redirect to myinterns.html
     });
- 
-  }
 
   $('#signOutBtn').on('click', function(e) {
     e.preventDefault();

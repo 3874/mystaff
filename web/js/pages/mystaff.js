@@ -2,18 +2,15 @@ import { getDataByKey, updateData } from "../../js/database.js";
 import { getAgentById } from "../allAgentsCon.js";
 import { signOut, FindUrl } from "../utils.js";
 import { initModeratorChat } from "../moderator-chat.js";
+import { initAuthGuard } from "../auth-guard.js";
 
-$(document).ready(function () {
-  // Check for login status
-  const isLoggedIn = localStorage.getItem("mystaff_loggedin");
-
-  if (isLoggedIn !== "true") {
-    // If not logged in, redirect to the sign-in page
-    alert("You must be logged in to view this page.");
-    window.location.href = "./signin.html";
-  } else {
-    loadStaffAgents();
+$(document).ready(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return; // 인증 실패 시 리다이렉트됨
   }
+
+  loadStaffAgents();
 
   // Initialize moderator chat functionality
   initModeratorChat();

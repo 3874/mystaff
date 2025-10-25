@@ -1,11 +1,17 @@
 import { getAllAgents, updateAgentById, deleteAgentById, addAgent } from "../allAgentsCon.js";
 import { handleMsg } from "../agents.js";
+import { initAuthGuard } from "../auth-guard.js";
 
 // Move these variables to the top-level scope
 let currentStaffId = null;
 let currentUpdateData = null;
 
-$(document).ready(function () {
+$(document).ready(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
+  }
+
   getAllAgents()
     .then((items) => {
       const table = $("#staffTable").DataTable({

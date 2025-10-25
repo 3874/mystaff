@@ -2,6 +2,90 @@
 import { getAllData, addData } from "./database.js";
 import { getAgentById } from "./allAgentsCon.js";
 import { getDataByKey } from "./database.js";
+import { uploadFileToDrive } from "./google-drive.js";
+
+// ========== 인증 관련 함수 ==========
+
+/**
+ * 로그인 상태 확인
+ * @returns {boolean} 로그인 여부
+ */
+export function isLoggedIn() {
+  return localStorage.getItem('mystaff_loggedin') === 'true';
+}
+
+/**
+ * 현재 로그인한 사용자 정보 가져오기
+ * IndexedDB에서 사용자 정보를 조회
+ * @returns {Promise<Object|null>} 사용자 정보 또는 null
+ */
+export async function getCurrentUser() {
+  if (!isLoggedIn()) return null;
+  
+  const email = localStorage.getItem('mystaff_user');
+  if (!email) return null;
+  
+  try {
+    // IndexedDB에서 사용자 정보 조회
+    const userData = await getDataByKey('mydata', email);
+    
+    if (!userData) {
+      console.error('User data not found in database');
+      return null;
+    }
+    
+    return {
+      email: userData.myId,
+      nick: userData.nick,
+      company: userData.company,
+      secretKey: userData.secretKey,
+      mystaff: userData.mystaff || [],
+      credentials: userData.credentials || {},
+      googleUser: userData.googleUser,
+      isGoogleUser: !!userData.googleUser
+    };
+  } catch (e) {
+    console.error('Failed to get user data from database:', e);
+    return null;
+  }
+}
+
+/**
+ * 페이지 접근 권한 확인 (로그인 필수 페이지용)
+ * 로그인하지 않은 경우 signin.html로 리다이렉트
+ */
+export function requireAuth() {
+  if (!isLoggedIn()) {
+    console.warn('Authentication required. Redirecting to sign-in page...');
+    window.location.href = './signin.html';
+    return false;
+  }
+  return true;
+}
+
+/**
+ * 사용자 표시 이름 가져오기
+ * @returns {Promise<string>} 표시할 사용자 이름
+ */
+export async function getUserDisplayName() {
+  const user = await getCurrentUser();
+  if (!user) return 'Guest';
+  
+  if (user.googleUser?.name) return user.googleUser.name;
+  if (user.nick) return user.nick;
+  return user.email || 'User';
+}
+
+/**
+ * 사용자 프로필 이미지 가져오기
+ * @returns {Promise<string|null>} 프로필 이미지 URL 또는 null
+ */
+export async function getUserProfilePicture() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  
+  return user.googleUser?.picture || null;
+}
 
 // Generic JSON POST helper for server APIs
 export async function apiPost(host, body) {
@@ -31,90 +115,14 @@ export async function signOut() {
   window.location.href = "./signin.html"; // Redirects to the sign-in page
 }
 
-export async function handleFileUploadToServer(event, sessionId, mystaff) {
-  const file = event.target.files[0];
-  const url = mystaff?.adapter?.host;
-  if (!file) return;
-  const fileName = file.name || "";
-  const formData = new FormData();
-
-  // 안전하게 헤더 복사 (존재하지 않으면 빈 객체)
-  const fetchHeaders = mystaff?.adapter?.headers ? { ...mystaff.adapter.headers } : {};
-  // 브라우저가 boundary를 붙이도록 Content-Type 제거
-  Object.keys(fetchHeaders).forEach((k) => {
-    if (k.toLowerCase() === "content-type") delete fetchHeaders[k];
-  });
-
-  formData.append("file", file);
-  formData.append("sessionId", sessionId);
-  formData.append("fileName", fileName);
-  formData.append("action", "upload");
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
-      headers: fetchHeaders,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Upload failed: ${response.status} ${response.statusText} - ${errorText}`
-      );
-    }
-
-    // 안전한 응답 파싱: 빈본문 / 비-JSON도 처리
-    const text = await response.text();
-    if (!text) {
-      console.log("File uploaded successfully (empty response body).");
-      alert("File uploaded successfully!");
-      return {};
-    }
-    try {
-      const responseData = JSON.parse(text);
-      console.log("File uploaded successfully:", responseData);
-      alert("File uploaded successfully!");
-      return responseData;
-    } catch (parseErr) {
-      console.warn("Upload response is not valid JSON, returning raw text.", parseErr);
-      console.log("Response text:", text);
-      alert("File uploaded successfully!");
-      return text;
-    }
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    alert(`File upload failed: ${error.message}`);
-    return null;
-  }
-}
-
-export async function handleFileUpload(event, sessionId, mystaff) {
-  const file = event.target.files[0];
-  if (!file) return;
-  console.log(file);
-
+/**
+ * 파일 확장자에 따라 내용을 추출하는 함수
+ * @param {File} file - 처리할 파일 객체
+ * @param {string} fileExtension - 파일 확장자
+ * @returns {Promise<string>} 추출된 파일 내용
+ */
+async function extractFileContent(file, fileExtension) {
   let content = "";
-  const fileName = file.name || "";
-  const fileExtension = fileName.split(".").pop().toLowerCase();
-
-  const fileExtensionPool = [
-    "doc",
-    "docx",
-    "pdf",
-    "pptx",
-    "txt",
-    "rtf",
-    "csv",
-    "xls",
-    "xlsx",
-  ];
-
-  if (!fileExtensionPool.includes(fileExtension)) {
-    // fileExtensionPook에 없는 확장자를 가지면 alert띄워서 저장이 불가하다가 하자
-    alert("docx, pdf, txt, xlsx, pptx 파일만 저장 가능합니다.");
-    return;
-  }
 
   try {
     switch (fileExtension) {
@@ -171,22 +179,105 @@ export async function handleFileUpload(event, sessionId, mystaff) {
         content = await file.text();
         break;
     }
+  } catch (error) {
+    console.error(`Error extracting content from ${fileExtension} file:`, error);
+    throw error;
+  }
 
-    // Generate a unique ID for the file record.
-    const fileId = Array.from(
-      crypto.getRandomValues(new Uint8Array(16)),
-      (byte) => ("0" + byte.toString(16)).slice(-2)
-    ).join("");
+  return content;
+}
+
+export async function handleFileUpload(event, sessionId, mystaff) {
+
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // 파일 input 초기화 (중요: 이렇게 해야 팝업 차단이 안됨)
+  event.target.value = '';
+  
+  console.log(file);
+
+  let content = "";
+  const fileName = file.name || "";
+  const fileExtension = fileName.split(".").pop().toLowerCase();
+
+  // 1단계: 확장자 확인
+  const fileExtensionPool = [
+    "doc",
+    "docx",
+    "pdf",
+    "pptx",
+    "txt",
+    "rtf",
+    "csv",
+    "xls",
+    "xlsx",
+  ];
+
+  if (!fileExtensionPool.includes(fileExtension)) {
+    alert("docx, pdf, txt, xlsx, pptx 파일만 저장 가능합니다.");
+    return;
+  }
+
+  // 2단계: 약간의 지연 후 Google Drive 업로드 시도 (팝업 차단 방지)
+  let driveFileInfo = null;
+  let uploadSuccess = false;
+  
+  // 50ms 지연을 주어 파일 선택 다이얼로그가 완전히 닫히도록 함
+  await new Promise(resolve => setTimeout(resolve, 50));
+  
+  try {
+    console.log('Attempting to upload file to Google Drive...');
+    // sessionId를 전달하여 files/{sessionId}/ 폴더에 저장
+    driveFileInfo = await uploadFileToDrive(file, fileName, sessionId);
+    console.log('File uploaded to Google Drive:', driveFileInfo);
+    uploadSuccess = true;
+    
+    // 같은 파일이 이미 있는지 확인
+    if (driveFileInfo.isDuplicate || driveFileInfo.alreadyExists) {
+      alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재합니다.\n\n파일명: ${fileName}\n\n중복 업로드를 방지했습니다.`);
+      // 중복 파일인 경우 여기서 함수 종료 (다음 프로세스 진행하지 않음)
+      return {
+        fileName: fileName,
+        isDuplicate: true,
+        message: '파일이 이미 존재하여 업로드를 건너뛰었습니다.'
+      };
+    } else {
+      alert(`✅ Google Drive 업로드 성공!\n\n파일명: ${fileName}`);
+    }
+  } catch (driveError) {
+    console.error('Google Drive upload failed:', driveError);
+    alert(`❌ Google Drive 업로드 실패\n\n계속 진행합니다.\n\n오류: ${driveError.message}`);
+    uploadSuccess = false;
+  }
+  
+  // 3단계: 업로드 실패 여부와 관계없이 파일 처리 진행
+  const fileId = Array.from(
+    crypto.getRandomValues(new Uint8Array(16)),
+    (byte) => ("0" + byte.toString(16)).slice(-2)
+  ).join("");
+
+  try {
+    // 파일 내용 추출
+    content = await extractFileContent(file, fileExtension);
+    
     const fileData = {
       id: fileId,
       sessionId: sessionId,
       staffId: mystaff?.staff_id || null,
       fileName: fileName,
       contents: content,
+      uploadSuccess: uploadSuccess,
+      // Google Drive 정보 포함 (업로드 성공 시에만 유효)
+      driveFileId: driveFileInfo?.fileId || null,
+      driveWebViewLink: driveFileInfo?.webViewLink || null,
+      driveWebContentLink: driveFileInfo?.webContentLink || null,
+      driveMimeType: driveFileInfo?.mimeType || null,
+      driveSize: driveFileInfo?.size || null,
     };
 
     await addData("myfiles", fileData);
-    alert("File processed and uploaded successfully!");
+    
     return fileData;
   } catch (error) {
     console.error("Error processing file:", error);
@@ -367,4 +458,11 @@ export function normalizeApiResponse(raw, requestData) {
     recordsFiltered: estimatedTotal,
     data: rows,
   };
+}
+
+
+export function generateSecretKey() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => {
+    return ('0' + byte.toString(16)).slice(-2);
+  }).join('');
 }

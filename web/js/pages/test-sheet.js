@@ -1,10 +1,16 @@
 import { normalizeApiResponse, apiPost } from "../utils.js";
+import { initAuthGuard } from "../auth-guard.js";
 
 let host = "";
 let mystaff = null;
 let currentSearchTerm = "";
 
-$(document).ready(function () {
+$(document).ready(async function () {
+  // 인증 체크
+  if (!(await initAuthGuard())) {
+    return;
+  }
+
   // Load test configuration from sessionStorage
   const testConfigStr = sessionStorage.getItem("testStaffConfig");
   if (!testConfigStr) {

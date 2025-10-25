@@ -1,20 +1,16 @@
 import { getAllData, deleteData, updateData } from '../database.js';
-import { getAnyAgentById } from '../utils.js'; // Assuming this is needed to get staff name
-import { deleteLTM } from '../memory.js'; // For deleting LTM associated with chat
-import { signOut } from '../utils.js';
+import { getAnyAgentById, signOut } from '../utils.js';
+import { deleteLTM } from '../memory.js';
+import { initAuthGuard } from '../auth-guard.js';
 
 $(document).ready(async function() {
-    // Check for login status
-    const isLoggedIn = localStorage.getItem('mystaff_loggedin');
-
-    if (isLoggedIn !== 'true') {
-        // If not logged in, redirect to the sign-in page
-        alert('You must be logged in to view this page.');
-        window.location.href = 'signin.html';
-    } else {
-        await loadChatList();
-        bindChatListEvents();
+    // 인증 체크
+    if (!(await initAuthGuard())) {
+        return;
     }
+
+    await loadChatList();
+    bindChatListEvents();
 
     $('#signOutBtn').on('click', function(e) {
         e.preventDefault();
