@@ -437,15 +437,16 @@ async function sendMessage() {
   let messageToSend = text;
 
   const $sendBtn = $("#sendBtn");
-  const $spinner = $("#loadingSpinner");
   $inputEl.prop("disabled", true);
   $sendBtn.prop("disabled", true);
-  $spinner.show();
 
   const tempUserMsg = { user: text, date: new Date().toISOString() };
   currentChat.push(tempUserMsg);
   renderMessages(currentChat);
   $inputEl.val("");
+
+  // Show loading message with spinner
+  showLoadingMessage();
 
   try {
     const processedInput = await preprocess(
@@ -455,6 +456,9 @@ async function sendMessage() {
     );
 
     const response = await handleMsg(processedInput, responder, sessionId);
+
+    // Remove loading message
+    removeLoadingMessage();
 
     currentChat.pop();
     const chatTurn = {
@@ -467,12 +471,20 @@ async function sendMessage() {
     currentChat.push(chatTurn);
     renderMessages(currentChat);
   } catch (error) {
+    removeLoadingMessage();
     console.error("Error sending message:", error);
-    alert("An error occurred while sending your message.");
+    // Show error message instead of alert
+    const errorMsg = {
+      system: "죄송합니다. 응답을 가져오는 중 오류가 발생했습니다.",
+      date: new Date().toISOString(),
+      speaker: responder.staff_name,
+      speakerId: responder.staff_id,
+    };
+    currentChat.push(errorMsg);
+    renderMessages(currentChat);
   } finally {
     $inputEl.prop("disabled", false);
     $sendBtn.prop("disabled", false);
-    $spinner.hide();
     await updateData("chat", sessionId, { msg: currentChat });
     await postprocess(sessionId, currentChat);
   }
@@ -538,4 +550,32 @@ async function showFileSearchDropdown() {
 
 function hideFileSearchDropdown() {
   $("#fileSearchDropdown").hide().empty();
+}
+
+/**
+ * Show loading message with spinner
+ */
+function showLoadingMessage() {
+  const speakerName = mystaff ? mystaff.staff_name : "System";
+  const loadingHtml = `
+    <div class="msg-container mb-3" id="loading-message">
+      <div class="msg-content msg-system p-3" style="background-color: #6c757d; width: 100%;">
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span><b>${speakerName}:</b> 응답을 생성하고 있습니다...</span>
+        </div>
+      </div>
+    </div>
+  `;
+  $("#chatMessages").append(loadingHtml);
+  $("#chatMessages").prop("scrollTop", $("#chatMessages").prop("scrollHeight"));
+}
+
+/**
+ * Remove loading message
+ */
+function removeLoadingMessage() {
+  $("#loading-message").remove();
 }
