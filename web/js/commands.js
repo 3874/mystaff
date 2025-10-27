@@ -17,17 +17,6 @@ export async function handleCommand(input, context, iteration = 10) {
         );
         return true;
       }
-    case "filesearch":
-    case "파일검색":
-      if (args.length >= 2) {
-        const fileId = args[0];
-        const topic_filesearch = args.slice(1).join(" ");
-        filesearch(topic_filesearch, fileId, context);
-        return true;
-      } else {
-        alert("Usage: /filesearch [fileId] [topic]");
-        return true;
-      }
     case "filelist":
     case "파일목록": {
       const { sessionId, currentChat, renderMessages } = context;
@@ -48,6 +37,27 @@ export async function handleCommand(input, context, iteration = 10) {
 
       const systemMessage = {
         system: fileListMessage,
+        date: new Date().toISOString(),
+      };
+
+      currentChat.push(systemMessage);
+      renderMessages(currentChat);
+      await updateData("chat", sessionId, { msg: currentChat });
+      return true;
+    }
+    case "help": {
+      const { currentChat, renderMessages } = context;
+      
+      const helpMessage = `Available Commands:
+      
+• /discuss [topic] - Start a discussion on a topic
+
+• /filelist - Show all files in current session
+
+• @[fileId] - Reference a file in your message`;
+
+      const systemMessage = {
+        system: helpMessage,
         date: new Date().toISOString(),
       };
 
