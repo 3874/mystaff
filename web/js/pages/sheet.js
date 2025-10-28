@@ -140,7 +140,7 @@ async function initTableForStaff(staffId) {
         if (!data) return;
         const $form = $("#rowDetailForm");
         renderRowFormForAgGrid($form, data, columns);
-        $("#rowModalLabel").text("Row Details");
+        $("#rowModalLabel").text("Details");
         const $modalEl = $("#rowModal");
         if ($modalEl.length) {
           const bsModal = new bootstrap.Modal($modalEl[0]);
@@ -344,6 +344,8 @@ async function initTableForStaff(staffId) {
       // Use static Save button in modal-footer
       const $modal = $form.closest('.modal');
       const $saveBtn = $modal.find('#rowModalSaveBtn');
+      const $deleteBtn = $modal.find('#rowModalDeleteBtn');
+      
       $saveBtn.off('click').on('click', async function () {
         // Collect editable fields
         const payload = { action: 'update' };
@@ -359,15 +361,64 @@ async function initTableForStaff(staffId) {
         });
         try {
           const result = await apiPost(host, payload);
+          console.log('Save result:', result); // 디버깅용 로그 추가
           // Optionally show success/fail message
-          if (result && result.success) {
+          // 다양한 성공 응답 형태를 처리
+          if (result && (result.success === true || result.success === 'true' || 
+                        result.status === 'success' || result.message === 'success' ||
+                        (Array.isArray(result) && result.length > 0) ||
+                        (result.output && Array.isArray(result.output)))) {
             alert('Saved successfully');
             $modal.modal('hide');
+            // 그리드 새로고침
+            if (gridOptions.api && typeof gridOptions.api.purgeInfiniteCache === "function") {
+              gridOptions.api.purgeInfiniteCache();
+            }
           } else {
             alert('Save failed');
           }
         } catch (err) {
+          console.error('Save error:', err);
           alert('Save error: ' + err);
+        }
+      });
+
+      $deleteBtn.off('click').on('click', async function () {
+        // 삭제 확인
+        if (!confirm('Are you sure you want to delete this item?')) {
+          return;
+        }
+
+        const payload = { action: 'delete' };
+        // Use _id if present
+        if (rowData && rowData._id) {
+          payload.id = rowData._id;
+        } else {
+          alert('No ID found for deletion');
+          return;
+        }
+
+        try {
+          const result = await apiPost(host, payload);
+          console.log('Delete result:', result); // 디버깅용 로그 추가
+          
+          // 다양한 성공 응답 형태를 처리
+          if (result && (result.success === true || result.success === 'true' || 
+                        result.status === 'success' || result.message === 'success' ||
+                        (Array.isArray(result) && result.length > 0) ||
+                        (result.output && Array.isArray(result.output)))) {
+            alert('Deleted successfully');
+            $modal.modal('hide');
+            // 그리드 새로고침
+            if (gridOptions.api && typeof gridOptions.api.purgeInfiniteCache === "function") {
+              gridOptions.api.purgeInfiniteCache();
+            }
+          } else {
+            alert('Delete failed');
+          }
+        } catch (err) {
+          console.error('Delete error:', err);
+          alert('Delete error: ' + err);
         }
       });
       columnsDef.forEach((col, idx) => {

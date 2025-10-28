@@ -95,7 +95,6 @@ function setupChatHandlers() {
     if (response) {
       renderMessages([{ system: response, date: new Date() }]);
       await saveChatMessage({
-        sessionId: "moderator",
         user: userInput,
         system: response,
       });
@@ -115,18 +114,47 @@ function setupChatHandlers() {
     event.preventDefault();
     $("#chatModal").modal("show");
 
-    // Load moderator chat history
-    const chatData = await getDataByKey("chat", "moderator");
-    if (chatData && chatData.msg) {
-      const msgs = chatData.msg.flatMap((m) => (m.msg ? m.msg : []));
-      renderMessages(msgs);
+    // Load moderator chat history from user's mydata
+    try {
+      const userId = localStorage.getItem("mystaff_user");
+      if (!userId) {
+        console.error("User ID not found in localStorage.");
+        return;
+      }
+
+      const userData = await getDataByKey("mydata", userId);
+      if (userData && userData.chat && userData.chat.length > 0) {
+        renderMessages(userData.chat);
+      }
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
     }
   });
 
   // Reset chat button handler
   $("#resetChatBtn").on("click", async function () {
-    await deleteData("chat", "moderator");
-    $("#chatMessages").empty();
+    try {
+      // Get user ID from localStorage
+      const userId = localStorage.getItem("mystaff_user");
+      if (!userId) {
+        console.error("User ID not found in localStorage.");
+        return;
+      }
+
+      // Get existing user data
+      const userData = await getDataByKey("mydata", userId);
+      if (userData) {
+        // Clear chat array
+        userData.chat = [];
+        // Save updated data
+        await updateData("mydata", userId, userData);
+      }
+      
+      // Clear chat messages from UI
+      $("#chatMessages").empty();
+    } catch (err) {
+      console.error("Failed to reset chat:", err);
+    }
   });
 
   // Copy button handler (delegated event)
@@ -193,43 +221,47 @@ function renderMessages(msgs) {
 /**
  * Save chat message to IndexedDB
  * @param {Object} params - Parameters for saving chat message
- * @param {string} params.sessionId - Session ID for the chat
  * @param {string} params.user - User message
  * @param {string} params.system - System response
  */
-async function saveChatMessage({ sessionId, user, system }) {
+async function saveChatMessage({user, system }) {
   if (!user || !system) return;
   
-  const chatData = {
-    sessionId,
-    msg: [
-      {
-        date: new Date().toISOString(),
-        speaker: "moderator",
-        speakerId: "",
-        system: system,
-        user: user,
-      },
-    ],
-    title: "moderator chat",
-    staffId: "moderator",
-  };
-
+  const currentDate = new Date().toISOString();
+  
   try {
-    const existing = await getDataByKey("chat", sessionId);
-    if (existing) {
-      if (!existing.msg) {
-        existing.msg = [];
-      }
-      existing.msg.push(chatData);
-      await updateData("chat", sessionId, existing);
-    } else {
-      const newChat = {
-        sessionId,
-        msg: [chatData],
-      };
-      await addData("chat", newChat);
+    // Get user ID from localStorage
+    const userId = localStorage.getItem("mystaff_user");
+    if (!userId) {
+      console.error("User ID not found in localStorage.");
+      return;
     }
+
+    // Get existing user data
+    let userData = await getDataByKey("mydata", userId);
+    
+    // If no user data exists, create new structure
+    if (!userData) {
+      userData = {
+        myId: userId,
+        chat: []
+      };
+    }
+    
+    // Initialize chat array if it doesn't exist
+    if (!userData.chat) {
+      userData.chat = [];
+    }
+    
+    // Add chat message
+    userData.chat.push({
+      user: user,
+      system: system,
+      date: currentDate
+    });
+    
+    // Save updated data
+    await updateData("mydata", userId, userData);
   } catch (err) {
     console.error("Failed to save chat message:", err);
   }
@@ -242,10 +274,19 @@ async function saveChatMessage({ sessionId, user, system }) {
 export async function openModeratorChat() {
   $("#chatModal").modal("show");
 
-  // Load moderator chat history
-  const chatData = await getDataByKey("chat", "moderator");
-  if (chatData && chatData.msg) {
-    const msgs = chatData.msg.flatMap((m) => (m.msg ? m.msg : []));
-    renderMessages(msgs);
+  // Load moderator chat history from user's mydata
+  try {
+    const userId = localStorage.getItem("mystaff_user");
+    if (!userId) {
+      console.error("User ID not found in localStorage.");
+      return;
+    }
+
+    const userData = await getDataByKey("mydata", userId);
+    if (userData && userData.chat && userData.chat.length > 0) {
+      renderMessages(userData.chat);
+    }
+  } catch (err) {
+    console.error("Failed to load chat history:", err);
   }
 }
