@@ -74,14 +74,10 @@ $(document).ready(async function () {
         let html = "";
         let adapterHtml = "";
         
-        // rowData의 모든 필드를 순회
-        Object.entries(rowData).forEach(([field, value]) => {
-          // staff_id는 숨김 필드로 처리
-          if (field === "staff_id") {
-            currentUpdateData[field] = value;
-            return;
-          }
-          
+        columns.forEach((col) => {
+          const field = col.data;
+          let value = rowData[field];
+
           if (field === "adapter" && typeof value === "object" && value !== null) {
             adapterHtml += `
               <div class="card mb-3">
@@ -121,18 +117,13 @@ $(document).ready(async function () {
             `;
             currentUpdateData["status"] = value;
           } else {
-            // 필드명을 보기 좋게 변환 (예: staff_name -> Staff Name)
-            const displayName = field.split('_').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
-            
             if (typeof value === "object" && value !== null) {
               value = JSON.stringify(value, null, 2);
             }
             html += `
               <div class="mb-3">
-                <label class="form-label">${displayName}</label>
-                <input type="text" class="form-control" data-field="${field}" value="${(value ?? "").replace(/"/g, "&quot;")}" >
+                <label class="form-label">${col.title}</label>
+                <input type="text" class="form-control" data-field="${field}" value="${( value ?? "").replace(/"/g, "&quot;")}" >
               </div>
             `;
             currentUpdateData[field] = value;
