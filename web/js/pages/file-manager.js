@@ -160,14 +160,12 @@ $(document).ready(async function () {
       alert("데이터를 불러오는 중 오류가 발생했습니다.");
     });
 
-  // Update 버튼 클릭 이벤트
   $(document).on("click", "#UpdateBtn", async function () {
     if (!currentFileId) {
       alert("업데이트할 데이터를 찾을 수 없습니다.");
       return;
     }
 
-    // 기존 rowData에서 누락된 필드 보완
     const rowData = $("#staffTable").DataTable().row(".selected").data() || {};
 
     const updateDataObj = {
@@ -178,7 +176,6 @@ $(document).ready(async function () {
       uploadSuccess: $("#uploadSuccessSelect").val() === 'true',
     };
 
-    // 일반 필드 덮어쓰기
     $("#cellDetailModalBody input[data-field]").each(function () {
       const field = $(this).data("field");
       let value = $(this).val();
@@ -188,7 +185,6 @@ $(document).ready(async function () {
       updateDataObj[field] = value;
     });
 
-    // textarea 필드 덮어쓰기 (contents)
     $("#cellDetailModalBody textarea[data-field]").each(function () {
       const field = $(this).data("field");
       let value = $(this).val();
@@ -260,11 +256,7 @@ $(document).ready(async function () {
         return;
       }
       
-      // TODO: 실제 AI API를 호출하여 요약 생성
-      // 여기서는 간단한 임시 요약 생성
-      const summary = generateSimpleSummary(contents);
-      
-      // summary textarea에 결과 입력
+      const summary = await generateSimpleSummary(contents);
       $("#summaryTextarea").val(summary);
       
     } catch (error) {
@@ -284,28 +276,31 @@ $(document).ready(async function () {
   });
 });
 
-// 간단한 요약 생성 함수 (임시)
-function generateSimpleSummary(text) {
-  const lines = text.split("\n").filter(line => line.trim() !== "");
-  const wordCount = text.trim().split(/\s+/).length;
-  const charCount = text.length;
-  
-  let summary = `📄 Document Summary\n\n`;
-  summary += `📊 Statistics:\n`;
-  summary += `- Characters: ${charCount}\n`;
-  summary += `- Words: ${wordCount}\n`;
-  summary += `- Lines: ${lines.length}\n\n`;
-  
-  if (lines.length > 0) {
-    summary += `🔑 First Lines:\n`;
-    const previewLines = lines.slice(0, Math.min(3, lines.length));
-    previewLines.forEach((line, index) => {
-      const trimmed = line.length > 100 ? line.substring(0, 100) + "..." : line;
-      summary += `${index + 1}. ${trimmed}\n`;
+// AI 기반 요약 생성 함수
+async function generateSimpleSummary(text) {
+  try {
+    const response = await fetch('https://qvo09bdcwd.execute-api.ap-northeast-2.amazonaws.com/prod/summary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: text
+      })
     });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.text(); 
+    
+    // API 응답에서 요약 텍스트 추출
+    console.log('Summary API response:', result);
+    return result;
+    
+  } catch (error) {
+    console.error('Summary API error:', error);
+    throw error;
   }
-  
-  summary += `\n💡 Note: This is a basic summary. Integrate with AI service for better results.`;
-  
-  return summary;
 }
