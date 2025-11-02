@@ -15,6 +15,8 @@ $(document).ready(async function () {
     .then((items) => {
       const table = $("#staffTable").DataTable({
         data: items,
+        pageLength: 50,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         columns: [
           { data: "fileName", title: "File Name",
             render: function (data) {
