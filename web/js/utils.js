@@ -235,13 +235,26 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     
     // 같은 파일이 이미 있는지 확인
     if (driveFileInfo.isDuplicate || driveFileInfo.alreadyExists) {
-      alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재합니다.\n\n파일명: ${fileName}\n\n중복 업로드를 방지했습니다.`);
-      // 중복 파일인 경우 여기서 함수 종료 (다음 프로세스 진행하지 않음)
-      return {
-        fileName: fileName,
-        isDuplicate: true,
-        message: '파일이 이미 존재하여 업로드를 건너뛰었습니다.'
-      };
+      // myfiles store에 이미 등록되어 있는지 확인
+      const allFiles = await getAllData("myfiles");
+      const existingFile = allFiles.find(f => 
+        f.driveFileId === driveFileInfo.fileId && 
+        f.sessionId === sessionId
+      );
+      
+      if (existingFile) {
+        // 이미 myfiles에 등록되어 있으면 종료
+        alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재하고, myfiles에도 등록되어 있습니다.\n\n파일명: ${fileName}\n\n중복 업로드를 방지했습니다.`);
+        return {
+          fileName: fileName,
+          isDuplicate: true,
+          message: '파일이 이미 존재하여 업로드를 건너뛰었습니다.'
+        };
+      } else {
+        // myfiles에 등록되어 있지 않으면 기존 Drive 파일 정보로 등록
+        alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재합니다.\n\n파일명: ${fileName}\n\nmyfiles에 등록합니다.`);
+        uploadSuccess = false; // 새로 업로드한 것은 아니므로 false
+      }
     } else {
       alert(`✅ Google Drive 업로드 성공!\n\n파일명: ${fileName}`);
     }
@@ -267,6 +280,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
       staffId: mystaff?.staff_id || null,
       fileName: fileName,
       contents: content,
+      summary: '',
       uploadSuccess: uploadSuccess,
       // Google Drive 정보 포함 (업로드 성공 시에만 유효)
       driveFileId: driveFileInfo?.fileId || null,
@@ -287,12 +301,15 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
 export async function FindUrl(mystaff, Fset = 0) {
   const staffId = mystaff.staff_id ? mystaff.staff_id : mystaff.staffId;
-  const resource = mystaff.resource ? mystaff.resource : "chat";
+  const resource_type = mystaff.resource_type ? mystaff.resource_type : "chat";
 
-  if (resource === "database") {
+  if (resource_type === "database") {
     const Finalurl = `./sheet.html?staffId=${staffId}`;
     return Finalurl;
-  } 
+  } else if (resource_type === "fileprocessing") {
+    const Finalurl = `./file-manager.html?staffId=${staffId}`;
+    return Finalurl;
+  }
 
   let Furl = "";
   if (Fset === 1) {

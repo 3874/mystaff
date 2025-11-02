@@ -108,24 +108,39 @@ export async function updateAgentById(staffId, updateData) {
   const endpoint = myAIstaffUrl;
 
   try {
+    const payload = {
+      action: "update",
+      staff_id: staffId,
+      ...updateData,
+    };
+    
+    console.log("updateAgentById 요청 시작:", payload);
+    
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "update",
-        staff_id: staffId,
-        ...updateData,
-      }),
+      body: JSON.stringify(payload),
     });
 
+    console.log("updateAgentById HTTP 상태:", res.status);
+
     if (!res.ok) {
-      throw new Error(`API error: ${res.status}`);
+      const errorText = await res.text();
+      console.error("updateAgentById HTTP 에러 응답:", errorText);
+      throw new Error(`API error: ${res.status} - ${errorText}`);
     }
 
     const raw = await res.json();
+    console.log("updateAgentById raw 응답:", raw);
+    
+    // 성공 응답이면 그대로 반환
+    if (raw.statusCode === 200 || raw.message === "Item updated successfully") {
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
+      return data || raw;
+    }
+    
     const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body;
-
-    return data;
+    return data || raw;
   } catch (err) {
     console.error("updateAgentById failed:", err);
     throw err;

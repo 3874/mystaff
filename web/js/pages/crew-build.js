@@ -90,7 +90,7 @@ $(async function () {
     $("#adapter_apiUrl").val(adapter.host || "");
     $("#adapter_token_limit").val(adapter.token_limit || 0);
     $("#adapter_language").val(data.language || "");
-    $("#adapter_resource").val(data.resource || "");
+    $("#adapter_resource").val(data.resource_type || "");
 
     const headers = adapter.headers || {};
     $("#adapter_headers_Authorization").val(headers.Authorization || "");
@@ -114,7 +114,7 @@ $(async function () {
       role: $("#role").val(),
       summary: $("#summary").val(),
       language: $("#adapter_language").val(),
-      resource: $("#adapter_resource").val(),
+      resource_type: $("#adapter_resource").val(),
       adapter: {
         name: $("#adapter_name").val(),
         host: $("#adapter_apiUrl").val(),
@@ -132,8 +132,8 @@ $(async function () {
 
   // Resource change handler - toggle response area based on resource type
   function updateResponseArea() {
-    const resource = $("#adapter_resource").val();
-    if (resource === "database") {
+    const resource_type = $("#adapter_resource").val();
+    if (resource_type === "database") {
       $("#textResponseArea").hide();
       $("#databaseResponseArea").show();
       
@@ -171,7 +171,7 @@ $(async function () {
       staffId: responder.staffId || `test-${Date.now()}`,
       staff_name: responder.staff_name || "Test Staff",
       adapter: responder.adapter,
-      resource: responder.resource,
+      resource_type: responder.resource_type,
       language: responder.language
     };
     

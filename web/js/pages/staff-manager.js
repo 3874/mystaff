@@ -13,10 +13,6 @@ $(document).ready(async function () {
 
   getAllAgents()
     .then((items) => {
-      console.log("=== getAllAgents() 전체 데이터 ===");
-      console.log(items);
-      console.log("데이터 개수:", items.length);
-      console.log("==============================");
       
       const table = $("#staffTable").DataTable({
         data: items,
@@ -24,6 +20,8 @@ $(document).ready(async function () {
           { data: "staff_name", title: "Name" },
           { data: "role", title: "Role" },
           { data: "status", title: "Status", "defaultContent": "pending" },
+          { data: "resource_type", title: "Resource", "defaultContent": "chat" },
+          { data: "language_code", title: "Language", "defaultContent": "ko" },
           {
             data: "adapter",
             title: "Adapter",
@@ -116,6 +114,30 @@ $(document).ready(async function () {
               </div>
             `;
             currentUpdateData["status"] = value;
+          } else if (field === "resource_type") {
+            html += `
+              <div class="mb-3">
+                <label class="form-label" for="resourceTypeSelect">Resource Type</label>
+                <select class="form-select" id="resourceTypeSelect">
+                  <option value="chat" ${value === 'chat' ? 'selected' : ''}>CHAT</option>
+                  <option value="database" ${value === 'database' ? 'selected' : ''}>DATABASE</option>
+                  <option value="coding" ${value === 'coding' ? 'selected' : ''}>CODING</option>
+                  <option value="image" ${value === 'image' ? 'selected' : ''}>IMAGE</option>
+                </select>
+              </div>
+            `;
+            currentUpdateData["resource_type"] = value;
+          } else if (field === "language_code") {
+            html += `
+              <div class="mb-3">
+                <label class="form-label" for="languageCodeSelect">Language</label>
+                <select class="form-select" id="languageCodeSelect">
+                  <option value="ko" ${value === 'ko' ? 'selected' : ''}>한국어</option>
+                  <option value="en" ${value === 'en' ? 'selected' : ''}>English</option>
+                </select>
+              </div>
+            `;
+            currentUpdateData["language_code"] = value;
           } else {
             if (typeof value === "object" && value !== null) {
               value = JSON.stringify(value, null, 2);
@@ -162,6 +184,8 @@ $(document).ready(async function () {
       staff_name: rowData.staff_name || "",
       summary: rowData.summary || "",
       role: rowData.role || "",
+      resource_type: $("#resourceTypeSelect").val() || rowData.resource_type || "",
+      language_code: $("#languageCodeSelect").val() || rowData.language_code || "",
       adapter: rowData.adapter || {},
       status: $("#statusSelect").val(),
     };
@@ -191,10 +215,12 @@ $(document).ready(async function () {
       updateData["adapter"] = adapterObj;
     }
 
+    console.log("현재 staff_id:", currentStaffId);
     console.log("최종 updateData:", updateData);
 
     try {
-      await updateAgentById(currentStaffId, updateData);
+      const result = await updateAgentById(currentStaffId, updateData);
+      console.log("업데이트 결과:", result);
       alert("업데이트 완료!");
       // 모달 닫기
       const modalEl = document.getElementById("cellDetailModal");
@@ -206,6 +232,7 @@ $(document).ready(async function () {
       const items = await getAllAgents();
       table.clear().rows.add(items).draw();
     } catch (err) {
+      console.error("업데이트 에러:", err);
       alert("업데이트 실패: " + err.message);
     }
   });

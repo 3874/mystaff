@@ -25,8 +25,8 @@ $(document).ready(async function () {
       name: testConfig.staff_name,
       summary: testConfig.adapter?.system_prompt || "Test Configuration",
       adapter: testConfig.adapter,
-      resource: testConfig.resource,
-      language: testConfig.language
+      resource_type: testConfig.resource_type,
+      language_code: testConfig.language_code
     };
     
     $("#title").text(mystaff.name);

@@ -38,7 +38,7 @@ $(document).ready(async function () {
     signOut();
   });
 
-  $("#messageInput").on("paste", function (e) {
+  $("#messageInput").on("paste", async function (e) {
     const clipboardData = e.originalEvent.clipboardData;
     if (clipboardData.files && clipboardData.files.length > 0) {
       e.preventDefault();
@@ -52,7 +52,7 @@ $(document).ready(async function () {
 
         if (allowedExtensions.includes(extension)) {
           const mockEvent = { target: { files: [file] } };
-          handleFileUpload(mockEvent, sessionId, mystaff);
+          await handleFileUploadWithSpinner(mockEvent, sessionId, mystaff);
         } else {
           alert("이 파일 형식은 저장이 불가합니다.");
         }
@@ -80,13 +80,68 @@ $(document).ready(async function () {
               type: "text/plain",
             });
             const mockEvent = { target: { files: [textFile] } };
-            handleFileUpload(mockEvent, sessionId, mystaff);
+            await handleFileUploadWithSpinner(mockEvent, sessionId, mystaff);
           }
         }
       }
     }
   });
 });
+
+/**
+ * Wrapper function for handleFileUpload with spinner
+ */
+async function handleFileUploadWithSpinner(event, sessionId, mystaff) {
+  // Show upload spinner
+  showUploadSpinner();
+  
+  try {
+    // Call the actual file upload function
+    const result = await handleFileUpload(event, sessionId, mystaff);
+    
+    // Refresh file list if modal is open
+    if ($("#manageFilesModal").hasClass("show")) {
+      await openManageFilesModal(sessionId);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("File upload error:", error);
+    alert("파일 업로드 중 오류가 발생했습니다: " + error.message);
+  } finally {
+    // Always remove spinner
+    removeUploadSpinner();
+  }
+}
+
+/**
+ * Show upload spinner
+ */
+function showUploadSpinner() {
+  const spinnerHtml = `
+    <div class="position-fixed top-50 start-50 translate-middle" id="upload-spinner" style="z-index: 9999;">
+      <div class="card shadow-lg" style="min-width: 300px;">
+        <div class="card-body text-center">
+          <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Uploading...</span>
+          </div>
+          <h5>파일 업로드 중...</h5>
+          <p class="text-muted mb-0">잠시만 기다려주세요</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" id="upload-backdrop" style="z-index: 9998;"></div>
+  `;
+  $("body").append(spinnerHtml);
+}
+
+/**
+ * Remove upload spinner
+ */
+function removeUploadSpinner() {
+  $("#upload-spinner").remove();
+  $("#upload-backdrop").remove();
+}
 
 async function initializeChat() {
   const params = new URLSearchParams(window.location.search);
@@ -240,8 +295,8 @@ function bindUIEvents() {
     $("#fileInput").click();
   });
 
-  $("#fileInput").on("change", (event) => {
-    handleFileUpload(event, sessionId, mystaff);
+  $("#fileInput").on("change", async (event) => {
+    await handleFileUploadWithSpinner(event, sessionId, mystaff);
   });
 
   $("#newChat").on("click", async () => {
