@@ -20,31 +20,6 @@ export async function preprocess(sessionId, input, agent, history = null) {
   const last20 = chatHistory.slice(-20);
   const ltm = (await getDataByKey("LTM", sessionId)) || "";
 
-  // Helper: convert history array -> single string
-  function convertHistoryToText(historyArr) {
-    if (!Array.isArray(historyArr) || historyArr.length === 0) return "";
-    return historyArr
-      .map((msg) => {
-        // common shapes: { user, system } or { role, content } or plain strings
-        if (typeof msg === "string") return msg;
-        if (msg.user && msg.system) {
-          return `User: ${msg.user}\nAI: ${msg.system}`;
-        }
-        if (msg.role && msg.content) {
-          return `${msg.role === "user" ? "User" : msg.role === "assistant" ? "AI" : msg.role}: ${msg.content}`;
-        }
-        if (msg.user) return `User: ${msg.user}`;
-        if (msg.system) return `AI: ${msg.system}`;
-        // fallback: JSON
-        try {
-          return JSON.stringify(msg);
-        } catch (e) {
-          return String(msg);
-        }
-      })
-      .join("\n\n---\n\n");
-  }
-
   let allFilesInfo = [];
   let modifiedInput = input;
 
@@ -82,7 +57,7 @@ export async function preprocess(sessionId, input, agent, history = null) {
   const prompt = {
     action: 'chat',
     prompt: modifiedInput,
-    history: convertHistoryToText(last20), 
+    history: last20, 
     ltm: ltmText, 
     file: allFilesText || "", 
     token_limit: agent?.adapter?.token_limit || 128000,

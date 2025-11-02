@@ -17,7 +17,7 @@ let tokenRequestPromise = null; // 진행 중인 토큰 요청 Promise
  * @param {boolean} forceRefresh - 강제로 새 토큰 요청
  * @returns {Promise<string>} Access Token
  */
-async function getAccessToken(forceRefresh = false) {
+export async function getAccessToken(forceRefresh = false) {
   // 캐시된 토큰이 있고 만료되지 않았으면 재사용
   if (!forceRefresh && cachedAccessToken && tokenExpiryTime && Date.now() < tokenExpiryTime) {
     console.log('Using cached access token');

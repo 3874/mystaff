@@ -89,8 +89,7 @@ export async function openAIChatAdapter({ processedInput, agent, sessionId }) {
       },
       { role: "user", content: finalPrompt },
     ],
-    //tools: [{type:"web_search"}],
-    temperature: 0.2,
+    temperature: 0.7,
   });
 
   const content = response.choices[0].message.content;

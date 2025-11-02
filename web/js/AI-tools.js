@@ -2,6 +2,7 @@ import { getDataByKey, updateData } from "./database.js";
 import { getAgentById } from "./allAgentsCon.js";
 import { preprocess, postprocess } from "./process.js";
 import { handleMsg } from "./agents.js";
+import { apiPost } from "./utils.js";
 
 export async function startDiscussion(
   topic,
@@ -120,13 +121,18 @@ export async function filesearch(topic, fileId, context) {
     return;
   }
 
-  const prompt = {
-    input: `${topic} from file contents: ${contents}`,
-    history: "",
-    ltm: "",
-  };
+  const messageToSend = `${topic} \n\n [file contents]:\n ${contents}`;
 
-  const response = await handleMsg(prompt, responder, context.sessionId);
+  const processedInput = {
+    action: 'chat',
+    prompt: messageToSend,
+    history: '', 
+    ltm: '', 
+    file: '', 
+    token_limit: responder?.adapter?.token_limit || 128000,
+};
+
+  const response = await handleMsg(processedInput, responder, fileName.sessionId);
 
   const systemMessage = {
     system: response,
@@ -138,4 +144,56 @@ export async function filesearch(topic, fileId, context) {
   context.renderMessages(context.currentChat);
   await updateData("chat", context.sessionId, { msg: context.currentChat });
   await postprocess(context.sessionId, context.currentChat);
+}
+
+
+export async function fileupload(fileId) {
+  let fileData = null;
+  let fileName = null;
+  let contents = null;
+  let summary = null;
+  let staffId = null;
+  let location = null;
+
+  if (!fileId) {
+    console.error("getFileById: fileId is required.");
+    return null;
+  }
+  
+  try {
+    fileData = await getDataByKey("myfiles", fileId);
+  } catch (error) {
+    console.error(`Error fetching file with ID ${fileId}:`, error);
+    return null;
+  }
+
+  if (fileData) {
+    fileName = fileData.fileName;
+    contents = fileData.contents;
+    summary = fileData.summary;
+    staffId = fileData.staffId;
+    location = fileData.location;
+  } else {
+    console.error(`File with ID ${fileId} not found.`);
+    alert(`File with ID ${fileId} not found.`);
+  }
+
+  const responder = await getAgentById(staffId);
+  if (!responder) {
+    alert("Could not find the main agent for this chat.");
+    return;
+  }
+
+  const uploadURL = responder.adapter?.host;
+  const body = {
+    action: 'upload',
+    file_name: fileName,
+    contents: contents,
+    summary: summary,
+    staff_id: staffId,
+    location: location
+  };
+
+  const response = await apiPost(uploadURL, body);
+  return response;
 }

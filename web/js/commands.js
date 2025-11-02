@@ -1,4 +1,4 @@
-import { startDiscussion, filesearch } from "./AI-tools.js";
+import { startDiscussion, filesearch, fileupload } from "./AI-tools.js";
 import { getAllData, updateData } from "./database.js";
 
 export async function handleCommand(input, context, iteration = 10) {
@@ -6,7 +6,6 @@ export async function handleCommand(input, context, iteration = 10) {
 
   switch (command) {
     case "discuss":
-    case "토론":
       const topic_discuss = args.join(" ");
       if (topic_discuss) {
         startDiscussion(topic_discuss, context, iteration);
@@ -17,8 +16,56 @@ export async function handleCommand(input, context, iteration = 10) {
         );
         return true;
       }
-    case "filelist":
-    case "파일목록": {
+    case "fupload": {
+        const query = args.join(" ");
+
+        if (query) {
+          // Extract fileId if provided (format: /fsearch @fileId query)
+          const fileIdMatch = query.match(/@(\w+)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+          if (!fileId) {
+            alert(
+              "Please provide a file ID. Usage: /fupload @[fileId]"
+            );
+            return true;
+          }
+
+          const response = await fileupload(fileId);
+          return true;
+        } else {
+          alert(
+            "Please provide a search query. Usage: /fupload @[fileId]"
+          );
+          return true;
+        }
+      }
+    case "fsearch": {
+      const query = args.join(" ");
+
+      if (query) {
+        // Extract fileId if provided (format: /fsearch @fileId query)
+        const fileIdMatch = query.match(/@(\w+)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+        const searchQuery = fileId ? query.replace(/@\w+\s*/, "").trim() : query;
+
+        if (!fileId) {
+          alert(
+            "Please provide a file ID. Usage: /fsearch @[fileId] [query]"
+          );
+          return true;
+        }
+
+        filesearch(searchQuery, fileId, context);
+        return true;
+      } else {
+        alert(
+          "Please provide a search query. Usage: /fsearch @[fileId] [query]"
+        );
+        return true;
+      }
+    }
+    case "flist": {
       const { sessionId, currentChat, renderMessages } = context;
       const allFiles = await getAllData("myfiles");
       const sessionFiles = allFiles.filter(
@@ -52,7 +99,11 @@ export async function handleCommand(input, context, iteration = 10) {
       
 • /discuss [topic] - Start a discussion on a topic
 
-• /filelist - Show all files in current session
+• /fsearch @[fileId] [query] - Search within a specific file
+
+• /flist - Show all files in current session
+
+• /fupload - Upload a new file
 
 • @[fileId] - Reference a file in your message`;
 
