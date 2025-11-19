@@ -190,7 +190,19 @@
         <div class="card mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h4>DIY Staffs</h4>
-            <a type="button" class="btn btn-danger" href="./crew-build.html">Build</a>
+            <div class="dropdown">
+              <button class="btn btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Build
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="./crew-build.html">Chat</a></li>
+                <li><a class="dropdown-item" href="./crew-build-sheet.html">Sheet</a></li>
+                <li><a class="dropdown-item" href="./crew-build-coding.html">Coding</a></li>
+                <li><a class="dropdown-item" href="./crew-build-image.html">Image</a></li>
+                <li><a class="dropdown-item" href="./crew-build-page.html">Page</a></li>
+              </ul>
+            </div>
           </div>
           <div class="card-body">
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="diy-staff-row">
