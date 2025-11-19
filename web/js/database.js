@@ -2,7 +2,7 @@
 // IndexedDB 기본 CRUD
 
 const DB_NAME = 'mystaff';
-const DB_VERSION = 2; // DB 버전을 4로 올립니다.
+const DB_VERSION = 3; // DB 버전을 3로 올립니다.
 
 let db;
 
@@ -24,7 +24,7 @@ function openDB() {
       if (!db.objectStoreNames.contains('LTM')) {
         db.createObjectStore('LTM', { keyPath: 'sessionId' });
       }
-      
+
       if (db.objectStoreNames.contains('myfiles')) {
         db.deleteObjectStore('myfiles');
       }
@@ -37,7 +37,11 @@ function openDB() {
       if (!db.objectStoreNames.contains('myinterns')) {
         db.createObjectStore('myinterns', { keyPath: 'staffId' });
       }
-      
+
+      if (!db.objectStoreNames.contains('mycrew_services')) {
+        db.createObjectStore('mycrew_services', { keyPath: 'id' });
+      }
+
     };
     request.onsuccess = () => {
       db = request.result;
@@ -87,7 +91,7 @@ export async function updateData(storeName, key, newData) {
     getReq.onerror = () => reject(getReq.error);
     getReq.onsuccess = () => {
       const existingData = getReq.result; // This is undefined if not found
-      
+
       // If newData is not a plain object, wrap it in an object with a 'contents' property.
       const dataToMerge = (newData !== null && typeof newData === 'object' && !Array.isArray(newData))
         ? newData

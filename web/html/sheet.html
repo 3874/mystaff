@@ -27,10 +27,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
 
     <style>
-      /* 대부분 Bootstrap 유틸리티로 처리.
-         남겨둔 커스텀 스타일: DataTables 경계/헤더 정렬, 드롭다운 내부 패딩, 폰트 축소 */
+      /* ?�부�?Bootstrap ?�틸리티�?처리.
+         ?�겨??커스?� ?��??? DataTables 경계/?�더 ?�렬, ?�롭?�운 ?��? ?�딩, ?�트 축소 */
       
-      /* 레이아웃: Bootstrap 유틸리티(d-flex, vh-100 등)를 사용하므로 최소화 */
+      /* ?�이?�웃: Bootstrap ?�틸리티(d-flex, vh-100 ??�??�용?��?�?최소??*/
       #sidebarMenu {
         position: fixed;
         top: 0;
@@ -54,7 +54,7 @@
         }
       }
 
-      /* Columns dropdown 내부 항목 패딩 (폼 체크 정렬 보정) */
+      /* Columns dropdown ?��? ??�� ?�딩 (??체크 ?�렬 보정) */
       #columnsDropdownWrapper .dropdown-menu .form-check {
         padding-left: 0.75rem;
       }
@@ -65,7 +65,7 @@
         margin-left: 0.5rem;
       }
 
-      /* DataTables: 테두리/헤더-바디 일치, 폰트/패딩 축소 */
+      /* DataTables: ?�두�??�더-바디 ?�치, ?�트/?�딩 축소 */
       #staffTable,
       #staffTable_wrapper .dataTables_scrollHead table,
       #staffTable_wrapper .dataTables_scrollBody table {
@@ -77,14 +77,14 @@
         background-clip: padding-box;
       }
 
-      /* 전체 테이블 외곽 테두리 통일 */
+      /* ?�체 ?�이�??�곽 ?�두�??�일 */
       #staffTable, 
       #staffTable_wrapper .dataTables_scrollHead table,
       #staffTable_wrapper .dataTables_scrollBody table {
         border: 1px solid rgba(255,255,255,0.06);
       }
 
-      /* 셀/헤더 경계 및 패딩 통일 */
+      /* ?�/?�더 경계 �??�딩 ?�일 */
       #staffTable thead th,
       #staffTable tbody td,
       #staffTable_wrapper .dataTables_scrollHead table th,
@@ -94,24 +94,24 @@
         vertical-align: middle;
       }
 
-      /* 헤더 상단 경계 강제 적용 (헤더가 희미해 보이는 문제 대응) */
+      /* ?�더 ?�단 경계 강제 ?�용 (?�더가 ?��???보이??문제 ?�?? */
       #staffTable thead th,
       #staffTable_wrapper .dataTables_scrollHead table thead th {
         border-top: 1px solid rgba(255,255,255,0.06) !important;
       }
 
-      /* 스크롤 헤더와 본문 너비 정렬 보정 */
+      /* ?�크�??�더?� 본문 ?�비 ?�렬 보정 */
       #staffTable_wrapper .dataTables_scrollHeadInner {
         min-width: 100%;
       }
 
-      /* 카드 테두리(선명성 보정) */
+      /* 카드 ?�두�??�명??보정) */
       .card {
         border: 1px solid rgba(255,255,255,0.06);
         background-clip: padding-box;
       }
 
-      /* 버튼 그룹 full-width(이미 클래스 있음) 안전 보정 */
+      /* 버튼 그룹 full-width(?��? ?�래???�음) ?�전 보정 */
       .btn-group.w-100 > .btn {
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -151,13 +151,13 @@
             </div>
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link" href="./mystaff.html">
+                <a class="nav-link" href="./mycrew.html">
                   <i class="fas fa-users"></i>
                   My Crew
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="./myinterns.html">
+                <a class="nav-link" href="./myinterests.html">
                   <i class="bi bi-android2"></i>
                   My Interests
                 </a>
@@ -236,7 +236,7 @@
                 <div class="card">
                   <div class="card-body">
                     <p class="card-text" id="summary">
-                      여기에 직원 목록이나 관리 기능이 표시됩니다.
+                      ?�기??직원 목록?�나 관�?기능???�시?�니??
                     </p>
                     <input id="quickFilter" class="form-control form-control-sm mb-2" placeholder="Search..." />
                     <div class="table-responsive">
@@ -252,7 +252,7 @@
       </div>
     </div>
 
-    <!-- Row details modal: DataTable 행 클릭 시 전체 내용을 label + input/textarea로 표시 -->
+    <!-- Row details modal: DataTable ???�릭 ???�체 ?�용??label + input/textarea�??�시 -->
     <div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -275,7 +275,7 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- 추가: Bootstrap JS (Popper 포함) -->
+    <!-- 추�?: Bootstrap JS (Popper ?�함) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Use a specific UMD build (unpkg) that normally exposes a Grid constructor on window.agGrid -->

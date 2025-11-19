@@ -21,19 +21,19 @@ export function isLoggedIn() {
  */
 export async function getCurrentUser() {
   if (!isLoggedIn()) return null;
-  
+
   const email = localStorage.getItem('mystaff_user');
   if (!email) return null;
-  
+
   try {
     // IndexedDB에서 사용자 정보 조회
     const userData = await getDataByKey('mydata', email);
-    
+
     if (!userData) {
       console.error('User data not found in database');
       return null;
     }
-    
+
     return {
       email: userData.myId,
       nick: userData.nick,
@@ -70,7 +70,7 @@ export function requireAuth() {
 export async function getUserDisplayName() {
   const user = await getCurrentUser();
   if (!user) return 'Guest';
-  
+
   if (user.googleUser?.name) return user.googleUser.name;
   if (user.nick) return user.nick;
   return user.email || 'User';
@@ -83,7 +83,7 @@ export async function getUserDisplayName() {
 export async function getUserProfilePicture() {
   const user = await getCurrentUser();
   if (!user) return null;
-  
+
   return user.googleUser?.picture || null;
 }
 
@@ -191,10 +191,10 @@ export async function handleFileUpload(event, sessionId, mystaff) {
 
   const file = event.target.files[0];
   if (!file) return;
-  
+
   // 파일 input 초기화 (중요: 이렇게 해야 팝업 차단이 안됨)
   event.target.value = '';
-  
+
   console.log(file);
 
   let content = "";
@@ -222,26 +222,26 @@ export async function handleFileUpload(event, sessionId, mystaff) {
   // 2단계: 약간의 지연 후 Google Drive 업로드 시도 (팝업 차단 방지)
   let driveFileInfo = null;
   let uploadSuccess = false;
-  
+
   // 50ms 지연을 주어 파일 선택 다이얼로그가 완전히 닫히도록 함
   await new Promise(resolve => setTimeout(resolve, 50));
-  
+
   try {
     console.log('Attempting to upload file to Google Drive...');
     // sessionId를 전달하여 files/{sessionId}/ 폴더에 저장
     driveFileInfo = await uploadFileToDrive(file, fileName, sessionId);
     console.log('File uploaded to Google Drive:', driveFileInfo);
     uploadSuccess = true;
-    
+
     // 같은 파일이 이미 있는지 확인
     if (driveFileInfo.isDuplicate || driveFileInfo.alreadyExists) {
       // myfiles store에 이미 등록되어 있는지 확인
       const allFiles = await getAllData("myfiles");
-      const existingFile = allFiles.find(f => 
-        f.driveFileId === driveFileInfo.fileId && 
+      const existingFile = allFiles.find(f =>
+        f.driveFileId === driveFileInfo.fileId &&
         f.sessionId === sessionId
       );
-      
+
       if (existingFile) {
         // 이미 myfiles에 등록되어 있으면 종료
         alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재하고, myfiles에도 등록되어 있습니다.\n\n파일명: ${fileName}\n\n중복 업로드를 방지했습니다.`);
@@ -263,7 +263,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     alert(`❌ Google Drive 업로드 실패\n\n계속 진행합니다.\n\n오류: ${driveError.message}`);
     uploadSuccess = false;
   }
-  
+
   // 3단계: 업로드 실패 여부와 관계없이 파일 처리 진행
   const fileId = Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
@@ -273,7 +273,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
   try {
     // 파일 내용 추출
     content = await extractFileContent(file, fileExtension);
-    
+
     const fileData = {
       id: fileId,
       sessionId: sessionId,
@@ -291,7 +291,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     };
 
     await addData("myfiles", fileData);
-    
+
     return fileData;
   } catch (error) {
     console.error("Error processing file:", error);
@@ -319,7 +319,7 @@ export async function FindUrl(mystaff, Fset = 0) {
   }
 
   if (!staffId) {
-    window.location.href = "mystaff.html";
+    window.location.href = "mycrew.html";
     return;
   }
 

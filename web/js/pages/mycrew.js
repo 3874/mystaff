@@ -20,15 +20,15 @@ $(document).ready(async function () {
 
     const agentId = $(this).data("id");
 
-    let mystaff;
+    let mycrew;
     if (agentId.startsWith("diystaff-")) {
-      mystaff = await getDataByKey("diystaff", agentId);
+      mycrew = await getDataByKey("diystaff", agentId);
     } else {
-      mystaff = await getAgentById(agentId);
+      mycrew = await getAgentById(agentId);
     }
-    console.log(mystaff);
+    console.log(mycrew);
 
-    const finalUrl = await FindUrl(mystaff);
+    const finalUrl = await FindUrl(mycrew);
     window.location.href = finalUrl;
   });
 
@@ -92,17 +92,17 @@ $(document).ready(async function () {
     const staffId = $(this).data("staff-id");
     console.log("staffId:", staffId);
 
-    let mystaff;
+    let mycrew;
     if (staffId.startsWith("diystaff-")) {
-      mystaff = await getDataByKey("diystaff", staffId);
-      console.log("diystaff:", mystaff);
+      mycrew = await getDataByKey("diystaff", staffId);
+      console.log("diystaff:", mycrew);
     } else {
-      mystaff = await getAgentById(staffId);
-      console.log("staff:", mystaff);
+      mycrew = await getAgentById(staffId);
+      console.log("staff:", mycrew);
     }
 
-    const finalUrl = await FindUrl(mystaff);
-    
+    const finalUrl = await FindUrl(mycrew);
+
     setTimeout(() => {
       window.location.href = finalUrl;
     }, 100);
@@ -148,25 +148,19 @@ async function loadStaffAgents() {
               <div class="col-12 col-md-3 mb-4">
                 <div class="card h-100">
                   <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${
-                      agent.staff_name || "Unnamed Agent"
-                    }</h5>
-                    <p class="card-text text-muted">${
-                      agent.role || "No role specified"
-                    }</p>
-                    <p class="card-text flex-grow-1">${
-                      agent.summary || "No description."
-                    }</p>
+                    <h5 class="card-title">${agent.staff_name || "Unnamed Agent"
+              }</h5>
+                    <p class="card-text text-muted">${agent.role || "No role specified"
+              }</p>
+                    <p class="card-text flex-grow-1">${agent.summary || "No description."
+              }</p>
                     <div class="d-flex flex-row gap-2 mt-auto">
-                      <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${
-                        agent.staff_id ? agent.staff_id : agent.staffId
-                      }">Detail</button>
-                      <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${
-                        agent.staff_id ? agent.staff_id : agent.staffId
-                      }">Chat</button>
-                      <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${
-                        agent.staff_id ? agent.staff_id : agent.staffId
-                      }">Fire</button>
+                      <button type="button" class="btn btn-sm btn-warning detail-btn" data-staff-id="${agent.staff_id ? agent.staff_id : agent.staffId
+              }">Detail</button>
+                      <button type="button" class="btn btn-sm btn-primary chat-btn" data-staff-id="${agent.staff_id ? agent.staff_id : agent.staffId
+              }">Chat</button>
+                      <button type="button" class="btn btn-sm btn-danger fire-staff-btn" data-staff-id="${agent.staff_id ? agent.staff_id : agent.staffId
+              }">Fire</button>
                     </div>
                   </div>
                 </div>

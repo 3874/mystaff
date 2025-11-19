@@ -1,4 +1,4 @@
-import { getAllData, getDataByKey, deleteData} from "../database.js";
+import { getAllData, getDataByKey, deleteData } from "../database.js";
 import { FindUrl } from "../utils.js";
 import { addAgent } from "../allAgentsCon.js";
 import { initModeratorChat } from "../moderator-chat.js";
@@ -31,7 +31,6 @@ $(async function () {
               </div>
               <div class="card-footer d-flex justify-content-end gap-2">
                 <button class="btn btn-sm btn-success regist-btn" data-staff-id="${staff.staffId}">Regist</button>
-                <button class="btn btn-sm btn-info detail-btn" data-staff-id="${staff.staffId}">Detail</button>
                 <button class="btn btn-sm btn-primary edit-btn" data-staff-id="${staff.staffId}">Edit</button>
               </div>
             </div>
@@ -84,11 +83,7 @@ $(async function () {
   });
 
 
-  // Event listener for detail buttons
-  $("#diy-staff-row").on("click", ".detail-btn", function () {
-    const staffId = $(this).data("staff-id");
-    window.location.href = `./staff-profile.html?staffId=${staffId}`;
-  });
+
 
   // Event listener for chat buttons
   $("#diy-staff-row").on("click", ".chat-btn", async function () {
@@ -116,9 +111,9 @@ $(async function () {
 
     if (staffData) {
       try {
-        staffData.staff_id= "mystaff-" + Date.now();
+        staffData.staff_id = "mystaff-" + Date.now();
         delete staffData.staffId;
-        console.log(staffData); 
+        console.log(staffData);
         await addAgent(staffData);
         alert(`Registered successfully.`);
       } catch (error) {
@@ -166,18 +161,18 @@ $(async function () {
 
   // Event listener for delete buttons on registered interns
   $("#registered-staff-row").on("click", ".delete-intern-btn", async function () {
-      const staffId = $(this).data("staff-id");
-      if (confirm(`Are you sure you want to delete intern ${staffId}?`)) {
-        try {
-          await deleteData("myinterns", staffId);
-          console.log("Intern deleted:", staffId);
-          loadRegisteredStaff(); // Refresh the list
-        } catch (error) {
-          console.error("Failed to delete intern data:", error);
-          alert("Failed to delete data. See console for details.");
-        }
+    const staffId = $(this).data("staff-id");
+    if (confirm(`Are you sure you want to delete intern ${staffId}?`)) {
+      try {
+        await deleteData("myinterns", staffId);
+        console.log("Intern deleted:", staffId);
+        loadRegisteredStaff(); // Refresh the list
+      } catch (error) {
+        console.error("Failed to delete intern data:", error);
+        alert("Failed to delete data. See console for details.");
       }
     }
+  }
   );
 
   // Initial load

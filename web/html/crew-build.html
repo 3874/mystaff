@@ -1,170 +1,162 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Interests - My AI crew</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-    <style>
-      body,
-      html {
-        height: 100%;
-      }
-      .main-content-container {
-        /* New class for the main area to enable flex layout */
-        height: 100vh; /* Full viewport height */
-        display: flex;
-        flex-direction: column;
-      }
-      .main-scroll-area {
-        /* New class for the scrollable content within main */
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 1rem; /* Added padding to match chatMessages */
-      }
-      #sidebarMenu {
-        /* Fixed sidebar that stays in place during scroll */
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh; /* Full viewport height */
-        overflow-y: auto;
-        z-index: 1000;
-      }
-      /* Adjust main content to account for fixed sidebar */
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Interests - My AI crew</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body,
+    html {
+      height: 100%;
+    }
+
+    .main-content-container {
+      /* New class for the main area to enable flex layout */
+      height: 100vh;
+      /* Full viewport height */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-scroll-area {
+      /* New class for the scrollable content within main */
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      /* Added padding to match chatMessages */
+    }
+
+    #sidebarMenu {
+      /* Fixed sidebar that stays in place during scroll */
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      /* Full viewport height */
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    /* Adjust main content to account for fixed sidebar */
+    main.main-content {
+      margin-left: 0;
+    }
+
+    @media (min-width: 768px) {
       main.main-content {
-        margin-left: 0;
+        margin-left: 25%;
+        /* Match col-md-3 width */
       }
-      @media (min-width: 768px) {
-        main.main-content {
-          margin-left: 25%; /* Match col-md-3 width */
-        }
-      }
-      @media (min-width: 992px) {
-        main.main-content {
-          margin-left: 16.666667%; /* Match col-lg-2 width */
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container-fluid h-100">
-      <div class="row h-100">
-        <!-- Sidebar -->
-        <nav
-          id="sidebarMenu"
-          class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse"
-        >
-          <div class="position-sticky pt-3">
-            <div class="sidebar-brand text-center my-3">
-              <!-- Added text-decoration-none for dark theme visibility -->
-              <img src="../img/aicrew4.png" alt="AI Crew Logo" style="max-width: 100px;" />
-            </div>
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <a class="nav-link" href="./mystaff.html">
-                  <i class="fas fa-users"></i>
-                  My Crew
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="./myinterns.html">
-                  <i class="bi bi-android2"></i>
-                  My Interests
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="./chatlist.html">
-                  <i class="fa fa-list"></i>
-                  Chat List
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" href="./marketplace.html">
-                  <i class="fas fa-search"></i>
-                  Marketplace
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="./file-manager.html">
-                  <i class="fas fa-file-alt"></i>
-                  File Manager
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" href="./credentials.html">
-                  <i class="fa fa-lock"></i>
-                  Credentials
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" href="./settings.html">
-                  <i class="fa fa-sliders"></i>
-                  Settings
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="./support.html">
-                  <i class="bi bi-headset"></i>
-                  Support
-                </a>
-              </li>
-            </ul>
-            <div class="mt-4 p-3">
-              <button
-                id="signOutBtn"
-                class="btn btn-danger btn-block mt-2 w-100"
-              >
-                <i class="fas fa-sign-out-alt"></i> Sign-Out
-              </button>
-            </div>
-          </div>
-        </nav>
+    }
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-          <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
-          >
-            <h1 class="h2">Build Crew</h1>
-            <div>
-              <a href="./myinterns.html" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
+    @media (min-width: 992px) {
+      main.main-content {
+        margin-left: 16.666667%;
+        /* Match col-lg-2 width */
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- Sidebar -->
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-body-tertiary d-md-block collapse">
+        <div class="position-sticky pt-3">
+          <div class="sidebar-brand text-center my-3">
+            <!-- Added text-decoration-none for dark theme visibility -->
+            <img src="../img/aicrew4.png" alt="AI Crew Logo" style="max-width: 100px;" />
+          </div>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="./mycrew.html">
+                <i class="fas fa-users"></i>
+                My Crew
               </a>
-            </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./myinterests.html">
+                <i class="bi bi-android2"></i>
+                My Interests
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./chatlist.html">
+                <i class="fa fa-list"></i>
+                Chat List
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./marketplace.html">
+                <i class="fas fa-search"></i>
+                Marketplace
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./file-manager.html">
+                <i class="fas fa-file-alt"></i>
+                File Manager
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./credentials.html">
+                <i class="fa fa-lock"></i>
+                Credentials
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./settings.html">
+                <i class="fa fa-sliders"></i>
+                Settings
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./support.html">
+                <i class="bi bi-headset"></i>
+                Support
+              </a>
+            </li>
+          </ul>
+          <div class="mt-4 p-3">
+            <button id="signOutBtn" class="btn btn-danger btn-block mt-2 w-100">
+              <i class="fas fa-sign-out-alt"></i> Sign-Out
+            </button>
           </div>
+        </div>
+      </nav>
 
-          <!-- Staff Information Card -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h5 class="mb-0">
-                <button 
-                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#staffInfoCollapse" 
-                  aria-expanded="true" 
-                  aria-controls="staffInfoCollapse"
-                >
-                  <i class="bi bi-chevron-down me-2" id="staffInfoCollapseIcon"></i>
-                  Staff Information
-                </button>
-              </h5>
-            </div>
-            <div class="collapse show" id="staffInfoCollapse">
-              <div class="card-body">
-                <form id="registForm">
+      <!-- Main content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+        <div
+          class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Build Crew</h1>
+          <div>
+            <a href="./myinterests.html" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Back
+            </a>
+          </div>
+        </div>
+
+        <!-- Staff Information Card -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button"
+                data-bs-toggle="collapse" data-bs-target="#staffInfoCollapse" aria-expanded="true"
+                aria-controls="staffInfoCollapse">
+                <i class="bi bi-chevron-down me-2" id="staffInfoCollapseIcon"></i>
+                Staff Information
+              </button>
+            </h5>
+          </div>
+          <div class="collapse show" id="staffInfoCollapse">
+            <div class="card-body">
+              <form id="registForm">
                 <div class="mb-3">
                   <label for="staffId" class="form-label">Staff ID</label>
                   <input type="text" class="form-control" id="staffId" />
@@ -194,35 +186,30 @@
                   <div class="col-md-6 mb-3">
                     <label for="adapter_language" class="form-label">Language</label>
                     <select class="form-select" id="adapter_language">
-                      <option value="ko">한국어</option>
+                      <option value="ko">?�국</option>
                       <option value="en">English</option>
                     </select>
                   </div>
                 </div>
               </form>
-              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Adapter Configuration Card -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h5 class="mb-0">
-                <button 
-                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#adapterConfigCollapse" 
-                  aria-expanded="true" 
-                  aria-controls="adapterConfigCollapse"
-                >
-                  <i class="bi bi-chevron-down me-2" id="adapterCollapseIcon"></i>
-                  Adapter Configuration
-                </button>
-              </h5>
-            </div>
-            <div class="collapse show" id="adapterConfigCollapse">
-              <div class="card-body">
+        <!-- Adapter Configuration Card -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button"
+                data-bs-toggle="collapse" data-bs-target="#adapterConfigCollapse" aria-expanded="true"
+                aria-controls="adapterConfigCollapse">
+                <i class="bi bi-chevron-down me-2" id="adapterCollapseIcon"></i>
+                Adapter Configuration
+              </button>
+            </h5>
+          </div>
+          <div class="collapse show" id="adapterConfigCollapse">
+            <div class="card-body">
               <div class="mb-3">
                 <label for="adapter_name" class="form-label">Adapter Type</label>
                 <select class="form-select" id="adapter_name">
@@ -236,7 +223,8 @@
               <div class="http-fields">
                 <div class="mb-3">
                   <label for="adapter_apiUrl" class="form-label">API URL (HOST)</label>
-                  <input type="text" class="form-control" id="adapter_apiUrl" placeholder="https://api.example.com/endpoint"/>
+                  <input type="text" class="form-control" id="adapter_apiUrl"
+                    placeholder="https://api.example.com/endpoint" />
                 </div>
 
                 <div class="mb-3">
@@ -251,11 +239,13 @@
                   <h6 class="mb-3">Headers</h6>
                   <div class="mb-3">
                     <label for="adapter_headers_Authorization" class="form-label">Authorization</label>
-                    <input type="text" class="form-control" id="adapter_headers_Authorization" placeholder="Bearer YOUR_TOKEN"/>
+                    <input type="text" class="form-control" id="adapter_headers_Authorization"
+                      placeholder="Bearer YOUR_TOKEN" />
                   </div>
                   <div class="mb-3">
                     <label for="adapter_headers_Content-Type" class="form-label">Content-Type</label>
-                    <input type="text" class="form-control" id="adapter_headers_Content-Type" placeholder="application/json"/>
+                    <input type="text" class="form-control" id="adapter_headers_Content-Type"
+                      placeholder="application/json" />
                   </div>
                 </div>
               </div>
@@ -264,41 +254,37 @@
               <div class="llm-fields" style="display: none">
                 <div class="mb-3">
                   <label for="adapter_model" class="form-label">Model</label>
-                  <input type="text" class="form-control" id="adapter_model" placeholder="gpt-4o-mini"/>
+                  <input type="text" class="form-control" id="adapter_model" placeholder="gpt-4o-mini" />
                 </div>
                 <div class="mb-3">
                   <label for="adapter_system_prompt" class="form-label">System Prompt</label>
-                  <textarea class="form-control" id="adapter_system_prompt" rows="4" placeholder="You are a helpful assistant..."></textarea>
+                  <textarea class="form-control" id="adapter_system_prompt" rows="4"
+                    placeholder="You are a helpful assistant..."></textarea>
                 </div>
               </div>
 
               <div class="mb-3">
                 <label for="adapter_token_limit" class="form-label">Token Limit</label>
-                <input type="number" class="form-control" id="adapter_token_limit" placeholder="4096"/>
-              </div>
+                <input type="number" class="form-control" id="adapter_token_limit" placeholder="4096" />
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Test Section Card -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h5 class="mb-0">
-                <button 
-                  class="btn btn-link text-decoration-none p-0 w-100 text-start" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#testConfigCollapse" 
-                  aria-expanded="true" 
-                  aria-controls="testConfigCollapse"
-                >
-                  <i class="bi bi-chevron-down me-2" id="testConfigCollapseIcon"></i>
-                  Test Configuration
-                </button>
-              </h5>
-            </div>
-            <div class="collapse show" id="testConfigCollapse">
-              <div class="card-body">
+        <!-- Test Section Card -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button"
+                data-bs-toggle="collapse" data-bs-target="#testConfigCollapse" aria-expanded="true"
+                aria-controls="testConfigCollapse">
+                <i class="bi bi-chevron-down me-2" id="testConfigCollapseIcon"></i>
+                Test Configuration
+              </button>
+            </h5>
+          </div>
+          <div class="collapse show" id="testConfigCollapse">
+            <div class="card-body">
               <!-- Input Section -->
               <div class="row mb-4">
                 <div class="col-12">
@@ -307,21 +293,23 @@
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="input_prompt" class="form-label">Prompt</label>
-                    <input type="text" class="form-control" id="input_prompt" placeholder="Enter test prompt"/>
+                    <input type="text" class="form-control" id="input_prompt" placeholder="Enter test prompt" />
                   </div>
                   <div class="mb-3">
                     <label for="input_history" class="form-label">History</label>
-                    <input type="text" class="form-control" id="input_history" placeholder="Optional conversation history"/>
+                    <input type="text" class="form-control" id="input_history"
+                      placeholder="Optional conversation history" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label for="input_ltm" class="form-label">LTM</label>
-                    <input type="text" class="form-control" id="input_ltm" placeholder="Optional long-term memory"/>
+                    <input type="text" class="form-control" id="input_ltm" placeholder="Optional long-term memory" />
                   </div>
                   <div class="mb-3">
                     <label for="input_sessionId" class="form-label">Session ID</label>
-                    <input type="text" class="form-control" id="input_sessionId" placeholder="Optional session identifier"/>
+                    <input type="text" class="form-control" id="input_sessionId"
+                      placeholder="Optional session identifier" />
                   </div>
                 </div>
               </div>
@@ -332,48 +320,42 @@
                   <h6 class="mb-3">Response</h6>
                   <!-- Text Response Area (for non-database resources) -->
                   <div class="mb-3" id="textResponseArea">
-                    <textarea
-                      class="form-control"
-                      id="output"
-                      rows="18"
-                      readonly
-                      placeholder="Test response will appear here..."
-                    ></textarea>
+                    <textarea class="form-control" id="output" rows="18" readonly
+                      placeholder="Test response will appear here..."></textarea>
                   </div>
                   <!-- Database Resource Area (iframe for test-sheet.html) -->
                   <div class="mb-3" id="databaseResponseArea" style="display: none;">
-                    <iframe 
-                      id="databaseFrame" 
+                    <iframe id="databaseFrame"
                       style="width: 100%; height: 600px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;"
-                      src=""
-                    ></iframe>
+                      src=""></iframe>
                   </div>
                 </div>
               </div>
-              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Action Buttons -->
-          <div class="d-flex justify-content-end gap-2 mb-4">
-            <a href="./myinterns.html" class="btn btn-secondary">
-              <i class="fas fa-times"></i> Cancel
-            </a>
-            <button type="button" class="btn btn-info" id="testBtn">
-              <i class="fas fa-vial"></i> Test
-            </button>
-            <button type="button" class="btn btn-primary" id="saveBtn">
-              <i class="fas fa-save"></i> Save
-            </button>
-          </div>
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end gap-2 mb-4">
+          <a href="./myinterests.html" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+          <button type="button" class="btn btn-info" id="testBtn">
+            <i class="fas fa-vial"></i> Test
+          </button>
+          <button type="button" class="btn btn-primary" id="saveBtn">
+            <i class="fas fa-save"></i> Save
+          </button>
+        </div>
 
-        </main>
-      </div>
+      </main>
     </div>
+  </div>
 
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="../js/pages/crew-build.js"></script>
-  </body>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../js/pages/crew-build.js"></script>
+</body>
+
 </html>
