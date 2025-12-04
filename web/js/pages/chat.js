@@ -26,7 +26,7 @@ $(document).ready(async function () {
     alert("An error occurred. Please sign in again.");
     return;
   }
-  
+
   const userId = user.email;
   mydata = await getDataByKey("mydata", userId);
 
@@ -94,16 +94,16 @@ $(document).ready(async function () {
 async function handleFileUploadWithSpinner(event, sessionId, mystaff) {
   // Show upload spinner
   showUploadSpinner();
-  
+
   try {
     // Call the actual file upload function
     const result = await handleFileUpload(event, sessionId, mystaff);
-    
+
     // Refresh file list if modal is open
     if ($("#manageFilesModal").hasClass("show")) {
       await openManageFilesModal(sessionId);
     }
-    
+
     return result;
   } catch (error) {
     console.error("File upload error:", error);
@@ -160,7 +160,7 @@ async function initializeChat() {
 
     if (!agent.adapter.name) {
       alert("Please select a staff member to chat with.");
-      window.location.href = "./mystaff.html";
+      window.location.href = "./mycrew.html";
       return;
     } else if (agent.adapter.name && agent.adapter.name !== "http") {
       apikey = apikeysObj[agent.adapter.name] || "";
@@ -175,7 +175,7 @@ async function initializeChat() {
     const finalUrl = await FindUrl(agent);
     window.location.href = finalUrl;
   } else {
-    window.location.href = `mystaff.html`;
+    window.location.href = `mycrew.html`;
   }
 }
 
@@ -215,12 +215,10 @@ async function loadSessionList() {
   filteredSessions.forEach((session) => {
     const isActive = session.sessionId === sessionId ? "active" : "";
     const listItem = `
-            <li class="list-group-item chat-session-item ${isActive} d-flex justify-content-between align-items-center mb-2 small" data-session-id="${
-      session.sessionId
-    }">
-                <span class="session-title" style="cursor:pointer;">${
-                  session.title || "Untitled"
-                }</span>
+            <li class="list-group-item chat-session-item ${isActive} d-flex justify-content-between align-items-center mb-2 small" data-session-id="${session.sessionId
+      }">
+                <span class="session-title" style="cursor:pointer;">${session.title || "Untitled"
+      }</span>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
                     <ul class="dropdown-menu">
@@ -249,8 +247,8 @@ async function renderMessages(msgs) {
                 <p><b>User:</b></p>
                 <div class="message-text">${m.user}</div>
                 <span class="msg-date text-muted small" hidden>${new Date(
-                  m.date
-                ).toLocaleString()}</span>
+        m.date
+      ).toLocaleString()}</span>
             </div>
         </div>`;
     }
@@ -274,8 +272,8 @@ async function renderMessages(msgs) {
                 <p><b>${speakerName}:</b></p>
                 <div class="message-text">${systemHtml}</div>
                 <span class="msg-date text-muted small" style="color: #ccc;" hidden>${new Date(
-                  m.date
-                ).toLocaleString()}</span>
+        m.date
+      ).toLocaleString()}</span>
             </div>
         </div>`;
     }

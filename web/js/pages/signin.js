@@ -161,11 +161,11 @@ async function handleGoogleSignIn(response) {
 
     // 페이지 이동 전 플래그 초기화
     isProcessing = false;
-    console.log('🏠 Redirecting to mystaff page...');
+    console.log('🏠 Redirecting to mycrew page...');
 
     // 약간의 지연 후 리디렉션 (Google 프롬프트가 완전히 닫힐 시간을 줌)
     setTimeout(() => {
-      window.location.href = './mystaff.html';
+      window.location.href = './mycrew.html';
     }, 100);
 
   } catch (error) {

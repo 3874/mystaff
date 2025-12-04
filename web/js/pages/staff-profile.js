@@ -25,40 +25,40 @@ $(document).ready(async function () {
 
   if (!staffId) {
     alert("No staffId");
-    window.location.href = "mystaff.html";
+    window.location.href = "mycrew.html";
     return;
   }
 
   $(".hire-btn").on("click", async function (e) {
-      e.preventDefault(); // Prevent default link behavior
+    e.preventDefault(); // Prevent default link behavior
 
-      const currentStaffId = staffId; // Get staffId again for clarity
+    const currentStaffId = staffId; // Get staffId again for clarity
 
-      if (!currentStaffId) {
-        alert("Error: Staff ID not found.");
-        return;
-      }
+    if (!currentStaffId) {
+      alert("Error: Staff ID not found.");
+      return;
+    }
 
-      let userData = await getDataByKey("mydata", userId);
-      if (!userData) {
-        window.location.href = "./signin.html";
-        return; // Initialize with myId if no user data exists
-      }
-      if (!userData.mystaff) {
-        userData.mystaff = []; // Initialize mystaff array if it doesn't exist
-      }
+    let userData = await getDataByKey("mydata", userId);
+    if (!userData) {
+      window.location.href = "./signin.html";
+      return; // Initialize with myId if no user data exists
+    }
+    if (!userData.mystaff) {
+      userData.mystaff = []; // Initialize mystaff array if it doesn't exist
+    }
 
-      // Check if staffId already exists in mystaff
-      if (userData.mystaff.includes(currentStaffId)) {
-        alert("This staff member is already in your MyStaff list!");
-      } else {
-        userData.mystaff.push(currentStaffId); // Add staffId to mystaff
-        await updateData("mydata", userId, userData); // Save updated user data
-        alert("Staff member added to your MyStaff list!");
-      }
+    // Check if staffId already exists in mystaff
+    if (userData.mystaff.includes(currentStaffId)) {
+      alert("This staff member is already in your MyStaff list!");
+    } else {
+      userData.mystaff.push(currentStaffId); // Add staffId to mystaff
+      await updateData("mydata", userId, userData); // Save updated user data
+      alert("Staff member added to your MyStaff list!");
+    }
 
-      window.location.href = "./mystaff.html"; // Redirect to mystaff.html
-    });
+    window.location.href = "./mycrew.html"; // Redirect to mycrew.html
+  });
 
   let staffData;
   if (staffId.startsWith("diystaff-")) {
@@ -86,7 +86,7 @@ function loadStaffAgent(staffData) {
   );
   $(".author-box-name").text(staffData.staff_name || "Unnamed Agent");
   $(".author-box-role").text(staffData.role || "No role specified");
-  $(".author-box-summary").text( staffData.summary || "No description available.");
+  $(".author-box-summary").text(staffData.summary || "No description available.");
   $(".author-box-resource").text(staffData.resource_type || "No resource specified");
   $(".author-box-language").text(staffData.language_code || "No language specified");
 
@@ -102,9 +102,8 @@ function loadStaffAgent(staffData) {
       tableHtml += `
         <tr>
           <th class="text-center border" style="width: 25%;">${key}</th>
-          <td class="border" style="width: 75%;">${
-            typeof value === "object" ? JSON.stringify(value, null, 2) : value
-          }</td>
+          <td class="border" style="width: 75%;">${typeof value === "object" ? JSON.stringify(value, null, 2) : value
+        }</td>
         </tr>
       `;
     }

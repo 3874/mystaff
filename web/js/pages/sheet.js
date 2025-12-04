@@ -21,7 +21,7 @@ $(document).ready(async function () {
 
   if (!staffId) {
     alert("Invalid staff ID");
-    location.href = "./mystaff.html";
+    location.href = "./mycrew.html";
     return;
   }
 
@@ -30,7 +30,7 @@ $(document).ready(async function () {
       mystaff = items;
       if (!mystaff) {
         alert("Invalid staff ID");
-        location.href = "./mystaff.html";
+        location.href = "./mycrew.html";
         return;
       }
       $("#title").text(mystaff.name);
@@ -47,7 +47,7 @@ $(document).ready(async function () {
     .catch((error) => {
       console.error("Error getting agent by ID:", error);
       alert("Failed to get staff details.");
-      location.href = "./mystaff.html";
+      location.href = "./mycrew.html";
     });
 });
 
@@ -228,13 +228,13 @@ async function initTableForStaff(staffId) {
     };
 
     // create the grid using UMD build exposed on window.agGrid.Grid (sheet.html must include UMD script)
-      // create the grid using constructor resolved by helper (tries globals then dynamic ESM)
-      const GridConstructor = await resolveAgGridConstructor();
-      if (!GridConstructor || typeof GridConstructor !== "function") {
-        console.error("ag-grid Grid constructor not available. Include ag-grid script or allow dynamic import.");
-        throw new Error("ag-grid Grid constructor not available.");
-      }
-      new GridConstructor(container, gridOptions);
+    // create the grid using constructor resolved by helper (tries globals then dynamic ESM)
+    const GridConstructor = await resolveAgGridConstructor();
+    if (!GridConstructor || typeof GridConstructor !== "function") {
+      console.error("ag-grid Grid constructor not available. Include ag-grid script or allow dynamic import.");
+      throw new Error("ag-grid Grid constructor not available.");
+    }
+    new GridConstructor(container, gridOptions);
     // datasource is attached in onGridReady
 
     // quick search handler: update currentSearchTerm and trigger client quickFilter + server re-fetch
@@ -281,7 +281,7 @@ async function initTableForStaff(staffId) {
       let $wrap = $input.parent();
       if (!$wrap.length || !$wrap.hasClass('quick-filter-wrap')) {
         $wrap = $("<span>").addClass('quick-filter-wrap');
-        try { $wrap.css('display', getComputedStyle($input[0]).display === 'block' ? 'block' : 'inline-block'); } catch (e) {}
+        try { $wrap.css('display', getComputedStyle($input[0]).display === 'block' ? 'block' : 'inline-block'); } catch (e) { }
         $input.before($wrap);
         $wrap.append($input);
       }
@@ -309,7 +309,7 @@ async function initTableForStaff(staffId) {
         $input.val('');
         toggleClearBtn();
         applySearch();
-        try { $input.focus(); } catch (e) {}
+        try { $input.focus(); } catch (e) { }
       });
 
       // input events: instant on input, also apply on Enter (keypress)
@@ -330,7 +330,7 @@ async function initTableForStaff(staffId) {
 
     // columns persistence wiring
     setupColumnsPersistence(gridOptions, columns, staffId, container);
-    
+
     // helper to render row form moved here so it is available to onRowClicked
     function renderRowFormForAgGrid($form, rowData, columnsDef) {
       $form.empty();
@@ -345,7 +345,7 @@ async function initTableForStaff(staffId) {
       const $modal = $form.closest('.modal');
       const $saveBtn = $modal.find('#rowModalSaveBtn');
       const $deleteBtn = $modal.find('#rowModalDeleteBtn');
-      
+
       $saveBtn.off('click').on('click', async function () {
         // Collect editable fields
         const payload = { action: 'update' };
@@ -364,10 +364,10 @@ async function initTableForStaff(staffId) {
           console.log('Save result:', result); // 디버깅용 로그 추가
           // Optionally show success/fail message
           // 다양한 성공 응답 형태를 처리
-          if (result && (result.success === true || result.success === 'true' || 
-                        result.status === 'success' || result.message === 'success' ||
-                        (Array.isArray(result) && result.length > 0) ||
-                        (result.output && Array.isArray(result.output)))) {
+          if (result && (result.success === true || result.success === 'true' ||
+            result.status === 'success' || result.message === 'success' ||
+            (Array.isArray(result) && result.length > 0) ||
+            (result.output && Array.isArray(result.output)))) {
             alert('Saved successfully');
             $modal.modal('hide');
             // 그리드 새로고침
@@ -401,12 +401,12 @@ async function initTableForStaff(staffId) {
         try {
           const result = await apiPost(host, payload);
           console.log('Delete result:', result); // 디버깅용 로그 추가
-          
+
           // 다양한 성공 응답 형태를 처리
-          if (result && (result.success === true || result.success === 'true' || 
-                        result.status === 'success' || result.message === 'success' ||
-                        (Array.isArray(result) && result.length > 0) ||
-                        (result.output && Array.isArray(result.output)))) {
+          if (result && (result.success === true || result.success === 'true' ||
+            result.status === 'success' || result.message === 'success' ||
+            (Array.isArray(result) && result.length > 0) ||
+            (result.output && Array.isArray(result.output)))) {
             alert('Deleted successfully');
             $modal.modal('hide');
             // 그리드 새로고침
@@ -530,10 +530,10 @@ function setupColumnsPersistence(gridOptionsOrApi, columns, staffId, containerEl
       const chkId = `colchk_ag_${idx}`;
       const li = $(
         '<li>' +
-          '<div class="form-check px-2 py-1">' +
-            `<input class="form-check-input col-toggle" type="checkbox" id="${chkId}" data-idx="${idx}">` +
-            `<label class="form-check-label" for="${chkId}" style="margin-left:6px;">${title}</label>` +
-          '</div>' +
+        '<div class="form-check px-2 py-1">' +
+        `<input class="form-check-input col-toggle" type="checkbox" id="${chkId}" data-idx="${idx}">` +
+        `<label class="form-check-label" for="${chkId}" style="margin-left:6px;">${title}</label>` +
+        '</div>' +
         '</li>'
       );
       menu.append(li);
@@ -694,7 +694,7 @@ async function resolveAgGridConstructor() {
           if (typeof val === "function" && k.toLowerCase().includes("grid")) return val;
           if (val && typeof val.Grid === "function") return val.Grid;
           if (typeof val === "function" && (val.name && val.name.toLowerCase().includes("grid"))) return val;
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -705,7 +705,7 @@ async function resolveAgGridConstructor() {
         if (!v) continue;
         if (v && typeof v.Grid === "function") return v.Grid;
         if (typeof v === "function" && (k.toLowerCase().includes("grid") || (v.name && v.name.toLowerCase().includes("grid")))) return v;
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // Fallback: attempt dynamic ESM import from CDN and inspect exports

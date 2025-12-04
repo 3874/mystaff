@@ -2,7 +2,7 @@ import { getDataByKey, updateData } from '../database.js';
 import { initAuthGuard } from '../auth-guard.js';
 import { getCurrentUser } from '../utils.js';
 
-$(document).ready(async function() {
+$(document).ready(async function () {
     // 인증 체크
     if (!initAuthGuard()) {
         return;
@@ -10,9 +10,9 @@ $(document).ready(async function() {
 
     const user = await getCurrentUser();
     if (!user) {
-      console.error('User not found.');
-      window.location.href = './signin.html';
-      return;
+        console.error('User not found.');
+        window.location.href = './signin.html';
+        return;
     }
 
     const userId = user.email;
@@ -60,7 +60,7 @@ $(document).ready(async function() {
             await updateData('mydata', userId, mydata);
             localStorage.setItem('mystaff_credentials', JSON.stringify(credentials));
             alert('Credentials saved successfully!');
-            window.location.href = './mystaff.html'; // Redirect to staff page after saving
+            window.location.href = './mycrew.html'; // Redirect to staff page after saving
         } catch (error) {
             console.error("Error saving credentials:", error);
             alert('Error saving credentials.');
@@ -68,7 +68,7 @@ $(document).ready(async function() {
     });
 
     // Add event listeners for password toggle buttons
-    $('.toggle-password').on('click', function() {
+    $('.toggle-password').on('click', function () {
         const button = $(this);
         const targetId = button.data('target');
         const passwordInput = $('#' + targetId);

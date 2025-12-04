@@ -3,7 +3,7 @@ import { getAgentById } from '../allAgentsCon.js';
 import { signOut, getCurrentUser } from '../utils.js';
 import { initAuthGuard } from '../auth-guard.js';
 
-$(document).ready(async function() {
+$(document).ready(async function () {
   // 인증 체크
   if (!initAuthGuard()) {
     return;
@@ -25,39 +25,39 @@ $(document).ready(async function() {
 
   if (!staffId) {
     alert('No staffId');
-      window.location.href = 'mystaff.html';
+    window.location.href = 'mycrew.html';
+    return;
+  }
+
+  const staffData = await getAgentById(staffId);
+  console.log(staffData);
+  loadStaffAgent(staffData);
+
+  $('.import-btn').on('click', async function (e) {
+    e.preventDefault(); // Prevent default link behavior
+
+    const currentStaffId = staffId;
+
+    if (!currentStaffId) {
+      alert('Error: Staff ID not found.');
       return;
     }
 
-    const staffData = await getAgentById(staffId);
-    console.log(staffData);
-    loadStaffAgent(staffData);
+    // Check if the staff data already exists in the 'myinterns' store
+    const existingStaff = await getDataByKey('myinterns', currentStaffId);
 
-    $('.import-btn').on('click', async function(e) {
-      e.preventDefault(); // Prevent default link behavior
+    if (existingStaff) {
+      alert('This staff member is already in your My Interests list!');
+    } else {
+      // Save the entire staffData object to the 'myinterns' store
+      await updateData('myinterns', currentStaffId, staffData);
+      alert('Staff member added to your My Interests list!');
+    }
 
-      const currentStaffId = staffId; 
+    window.location.href = './myinterns.html'; // Redirect to myinterns.html
+  });
 
-      if (!currentStaffId) {
-        alert('Error: Staff ID not found.');
-        return;
-      }
-
-      // Check if the staff data already exists in the 'myinterns' store
-      const existingStaff = await getDataByKey('myinterns', currentStaffId);
-
-      if (existingStaff) {
-        alert('This staff member is already in your My Interests list!');
-      } else {
-        // Save the entire staffData object to the 'myinterns' store
-        await updateData('myinterns', currentStaffId, staffData);
-        alert('Staff member added to your My Interests list!');
-      }
-
-      window.location.href = './myinterns.html'; // Redirect to myinterns.html
-    });
-
-  $('#signOutBtn').on('click', function(e) {
+  $('#signOutBtn').on('click', function (e) {
     e.preventDefault();
     signOut();
   });
@@ -75,7 +75,7 @@ function loadStaffAgent(staffData) {
   $('.author-box-summary').text(staffData.summary || 'No description available.');
   $('.author-box-input').text(JSON.stringify(staffData.input_format) || 'No input type specified');
   $('.author-box-output').text(JSON.stringify(staffData.output_format) || 'No output type specified');
-  
+
   // staffData.adapter는 object type 이다. 만약 값이 있다면 $('.author-box-adapter')아래 테이블로 넣자
   const adapterData = staffData.adapter;
   let tableHtml = '';
