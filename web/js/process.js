@@ -1,4 +1,6 @@
-import { getDataByKey, updateData } from "./database.js";
+import { getDataByKey } from "./database.js";
+import { loadLTM, updateLTM } from "./memory.js";
+import OpenAI from "https://cdn.jsdelivr.net/npm/openai@latest/+esm";
 
 async function getFileContentById(fileId) {
   if (!fileId) return null;
@@ -18,7 +20,7 @@ export async function preprocess(sessionId, input, agent, history = null) {
     ? history
     : (await getDataByKey("chat", sessionId))?.msg || [];
   const last20 = chatHistory.slice(-20);
-  const ltm = (await getDataByKey("LTM", sessionId)) || "";
+  const ltm = await loadLTM(sessionId);
 
   let allFilesInfo = [];
   let modifiedInput = input;
@@ -57,9 +59,9 @@ export async function preprocess(sessionId, input, agent, history = null) {
   const prompt = {
     action: 'chat',
     prompt: modifiedInput,
-    history: last20, 
-    ltm: ltmText, 
-    file: allFilesText || "", 
+    history: last20,
+    ltm: ltmText,
+    file: allFilesText || "",
     token_limit: agent?.adapter?.token_limit || 128000,
   };
   return prompt;
@@ -87,7 +89,7 @@ export async function postprocess(sessionId, currentChat) {
   }
 
   let newLTM = null;
-  const storedLTM = await getDataByKey("LTM", sessionId);
+  const storedLTM = await loadLTM(sessionId);
 
   let ltmTextForLLM =
     storedLTM && typeof storedLTM.contents === "string"
@@ -117,7 +119,7 @@ export async function postprocess(sessionId, currentChat) {
         .replace(/^```markdown/, "")
         .replace(/```$/, "")
         .trim();
-      await updateData("LTM", sessionId, { contents: content });
+      await updateLTM(sessionId, { contents: content });
     } catch (error) {
       console.error("Failed to update LTM with new content:", error);
     }
@@ -130,47 +132,38 @@ export async function postprocess(sessionId, currentChat) {
 }
 
 export async function generateLTM(currentChat, currentLTM, timeout = 18000) {
-  const url = "https://8nlkobkyb6.execute-api.ap-northeast-2.amazonaws.com/default";
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  console.log(currentChat);
-  console.log(currentLTM);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        currentChat: currentChat,
-        currentLTM: currentLTM,
-      }),
-    });
+  const credentials = localStorage.getItem("mystaff_credentials");
+  const apiKey = JSON.parse(credentials || "{}").openai;
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(
-        `API ${res.status} ${res.statusText} — ${text || "no body"}`
-      );
-    }
-
-    const newLTM = await res.text();
-    console.log("New LTM content:", newLTM);
-
-    if (!newLTM || newLTM.trim() === "") {
-      return currentLTM;
-    }
-
-    const parsedContent = JSON.parse(newLTM);
-    const newLTMContent = parsedContent.body || currentLTM;
-    console.log("Parsed LTM content:", newLTMContent);
-
-    return newLTMContent;
-  } catch (err) {
-    if (err.name === "AbortError") {
-      return currentLTM;
-    }
+  if (!apiKey) {
+    console.warn("OpenAI API key missing for LTM generation.");
     return currentLTM;
-  } finally {
-    clearTimeout(timeoutId);
+  }
+
+  const client = new OpenAI({ apiKey: apiKey, dangerouslyAllowBrowser: true });
+
+  try {
+    const response = await client.chat.completions.create({
+      model: "gpt-oss-120b",
+      messages: [
+        {
+          role: "system",
+          content: "You are an assistant that summarizes and updates Long-Term Memory (LTM) based on chat history. Keep the LTM concise and focused on key facts, preferences, and progress. Return ONLY the updated LTM text without any conversational fillers or markdown formatting if possible."
+        },
+        {
+          role: "user",
+          content: `Current LTM:\n${currentLTM}\n\nRecent Chat:\n${currentChat}\n\nUpdated LTM:`
+        }
+      ],
+      temperature: 0.3,
+    }, { timeout: timeout });
+
+    const newLTMContent = response.choices[0].message.content.trim();
+    console.log("New LTM content from OpenAI:", newLTMContent);
+
+    return newLTMContent || currentLTM;
+  } catch (err) {
+    console.error("OpenAI LTM generation error:", err);
+    return currentLTM;
   }
 }
