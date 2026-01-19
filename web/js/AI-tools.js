@@ -3,6 +3,7 @@ import { getAgentById } from "./allAgentsCon.js";
 import { preprocess, postprocess } from "./process.js";
 import { handleMsg } from "./agents.js";
 import { apiPost } from "./utils.js";
+import { vectorDB } from "./vector-db.js";
 
 export async function startDiscussion(
   topic,
@@ -115,30 +116,47 @@ export async function filesearch(topic, fileId, context) {
     alert(`File with ID ${fileId} not found.`);
   }
 
+  // 1. 벡터 데이터베이스에서 가장 유사한 컨텍스트 검색
+  let results = [];
+  try {
+    results = await vectorDB.search(topic, 5, [fileId]);
+    console.log("Vector search results:", results);
+  } catch (err) {
+    console.error("Vector search failed, falling back to full text:", err);
+  }
+
+  // 검색 결과가 있으면 컨텍스트를 구성, 없으면 전체 내용을 사용 (폴백)
+  let contextText = contents;
+  if (results.length > 0) {
+    contextText = results.map(r => `[From ${r.fileName}]\n${r.text}`).join("\n\n---\n\n");
+  }
+
   const responder = await getAgentById(staffId);
   if (!responder) {
     alert("Could not find the main agent for this chat.");
     return;
   }
 
-  const messageToSend = `${topic} \n\n [file contents]:\n ${contents}`;
+  const messageToSend = `다음 파일의 내용을 참고해서 사용자의 질문에 답해줘.\n\n[참고 내용]:\n${contextText}\n\n[질문]:\n${topic}`;
 
   const processedInput = {
     action: 'chat',
     prompt: messageToSend,
-    history: '', 
-    ltm: '', 
-    file: '', 
+    history: context.currentChat.slice(-5),
+    ltm: '',
+    file: '',
     token_limit: responder?.adapter?.token_limit || 128000,
-};
+    references: results // UI에서 출처를 표시할 수 있도록 함
+  };
 
-  const response = await handleMsg(processedInput, responder, fileName.sessionId);
+  const response = await handleMsg(processedInput, responder, context.sessionId);
 
   const systemMessage = {
     system: response,
     date: new Date().toISOString(),
     speaker: responder.staff_name,
     speakerId: responder.staff_id,
+    references: results
   };
   context.currentChat.push(systemMessage);
   context.renderMessages(context.currentChat);
@@ -159,7 +177,7 @@ export async function fileupload(fileId) {
     console.error("getFileById: fileId is required.");
     return null;
   }
-  
+
   try {
     fileData = await getDataByKey("myfiles", fileId);
   } catch (error) {

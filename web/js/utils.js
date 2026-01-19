@@ -1,8 +1,8 @@
-// utils.js
 import { getAllData, addData } from "./database.js";
 import { getAgentById } from "./allAgentsCon.js";
 import { getDataByKey } from "./database.js";
-import { uploadFileToDrive } from "./google-drive.js";
+import { vectorDB } from "./vector-db.js";
+
 
 // ========== 인증 관련 함수 ==========
 
@@ -219,52 +219,7 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     return;
   }
 
-  // 2단계: 약간의 지연 후 Google Drive 업로드 시도 (팝업 차단 방지)
-  let driveFileInfo = null;
-  let uploadSuccess = false;
-
-  // 50ms 지연을 주어 파일 선택 다이얼로그가 완전히 닫히도록 함
-  await new Promise(resolve => setTimeout(resolve, 50));
-
-  try {
-    console.log('Attempting to upload file to Google Drive...');
-    // sessionId를 전달하여 files/{sessionId}/ 폴더에 저장
-    driveFileInfo = await uploadFileToDrive(file, fileName, sessionId);
-    console.log('File uploaded to Google Drive:', driveFileInfo);
-    uploadSuccess = true;
-
-    // 같은 파일이 이미 있는지 확인
-    if (driveFileInfo.isDuplicate || driveFileInfo.alreadyExists) {
-      // myfiles store에 이미 등록되어 있는지 확인
-      const allFiles = await getAllData("myfiles");
-      const existingFile = allFiles.find(f =>
-        f.driveFileId === driveFileInfo.fileId &&
-        f.sessionId === sessionId
-      );
-
-      if (existingFile) {
-        // 이미 myfiles에 등록되어 있으면 종료
-        alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재하고, myfiles에도 등록되어 있습니다.\n\n파일명: ${fileName}\n\n중복 업로드를 방지했습니다.`);
-        return {
-          fileName: fileName,
-          isDuplicate: true,
-          message: '파일이 이미 존재하여 업로드를 건너뛰었습니다.'
-        };
-      } else {
-        // myfiles에 등록되어 있지 않으면 기존 Drive 파일 정보로 등록
-        alert(`ℹ️ 같은 이름의 파일이 이미 Google Drive에 존재합니다.\n\n파일명: ${fileName}\n\nmyfiles에 등록합니다.`);
-        uploadSuccess = false; // 새로 업로드한 것은 아니므로 false
-      }
-    } else {
-      alert(`✅ Google Drive 업로드 성공!\n\n파일명: ${fileName}`);
-    }
-  } catch (driveError) {
-    console.error('Google Drive upload failed:', driveError);
-    alert(`❌ Google Drive 업로드 실패\n\n계속 진행합니다.\n\n오류: ${driveError.message}`);
-    uploadSuccess = false;
-  }
-
-  // 3단계: 업로드 실패 여부와 관계없이 파일 처리 진행
+  // 2단계: 로컬 처리 ID 생성
   const fileId = Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
     (byte) => ("0" + byte.toString(16)).slice(-2)
@@ -281,16 +236,29 @@ export async function handleFileUpload(event, sessionId, mystaff) {
       fileName: fileName,
       contents: content,
       summary: '',
-      uploadSuccess: uploadSuccess,
-      // Google Drive 정보 포함 (업로드 성공 시에만 유효)
-      driveFileId: driveFileInfo?.fileId || null,
-      driveWebViewLink: driveFileInfo?.webViewLink || null,
-      driveWebContentLink: driveFileInfo?.webContentLink || null,
-      driveMimeType: driveFileInfo?.mimeType || null,
-      driveSize: driveFileInfo?.size || null,
+      uploadSuccess: false,
+      storage: 'local'
     };
 
     await addData("myfiles", fileData);
+
+    // 4단계: 벡터 데이터베이스 구축 (OPFS 활용)
+    try {
+      console.log("Vectorizing file...");
+      // 유저에게 진행 상황 알림 (옵션)
+      const vectorNotif = document.createElement("div");
+      vectorNotif.style.cssText = "position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.7); color:white; padding:10px; border-radius:5px; z-index:10000;";
+      vectorNotif.innerText = "📄 파일 벡터화 중... 잠시만 기다려주세요.";
+      document.body.appendChild(vectorNotif);
+
+      await vectorDB.ingest(fileId, fileName, content);
+
+      vectorNotif.innerText = "✅ 벡터화 완료!";
+      setTimeout(() => vectorNotif.remove(), 3000);
+    } catch (vErr) {
+      console.error("Vector ingestion failed:", vErr);
+      alert("벡터 데이터베이스 구성에 실패했습니다. (OpenAI API 키를 확인해주세요)");
+    }
 
     return fileData;
   } catch (error) {
