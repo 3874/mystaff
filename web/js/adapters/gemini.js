@@ -3,7 +3,7 @@ import { historyToString, estimateTokens, checkLanguage } from "../utils.js";
 export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
   const credentials = localStorage.getItem("mystaff_credentials");
   const GEMINI_API_KEY = JSON.parse(credentials || "{}").gemini;
-  const model = agent?.model || "gemini-2.5-flash";
+  const model = agent?.model || "gemini-1.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
   if (!GEMINI_API_KEY) {
@@ -30,9 +30,13 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
   let finalPrompt = "";
 
   let Prompt1 = promptText.trim() + "\n\n";
-  Prompt1 += `Answer concisely and professionally in ${language}.\n`;
-  Prompt1 += `If you do not know the answer, say "I do not know".\n`;
-  Prompt1 += `Do not make up answers.\n`;
+  if (agent?.language && agent.language !== "auto") {
+    Prompt1 += `Answer concisely and professionally in ${language}.\n`;
+  } else {
+    Prompt1 += `Answer concisely and professionally in the same language as the user's question.\n`;
+  }
+  Prompt1 += 'If you do not know the answer, say "I do not know".\n';
+  Prompt1 += "Do not make up answers.\n";
 
   let Prompt2 = "";
   // Append ltm block only if ltm is a non-empty string
@@ -71,7 +75,31 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
     finalPrompt = Prompt1 + Prompt2 + Prompt3 + Prompt4;
   }
 
-  const res = await fetch(url, {
+  // 지수 백오프(Exponential Backoff)를 적용한 재시도 함수
+  const fetchWithRetry = async (url, options, maxRetries = 3) => {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const res = await fetch(url, options);
+
+        // 503(Overloaded) 또는 429(Rate Limit)인 경우 재시도
+        if (res.status === 503 || res.status === 429) {
+          if (i === maxRetries - 1) return res; // 마지막 시도면 결과 반환
+          const waitTime = Math.pow(2, i) * 1000; // 1초, 2초, 4초...
+          console.warn(
+            `Gemini API busy (${res.status}). Retrying in ${waitTime}ms... (${i + 1}/${maxRetries})`
+          );
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+          continue;
+        }
+        return res;
+      } catch (err) {
+        if (i === maxRetries - 1) throw err;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  };
+
+  const res = await fetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -99,8 +127,7 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(
-      `Gemini API error: ${res.status} - ${
-        errorData.error.message || JSON.stringify(errorData)
+      `Gemini API error: ${res.status} - ${errorData.error?.message || JSON.stringify(errorData)
       }`
     );
   }

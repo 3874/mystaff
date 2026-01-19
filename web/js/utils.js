@@ -359,7 +359,7 @@ export async function FindUrl(mystaff, Fset = 0) {
   return Finalurl;
 }
 
-export async function historyToString(history) {
+export function historyToString(history) {
   if (!Array.isArray(history)) return "";
 
   return history

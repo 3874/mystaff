@@ -144,6 +144,15 @@ function removeUploadSpinner() {
 }
 
 async function initializeChat() {
+  const credentials = localStorage.getItem("mystaff_credentials");
+  const keys = JSON.parse(credentials || "{}");
+
+  if (!keys.openai || keys.openai.trim() === "" || keys.openai === "undefined") {
+    alert("LTM 기능을 위해 OpenAI API 키가 필요합니다. Credentials 페이지에서 설정해주세요.");
+    window.location.href = "./credentials.html";
+    return;
+  }
+
   const params = new URLSearchParams(window.location.search);
   staffId = params.get("staffId");
   sessionId = params.get("sessionId");
@@ -197,7 +206,7 @@ async function loadChatSession(sessionId) {
         },
       ];
     }
-    renderMessages(currentChat);
+    await renderMessages(currentChat);
   } else {
     mystaff = null;
   }
@@ -253,8 +262,7 @@ async function renderMessages(msgs) {
         </div>`;
     }
     if (m.system) {
-      const speakerName =
-        m.speaker || (mystaff ? mystaff.staff_name : "System");
+      const speakerName = m.speaker || (mystaff ? mystaff.staff_name : "System");
       let bgColor = "#6c757d";
       if (m.speakerId) {
         const agent = (await getAnyAgentById(m.speakerId)) || {};
@@ -276,6 +284,21 @@ async function renderMessages(msgs) {
       ).toLocaleString()}</span>
             </div>
         </div>`;
+    }
+    if (m.loading) {
+      const speakerName = m.speaker || (mystaff ? mystaff.staff_name : "System");
+      messagesHtml += `
+        <div class="msg-container mb-3" id="loading-message">
+          <div class="msg-content msg-system p-3" style="background-color: #6c757d; width: 100%;">
+            <div class="d-flex align-items-center">
+              <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span><b>${speakerName}:</b> 응답을 생성하고 있습니다...</span>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
   $container.html(messagesHtml);
@@ -463,7 +486,7 @@ async function sendMessage() {
   if (text.startsWith("/")) {
     const userMessage = { user: text, date: new Date().toISOString() };
     currentChat.push(userMessage);
-    renderMessages(currentChat);
+    await renderMessages(currentChat);
     $inputEl.val("");
 
     const context = {
@@ -476,7 +499,7 @@ async function sendMessage() {
 
     if (!commandIsValid) {
       currentChat.pop();
-      renderMessages(currentChat);
+      await renderMessages(currentChat);
     }
     return;
   }
@@ -486,20 +509,21 @@ async function sendMessage() {
     return;
   }
 
-  let responder = mystaff;
-  let messageToSend = text;
-
   const $sendBtn = $("#sendBtn");
   $inputEl.prop("disabled", true);
   $sendBtn.prop("disabled", true);
 
   const tempUserMsg = { user: text, date: new Date().toISOString() };
   currentChat.push(tempUserMsg);
-  renderMessages(currentChat);
+  await renderMessages(currentChat);
   $inputEl.val("");
 
+  let responder = mystaff;
+  let messageToSend = text;
+
   // Show loading message with spinner
-  showLoadingMessage();
+  currentChat.push({ loading: true, speaker: responder.staff_name });
+  await renderMessages(currentChat);
 
   try {
     const processedInput = await preprocess(
@@ -510,10 +534,10 @@ async function sendMessage() {
 
     const response = await handleMsg(processedInput, responder, sessionId);
 
-    // Remove loading message
-    removeLoadingMessage();
+    // Remove loading message and temp user message
+    currentChat.pop(); // pop loading
+    currentChat.pop(); // pop tempUserMsg
 
-    currentChat.pop();
     const chatTurn = {
       user: text,
       system: response,
@@ -522,9 +546,11 @@ async function sendMessage() {
       speakerId: responder.staff_id,
     };
     currentChat.push(chatTurn);
-    renderMessages(currentChat);
+    await renderMessages(currentChat);
   } catch (error) {
-    removeLoadingMessage();
+    // Remove loading message
+    currentChat.pop();
+
     console.error("Error sending message:", error);
     // Show error message instead of alert
     const errorMsg = {
@@ -534,7 +560,7 @@ async function sendMessage() {
       speakerId: responder.staff_id,
     };
     currentChat.push(errorMsg);
-    renderMessages(currentChat);
+    await renderMessages(currentChat);
   } finally {
     $inputEl.prop("disabled", false);
     $sendBtn.prop("disabled", false);
@@ -606,29 +632,11 @@ function hideFileSearchDropdown() {
 }
 
 /**
- * Show loading message with spinner
+ * Show loading message with spinner (Legacy - now handled in renderMessages)
  */
-function showLoadingMessage() {
-  const speakerName = mystaff ? mystaff.staff_name : "System";
-  const loadingHtml = `
-    <div class="msg-container mb-3" id="loading-message">
-      <div class="msg-content msg-system p-3" style="background-color: #6c757d; width: 100%;">
-        <div class="d-flex align-items-center">
-          <div class="spinner-border spinner-border-sm me-2" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <span><b>${speakerName}:</b> 응답을 생성하고 있습니다...</span>
-        </div>
-      </div>
-    </div>
-  `;
-  $("#chatMessages").append(loadingHtml);
-  $("#chatMessages").prop("scrollTop", $("#chatMessages").prop("scrollHeight"));
-}
+function showLoadingMessage() { }
 
 /**
- * Remove loading message
+ * Remove loading message (Legacy - now handled in renderMessages)
  */
-function removeLoadingMessage() {
-  $("#loading-message").remove();
-}
+function removeLoadingMessage() { }

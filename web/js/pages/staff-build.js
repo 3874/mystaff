@@ -11,7 +11,7 @@ $(async function () {
 
   // Initialize moderator chat functionality
   initModeratorChat();
-  
+
   // Check if we're editing an existing staff (staffId in URL)
   const urlParams = new URLSearchParams(window.location.search);
   const staffId = urlParams.get('staffId');
@@ -23,14 +23,14 @@ $(async function () {
   $('#staffInfoCollapse').on('hide.bs.collapse', function () {
     $('#staffInfoCollapseIcon').removeClass('bi-chevron-down').addClass('bi-chevron-right');
   });
-  
+
   $('#adapterConfigCollapse').on('show.bs.collapse', function () {
     $('#adapterCollapseIcon').removeClass('bi-chevron-right').addClass('bi-chevron-down');
   });
   $('#adapterConfigCollapse').on('hide.bs.collapse', function () {
     $('#adapterCollapseIcon').removeClass('bi-chevron-down').addClass('bi-chevron-right');
   });
-  
+
   $('#testConfigCollapse').on('show.bs.collapse', function () {
     $('#testConfigCollapseIcon').removeClass('bi-chevron-right').addClass('bi-chevron-down');
   });
@@ -136,29 +136,29 @@ $(async function () {
     if (resource === "database") {
       $("#textResponseArea").hide();
       $("#databaseResponseArea").show();
-      
+
       // Disable test button for database (auto-loads)
       $("#testBtn").prop("disabled", true).attr("title", "Database resource auto-loads on configuration change");
-      
+
       // Disable all input fields (not needed for database)
       $("#input_prompt, #input_history, #input_ltm, #input_sessionId")
         .prop("disabled", true)
         .addClass("text-muted");
-      
+
       // Automatically load test-sheet.html when database is selected
       loadDatabaseTestView();
     } else {
       $("#textResponseArea").show();
       $("#databaseResponseArea").hide();
-      
+
       // Enable test button for non-database resources
       $("#testBtn").prop("disabled", false).attr("title", "Test the configuration");
-      
+
       // Enable all input fields
       $("#input_prompt, #input_history, #input_ltm, #input_sessionId")
         .prop("disabled", false)
         .removeClass("text-muted");
-      
+
       // Clear iframe when switching away from database
       $("#databaseFrame").attr("src", "");
     }
@@ -174,14 +174,14 @@ $(async function () {
       resource_type: responder.resource_type,
       language_code: responder.language_code
     };
-    
+
     // Store test configuration in sessionStorage
     sessionStorage.setItem("testStaffConfig", JSON.stringify(staffData));
-    
+
     // Load test-sheet.html in iframe
     const iframeUrl = `./test-sheet.html`;
     $("#databaseFrame").attr("src", iframeUrl);
-    
+
     console.log("Loading test database view:", staffData);
   }
 
@@ -264,7 +264,7 @@ $(async function () {
         alert("Staff created successfully!");
       }
       // Redirect back to myinterns page
-      window.location.href = "./myinterns.html";
+      window.location.href = "./myinterests.html";
     } catch (error) {
       console.error("Failed to save staff data:", error);
       alert("Failed to save data. See console for details.");
@@ -279,13 +279,13 @@ $(async function () {
     }
 
     const responder = getJsonFromForm();
-    
+
     // For non-database resources, use the text response area
     if (!$("#input_prompt").val()) {
       alert("Please enter a test prompt.");
       return;
     }
-    
+
     const processedInput = {
       action: 'chat',
       prompt: $("#input_prompt").val(),
@@ -316,12 +316,12 @@ $(async function () {
         updateResponseArea(); // Update response area based on loaded resource
       } else {
         alert("Could not find staff data.");
-        window.location.href = "./myinterns.html";
+        window.location.href = "./myinterests.html";
       }
     }).catch(error => {
       console.error("Failed to load staff data:", error);
       alert("Failed to load staff data.");
-      window.location.href = "./myinterns.html";
+      window.location.href = "./myinterests.html";
     });
   } else {
     // New staff - initialize with defaults

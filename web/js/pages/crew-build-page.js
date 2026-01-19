@@ -193,7 +193,7 @@ $(async function () {
                 alert("Staff created successfully!");
             }
             // Redirect back to myinterns page
-            window.location.href = "./myinterns.html";
+            window.location.href = "./myinterests.html";
         } catch (error) {
             console.error("Failed to save staff data:", error);
             alert("Failed to save data. See console for details.");
@@ -265,12 +265,12 @@ $(async function () {
                 populateForm(staffData);
             } else {
                 alert("Could not find staff data.");
-                window.location.href = "./myinterns.html";
+                window.location.href = "./myinterests.html";
             }
         }).catch(error => {
             console.error("Failed to load staff data:", error);
             alert("Failed to load staff data.");
-            window.location.href = "./myinterns.html";
+            window.location.href = "./myinterests.html";
         });
     } else {
         // New staff - initialize with defaults

@@ -54,7 +54,7 @@ $(document).ready(async function () {
       alert('Staff member added to your My Interests list!');
     }
 
-    window.location.href = './myinterns.html'; // Redirect to myinterns.html
+    window.location.href = './myinterests.html'; // Redirect to myinterests.html
   });
 
   $('#signOutBtn').on('click', function (e) {

@@ -40,7 +40,11 @@ export async function openAIChatAdapter({ processedInput, agent, sessionId }) {
   let finalPrompt = "";
 
   let Prompt1 = promptText.trim() + "\n\n";
-  Prompt1 += `Answer concisely and professionally in ${language}.\n`;
+  if (agent?.language && agent.language !== "auto") {
+    Prompt1 += `Answer concisely and professionally in ${language}.\n`;
+  } else {
+    Prompt1 += `Answer concisely and professionally in the same language as the user's question.\n`;
+  }
   Prompt1 += 'If you do not know the answer, say "I do not know".\n';
   Prompt1 += "Do not make up answers.\n";
 
