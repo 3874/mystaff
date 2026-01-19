@@ -219,6 +219,13 @@ export async function handleFileUpload(event, sessionId, mystaff) {
     return;
   }
 
+  // 1.5단계: 파일 크기 확인 (10MB 제한)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  if (file.size > MAX_FILE_SIZE) {
+    alert(`파일 크기가 너무 큽니다. (최대 10MB)\n현재 파일 크기: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+    return;
+  }
+
   // 2단계: 로컬 처리 ID 생성
   const fileId = Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
@@ -359,8 +366,9 @@ export async function getAnyAgentById(staffId) {
 
 export function estimateTokens(text) {
   if (!text) return 0;
-  // 평균 4 chars per token (조정 가능)
-  return Math.ceil(text.length / 4);
+  // Safest estimate for Korean/multi-byte: 1 char = 1 token.
+  // English will be overestimated (it's ~4 chars/token), but this prevents crashes.
+  return text.length;
 }
 
 export function checkLanguage(text) {

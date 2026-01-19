@@ -13,8 +13,12 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
   }
 
   const language = checkLanguage(agent?.language);
+  const systemPrompt = agent?.adapter.system_prompt || "You are a concise, professional assistant.";
+  const SystemLength = Number(String(estimateTokens(systemPrompt)).trim()) || 0;
+
   const MaxToken = agent?.adapter?.token_limit || 128000;
-  const LimitToken = MaxToken - 100;
+  // Increase buffer to 3000 tokens for safety
+  const LimitToken = MaxToken - SystemLength - 3000;
 
   // Safely coerce processedInput fields to strings so missing values don't throw
   const promptText = String((processedInput && processedInput.prompt) || "");
@@ -38,6 +42,16 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
   Prompt1 += 'If you do not know the answer, say "I do not know".\n';
   Prompt1 += "Do not make up answers.\n";
 
+  // Re-check Prompt1 length after adding instructions
+  PromptLength = estimateTokens(Prompt1);
+
+  if (PromptLength > LimitToken) {
+    console.warn("User prompt exceeds limit, truncating...");
+    // Truncate based on 1:1 ratio
+    Prompt1 = Prompt1.substring(0, LimitToken);
+    PromptLength = estimateTokens(Prompt1);
+  }
+
   let Prompt2 = "";
   // Append ltm block only if ltm is a non-empty string
   if (ltmText && ltmText.trim()) {
@@ -60,11 +74,6 @@ export async function geminiChatAdapter({ processedInput, agent, sessionId }) {
     Prompt4 += "\n\nbased on below file:\n";
     Prompt4 += "[file]\n";
     Prompt4 += fileText + "\n";
-  }
-
-  if (PromptLength > LimitToken) {
-    alert("Prompt가 너무 깁니다. 더 짧게 해주세요.");
-    return;
   }
 
   // 중요도 순서에 따른 프롬프트 재구성 (LTM -> Files -> History -> User Question)
