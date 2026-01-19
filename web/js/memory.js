@@ -10,3 +10,12 @@ export async function loadLTM(sessionId) {
 export async function deleteLTM(sessionId) {
   await deleteData('LTM', sessionId);
 }
+
+export async function saveLTM(sessionId, ltm) {
+  await addData('LTM', sessionId, ltm);
+}
+
+export async function updateLTM(sessionId, ltm) {
+  await updateData('LTM', sessionId, ltm);
+}
+
