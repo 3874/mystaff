@@ -72,14 +72,21 @@ export async function openAIChatAdapter({ processedInput, agent, sessionId }) {
   if (PromptLength > LimitToken) {
     alert("Prompt가 너무 깁니다. 더 짧게 해주세요.");
     return;
-  } else if (LtmLength + PromptLength > LimitToken) {
-    finalPrompt = Prompt1;
-  } else if (HistoryLength + LtmLength + PromptLength > LimitToken) {
-    finalPrompt = Prompt1 + Prompt2;
+  }
+
+  // 중요도 순서에 따른 프롬프트 재구성 (LTM -> Files -> History -> User Question)
+  if (LtmLength + PromptLength > LimitToken) {
+    // 필수 정보(질문)만 포함
+    finalPrompt = `[USER QUESTION]\n${Prompt1}`;
+  } else if (FileLength + LtmLength + PromptLength > LimitToken) {
+    // 질문 + LTM 포함
+    finalPrompt = `${Prompt2}\n\n[USER QUESTION]\n${Prompt1}`;
   } else if (FileLength + HistoryLength + LtmLength + PromptLength > LimitToken) {
-    finalPrompt = Prompt1 + Prompt2 + Prompt3;
+    // 질문 + LTM + 히스토리 포함
+    finalPrompt = `${Prompt2}${Prompt3}\n\n[USER QUESTION]\n${Prompt1}`;
   } else {
-    finalPrompt = Prompt1 + Prompt2 + Prompt3 + Prompt4;
+    // 모든 정보 포함
+    finalPrompt = `${Prompt2}${Prompt4}${Prompt3}\n\n[USER QUESTION]\n${Prompt1}`;
   }
 
   const response = await client.chat.completions.create({
