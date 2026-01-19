@@ -118,5 +118,16 @@ export const vectorDB = {
 
         scored.sort((a, b) => b.score - a.score);
         return scored.slice(0, topK);
+    },
+
+    async delete(fileId) {
+        try {
+            const root = await navigator.storage.getDirectory();
+            const vectorDir = await root.getDirectoryHandle("vectors", { create: true });
+            await vectorDir.removeEntry(`${fileId}.json`);
+            console.log(`Vector data for file ${fileId} deleted from OPFS.`);
+        } catch (e) {
+            console.warn(`Could not delete vector data for file ${fileId}:`, e.message);
+        }
     }
 };

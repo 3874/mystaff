@@ -7,6 +7,8 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { handleCommand } from "../commands.js";
 import { FindUrl, handleFileUpload, signOut } from "../utils.js";
 import { initAuthGuard } from "../auth-guard.js";
+import { vectorDB } from "../vector-db.js";
+
 
 let sessionId = null;
 let mystaff = null;
@@ -373,6 +375,7 @@ function bindUIEvents() {
       );
       for (const file of filesToDelete) {
         await deleteData("myfiles", file.id);
+        await vectorDB.delete(file.id);
       }
 
       await deleteData("chat", sessionToDeleteId);
@@ -409,6 +412,7 @@ function bindUIEvents() {
     if (confirm("Are you sure you want to delete this file?")) {
       try {
         await deleteData("myfiles", fileId);
+        await vectorDB.delete(fileId);
         $listItem.remove();
         if ($("#fileList").children().length === 0) {
           $("#fileList").append(
@@ -584,8 +588,8 @@ async function openManageFilesModal(sessionIdForFiles) {
         const fileName = file.fileName || "Unnamed File";
         const fileItemHtml = `
                     <li class="list-group-item d-flex justify-content-between align-items-center" data-file-id="${file.id}">
-                        <span>${fileName}</span>
-                        <button type="button" class="btn btn-danger btn-sm delete-file-btn">
+                        <span class="text-truncate me-3 flex-grow-1" style="min-width: 0;" title="${fileName}">${fileName}</span>
+                        <button type="button" class="btn btn-danger btn-sm delete-file-btn" style="flex-shrink: 0;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </li>`;
